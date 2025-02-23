@@ -1,71 +1,78 @@
-#include "esp_sleep.h"  // Required for deep sleep functions
+#include "esp_sleep.h"  // Required for deep sleep functions 
 
-// 2022/11/24
-// Written by Soham Naik - 11/08/2024
-// Modified by Zaynab Mourtada - 12/29/2024
-// Glove 1 - Single Light Source for OOK (On-Off Keying) Signal
-// Single node: Index finger connected to D3 (PWM-capable pin)
+const int redLED = D2;    // Red LED pin
+const int greenLED = D4;  // Green LED pin
 
-int indexFingerLED = 3;  // PWM-capable pin
-
-float shutterRate = 1000.0; // Default shutter rate in Hz
+float shutterRate = 5000.0; // Set frequency to 5 kHz
 float shutterPeriod;        // Shutter period in microseconds
-int pilotGap;               // Delay between each OOK signal
-int pulseWidth;             // Width of each OOK bit LIGHT band
-int gapWidth;               // Width of each OOK bit DARK band
+int pulseWidth;             // Width of each ON pulse (50% duty cycle)
+int gapWidth;               // Width of each OFF gap (50% duty cycle)
 
-unsigned long startTime;    // Start time to limit the signal duration
+unsigned long loopStartTime; // To mark the beginning of the 45-second cycle
 
-// Splits the shutter period into ON time and OFF time
+// Calculate timing parameters based on shutterRate (assumes 50% duty cycle)
 void calculateTiming() {
-  shutterPeriod = (1.0 / shutterRate) * 1e6; // Converting shutter rate to microseconds
-  pulseWidth = shutterPeriod * 1.0;          // 50% ON (adjust multiplier if a true 50% duty cycle is needed)
-  gapWidth = shutterPeriod * 1.0;            // 50% OFF (adjust multiplier if a true 50% duty cycle is needed)
-  pilotGap = shutterPeriod * 7;
+  shutterPeriod = (1.0 / shutterRate) * 1e6; // period in microseconds
+  pulseWidth = shutterPeriod / 2;            // 50% ON time
+  gapWidth = shutterPeriod / 2;              // 50% OFF time
 }
 
-// Function to emit a gap between OOK signals (if desired)
-void emitPilotGap() {
-  digitalWrite(indexFingerLED, LOW);    // Turn LED OFF
-  delayMicroseconds(pilotGap);
-}
-
-// Function to emit a symbol with a specified binary pattern
-void emitSymbol(const char* binaryPattern) {
+// Emit an OOK symbol using the specified binary pattern on a given LED pin
+// '1' turns the LED ON for pulseWidth and '0' turns it OFF for gapWidth.
+void emitSymbol(int ledPin, const char* binaryPattern) {
   for (int i = 0; binaryPattern[i] != '\0'; i++) {
     if (binaryPattern[i] == '1') {
-      digitalWrite(indexFingerLED, HIGH);  // LED ON for "1" bit
+      digitalWrite(ledPin, HIGH);
       delayMicroseconds(pulseWidth);
     } else {
-      digitalWrite(indexFingerLED, LOW);   // LED OFF for "0" bit
+      digitalWrite(ledPin, LOW);
       delayMicroseconds(gapWidth);
     }
   }
 }
 
-// Function to generate the OOK signal using a predefined binary pattern
-void generateOOKSignal() {
-  // Optionally, uncomment the next line if you want to include a pilot gap:
-  // emitPilotGap();
-  // Choose the desired pattern:
-  // emitSymbol("11110000");  // Example pattern for one user
-  emitSymbol("10101010");    // Example pattern for another user
+// Generate one OOK sequence on the given LED (here, greenLED)
+void generateOOKSignal(int ledPin) {
+  // Using a sample binary pattern "10101010" as an example.
+  emitSymbol(ledPin, "10101010");
+}
+
+// Create a red preamble by toggling the red LED at 5 kHz for 1 second.
+void redPreamble() {
+  unsigned long start = micros();
+  while ((micros() - start) < 1000000UL) { // run for 1 second
+    digitalWrite(redLED, HIGH);
+    delayMicroseconds(pulseWidth);
+    digitalWrite(redLED, LOW);
+    delayMicroseconds(gapWidth);
+  }
 }
 
 void setup() {
-  pinMode(indexFingerLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
+  pinMode(greenLED, OUTPUT);
   calculateTiming();
-  startTime = millis();  // Record the starting time
+  loopStartTime = millis();  // Record the starting time of the 45-second cycle
 }
 
 void loop() {
-  // Run the OOK signal for 30 seconds (30,000 ms)
-  if (millis() - startTime < 30000UL) {
-    generateOOKSignal();
-  } else {
-    // Turn off the LED before shutdown
-    digitalWrite(indexFingerLED, LOW);
-    // Enter deep sleep mode to effectively "shutdown" the board
-    esp_deep_sleep_start();
+  // Continue the process until 45 seconds have passed
+  while (millis() - loopStartTime < 45000UL) {
+    // 1. Emit the red preamble.
+    redPreamble();
+
+    // 2. Emit 5 OOK sequences on the green LED.
+    for (int i = 0; i < 5; i++) {
+      generateOOKSignal(greenLED);
+      // Optionally, add a short delay between sequences.
+      delay(100);
+    }
   }
+
+  // Turn off both LEDs after 45 seconds.
+  digitalWrite(redLED, LOW);
+  digitalWrite(greenLED, LOW);
+  
+  // If you want to use deep sleep, you can uncomment the next line.
+  esp_deep_sleep_start();
 }
