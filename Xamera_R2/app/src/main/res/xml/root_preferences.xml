@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Settings Section with a custom title layout (if needed) -->
+    <PreferenceCategory
+        android:title="Settings"
+        android:layout="@layout/preference_category_layout">
+
+        <!-- Shutter Speed Settings with custom layout -->
+        <ListPreference
+            android:key="shutter_speed"
+            android:layout="@layout/preference_list_layout"
+            android:title="Rolling Shutter Speed"
+            android:summary="Select the rolling shutter speed (in Hz)"
+            android:entries="@array/shutter_speed_options"
+            android:entryValues="@array/shutter_speed_values"
+            android:defaultValue="60" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

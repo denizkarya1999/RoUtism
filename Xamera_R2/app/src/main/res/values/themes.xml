@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Splash screen theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/darkBlue</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/xamera_launcher</item>
+        <item name="windowSplashScreenAnimationDuration">200</item>
+        <item name="postSplashScreenTheme">@style/Theme.Xamera</item>
+    </style>
+
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Xamera" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/darkBlue</item>
+    </style>
+
+    <style name="Theme.Xamera" parent="Base.Theme.Xamera" />
+</resources>
