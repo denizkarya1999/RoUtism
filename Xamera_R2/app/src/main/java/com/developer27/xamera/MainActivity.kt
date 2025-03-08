@@ -24,14 +24,12 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.developer27.xamera.routism.camera.CameraHelper
 import com.developer27.xamera.routism.databinding.ActivityMainBinding
 import com.developer27.xamera.routism.videoprocessing.ProcessedFrameRecorder
-import com.developer27.xamera.routism.videoprocessing.ProcessedVideoRecorder
 import com.developer27.xamera.routism.videoprocessing.Settings
 import com.developer27.xamera.routism.videoprocessing.VideoProcessor
 import org.tensorflow.lite.Interpreter
@@ -50,7 +48,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cameraManager: CameraManager
     private lateinit var cameraHelper: CameraHelper
     private var tfliteInterpreter: Interpreter? = null
-    private var processedVideoRecorder: ProcessedVideoRecorder? = null
     private var processedFrameRecorder: ProcessedFrameRecorder? = null
     private var videoProcessor: VideoProcessor? = null
 
@@ -205,31 +202,41 @@ class MainActivity : AppCompatActivity() {
         viewBinding.processedFrameView.visibility = View.VISIBLE
 
         videoProcessor?.reset()
-
-        if (Settings.ExportData.videoDATA) {
-            val dims = videoProcessor?.getModelDimensions()
-            val width = dims?.first ?: 416
-            val height = dims?.second ?: 416
-            val outputPath = getProcessedVideoOutputPath()
-
-            // TODO <Deniz Acikbas>: Investigate how ProcessedVideoRecorder class works.
-            //processedVideoRecorder = ProcessedVideoRecorder(width, height, outputPath)
-            //processedVideoRecorder?.start()
-        }
     }
 
     private fun stopProcessingAndRecording() {
         isRecording = false
         isProcessing = false
+
+        // Algorithm: Save only the drawn line (excluding camera preview and bounding box).
+        // Use the exportTraceForInference() method to retrieve a bitmap containing only the drawn trace.
+        try {
+            val traceBitmap = videoProcessor?.exportTraceForInference()
+            if (traceBitmap != null) {
+                // Generate a file path to save the exported trace.
+                val screenshotPath = getProcessedImageOutputPath() // reusing existing method to get a file path.
+                val screenshotFile = File(screenshotPath)
+                FileOutputStream(screenshotFile).use { outputStream ->
+                    // Compress and write the bitmap to file (JPEG with quality 90).
+                    traceBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+                    outputStream.flush()
+                }
+                Toast.makeText(this, "Exported trace saved: $screenshotPath", Toast.LENGTH_SHORT).show()
+                Log.d("MainActivity", "Exported trace saved successfully: $screenshotPath")
+            } else {
+                Log.e("MainActivity", "Failed to export trace: Bitmap is null.")
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error exporting trace: ${e.message}", Toast.LENGTH_SHORT).show()
+            Log.e("MainActivity", "Error exporting trace", e)
+        }
+
+        // Now hide the overlay and update UI after exporting the trace.
         viewBinding.startProcessingButton.text = "Start Tracking"
         viewBinding.startProcessingButton.backgroundTintList =
             ContextCompat.getColorStateList(this, R.color.blue)
         viewBinding.processedFrameView.visibility = View.GONE
         viewBinding.processedFrameView.setImageBitmap(null)
-
-        // TODO <Deniz Acikbas>: Investigate how ProcessedVideoRecorder class works.
-        //processedVideoRecorder?.stop()
-        //processedVideoRecorder = null
 
         val outputPath = getProcessedImageOutputPath()
         processedFrameRecorder = ProcessedFrameRecorder(outputPath)
@@ -237,29 +244,29 @@ class MainActivity : AppCompatActivity() {
             if (frameIMG) {
                 val bitmap = videoProcessor?.exportTraceForInference()
                 if (bitmap != null) {
-                    // TODO <Deniz Acikbas>: Investigate how ProcessedFrameRecorder class works.
-                    //processedFrameRecorder?.save(bitmap)
+                    processedFrameRecorder?.save(bitmap)
                 }
             }
         }
 
         // TODO <Deniz Acikbas>: Study how digit inference model is implemented in Rollity.
-        //inferenceResult = runDigitRecognitionInference()
+        // inferenceResult = runDigitRecognitionInference()
         inferenceResult = "Study ML Inference in Rollity" // Temporary message
         viewBinding.predictedEmotionTextView.text = inferenceResult
 
         // Retrieve tracking coordinates.
         trackingCoordinates = videoProcessor?.getTrackingCoordinatesString() ?: ""
 
-        // Show message box for image export algorithm.
-        AlertDialog.Builder(this)
-            .setTitle("Image Export Algorithm")
-            .setMessage("Implement an Image Export algorithm to train Emotion Recognition Machine Learning Model")
-            .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
-            .show()
-
         // TODO <Deniz Acikbas>: Study how parameters are passing to the ARCore and think about how this will happen in RoUtism.
-        //launch3DActivity()
+        // launch3DActivity()
+    }
+
+    // Helper function to capture a view (including its drawing/overlay) as a Bitmap.
+    private fun captureView(view: View): Bitmap {
+        val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        view.draw(canvas)
+        return bitmap
     }
 
     // TODO <Deniz Acikbas>: Study how digit inference model is implemented in Rollity.
@@ -333,11 +340,6 @@ class MainActivity : AppCompatActivity() {
                 processedFrames?.let { (outputBitmap, preprocessedBitmap) ->
                     if (isProcessing) {
                         viewBinding.processedFrameView.setImageBitmap(outputBitmap)
-                        with(Settings.ExportData) {
-                            if (videoDATA) {
-                                processedVideoRecorder?.recordFrame(preprocessedBitmap)
-                            }
-                        }
                     }
                 }
                 isProcessingFrame = false
@@ -345,22 +347,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // TODO <Deniz Acikbas>: Study this part as part of sample recorder
-    private fun getProcessedVideoOutputPath(): String {
-        @Suppress("DEPRECATION")
-        val moviesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)
-        val routismDir = File(moviesDir, "RoUtism_ML_Training")
-        if (!routismDir.exists()) {
-            routismDir.mkdirs()
-        }
-        return File(routismDir, "Inference_${System.currentTimeMillis()}.mp4").absolutePath
-    }
-
-    // TODO <Deniz Acikbas>: Study this part as part of sample recorder
     private fun getProcessedImageOutputPath(): String {
         @Suppress("DEPRECATION")
         val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-        val routismDir = File(picturesDir, "RoUtism_ML_Training")
+        val routismDir = File(picturesDir, "RoUtism_ML_Training_Data")
         if (!routismDir.exists()) {
             routismDir.mkdirs()
         }
