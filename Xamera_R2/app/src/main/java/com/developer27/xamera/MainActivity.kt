@@ -204,14 +204,42 @@ class MainActivity : AppCompatActivity() {
         videoProcessor?.reset()
     }
 
+    // Helper function to crop a bitmap to its non-white content.
+    private fun cropToNonWhite(bitmap: Bitmap): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+        var minX = width
+        var minY = height
+        var maxX = 0
+        var maxY = 0
+
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                // Check if pixel is not white.
+                if (bitmap.getPixel(x, y) != android.graphics.Color.WHITE) {
+                    if (x < minX) minX = x
+                    if (x > maxX) maxX = x
+                    if (y < minY) minY = y
+                    if (y > maxY) maxY = y
+                }
+            }
+        }
+        // If no non-white pixels found, return a 1x1 white image.
+        if (minX > maxX || minY > maxY) {
+            return Bitmap.createBitmap(1, 1, bitmap.config).apply { eraseColor(android.graphics.Color.WHITE) }
+        }
+        return Bitmap.createBitmap(bitmap, minX, minY, maxX - minX + 1, maxY - minY + 1)
+    }
+
     private fun stopProcessingAndRecording() {
         isRecording = false
         isProcessing = false
 
+        // *************************************
         // Algorithm: Save only the drawn line (excluding camera preview and bounding box).
-        // Use the exportTraceForInference() method to retrieve a bitmap containing only the drawn trace.
+        // Use the exportTraceForDataCollection() method to retrieve a bitmap containing only the drawn trace for data collection.
         try {
-            val traceBitmap = videoProcessor?.exportTraceForInference()
+            val traceBitmap = videoProcessor?.exportTraceForDataCollection()
             if (traceBitmap != null) {
                 // Generate a file path to save the exported trace.
                 val screenshotPath = getProcessedImageOutputPath() // reusing existing method to get a file path.
@@ -230,6 +258,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Error exporting trace: ${e.message}", Toast.LENGTH_SHORT).show()
             Log.e("MainActivity", "Error exporting trace", e)
         }
+        // *************************************
 
         // Now hide the overlay and update UI after exporting the trace.
         viewBinding.startProcessingButton.text = "Start Tracking"
@@ -242,9 +271,11 @@ class MainActivity : AppCompatActivity() {
         processedFrameRecorder = ProcessedFrameRecorder(outputPath)
         with(Settings.ExportData) {
             if (frameIMG) {
-                val bitmap = videoProcessor?.exportTraceForInference()
+                // For data collection, you could also use exportTraceForDataCollection() here.
+                val bitmap = videoProcessor?.exportTraceForDataCollection()
                 if (bitmap != null) {
-                    processedFrameRecorder?.save(bitmap)
+                    // TODO <Deniz Acikbas>: Investigate how ProcessedFrameRecorder class works.
+                    // processedFrameRecorder?.save(bitmap)
                 }
             }
         }
@@ -340,6 +371,7 @@ class MainActivity : AppCompatActivity() {
                 processedFrames?.let { (outputBitmap, preprocessedBitmap) ->
                     if (isProcessing) {
                         viewBinding.processedFrameView.setImageBitmap(outputBitmap)
+                        // Removed ProcessedVideoRecorder parts.
                     }
                 }
                 isProcessingFrame = false
