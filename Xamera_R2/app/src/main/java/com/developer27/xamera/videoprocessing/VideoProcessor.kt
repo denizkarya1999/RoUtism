@@ -211,13 +211,20 @@ class VideoProcessor(private val context: Context) {
         return scaledBitmap
     }
 
-    // NEW FUNCTION: Creates a white, square Bitmap that encapsulates the drawn spline trace (with padding)
-// and returns the full-size image (without scaling) for data collection.
+    // NEW FUNCTION: Creates a fixed-size (based on the device's screen size) white, square Bitmap that encapsulates the drawn spline trace
+// and returns the full-size image (without forcing small drawings to scale up) for data collection.
     fun exportTraceForDataCollection(): Bitmap {
         // Ensure there is some trace data.
         if (smoothDataList.isEmpty()) {
             return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
         }
+
+        // Obtain screen dimensions (choose the smaller dimension to form a square)
+        val metrics = context.resources.displayMetrics
+        val screenWidth = metrics.widthPixels
+        val screenHeight = metrics.heightPixels
+        val fixedSize = min(screenWidth, screenHeight).toDouble()
+
         // 1. Compute the bounding box of the trace points.
         var minX = Double.MAX_VALUE
         var minY = Double.MAX_VALUE
@@ -229,32 +236,53 @@ class VideoProcessor(private val context: Context) {
             maxX = max(maxX, pt.x)
             maxY = max(maxY, pt.y)
         }
-        // 2. Define padding (in pixels) around the output img.
+
+        // 2. Define padding (in pixels) around the drawing.
         val padding = 30.0
-        // Compute optimal dimensions.
-        val optimalWidth = max((maxX - minX + 2 * padding).toInt(), 1)
-        val optimalHeight = max((maxY - minY + 2 * padding).toInt(), 1)
-        // 3. Determine the square size as the greatest of the optimal dimensions.
-        val squareSize = max(optimalWidth, optimalHeight)
-        // 4. Create a white square Mat of the computed dimensions.
-        val mat = Mat(squareSize, squareSize, CvType.CV_8UC4, Scalar(255.0, 255.0, 255.0, 255.0))
-        // 5. Compute offsets to center the drawn trace inside the square.
-        val xOffset = (squareSize - optimalWidth) / 2.0
-        val yOffset = (squareSize - optimalHeight) / 2.0
-        // 6. Create an adjusted list of points so that the drawing starts at (padding, padding) plus the offsets.
-        val adjustedPoints = smoothDataList.map { Point(it.x - minX + padding + xOffset, it.y - minY + padding + yOffset) }
-        // 7. Set up drawing parameters (temporarily override settings).
+
+        // 3. Compute the drawing width and height.
+        val drawingWidth = maxX - minX
+        val drawingHeight = maxY - minY
+
+        // 4. Determine the effective drawing area.
+        val effectiveSize = fixedSize - 2 * padding
+
+        // 5. Determine scaling factor:
+        //    Scale down if the drawing exceeds the effective area; otherwise, leave at original scale.
+        val scale = if (drawingWidth > effectiveSize || drawingHeight > effectiveSize) {
+            min(effectiveSize / drawingWidth, effectiveSize / drawingHeight)
+        } else {
+            1.0
+        }
+
+        // 6. Compute new drawing dimensions after scaling.
+        val newDrawingWidth = drawingWidth * scale
+        val newDrawingHeight = drawingHeight * scale
+
+        // 7. Compute offsets to center the drawing in the fixed pane.
+        val offsetX = (fixedSize - newDrawingWidth) / 2.0
+        val offsetY = (fixedSize - newDrawingHeight) / 2.0
+
+        // 8. Create an adjusted list of points by scaling and translating the original points.
+        val adjustedPoints = smoothDataList.map {
+            Point((it.x - minX) * scale + offsetX, (it.y - minY) * scale + offsetY)
+        }
+
+        // 9. Create a fixed-size white square Mat.
+        val mat = Mat(fixedSize.toInt(), fixedSize.toInt(), CvType.CV_8UC4, Scalar(255.0, 255.0, 255.0, 255.0))
+
+        // 10. Set up drawing parameters (temporarily override settings).
         val originalColor = Settings.Trace.splineLineColor
         val originalThickness = Settings.Trace.lineThickness
         Settings.Trace.splineLineColor = Scalar(0.0, 0.0, 0.0) // Black
-        Settings.Trace.lineThickness = 16  // Reduced thickness further from 18 to 16
-        // 8. Draw the spline curve using the adjusted points.
+        Settings.Trace.lineThickness = 1  // As thin as possible
+        // 11. Draw the spline curve using the adjusted points.
         TraceRenderer.drawSplineCurve(adjustedPoints, mat)
-        // 9. Restore the original settings.
+        // 12. Restore the original settings.
         Settings.Trace.splineLineColor = originalColor
         Settings.Trace.lineThickness = originalThickness
-        // 10. Convert the Mat back to a Bitmap and return it without scaling.
-        return Bitmap.createBitmap(squareSize, squareSize, Bitmap.Config.ARGB_8888).apply {
+        // 13. Convert the Mat back to a Bitmap and return it.
+        return Bitmap.createBitmap(fixedSize.toInt(), fixedSize.toInt(), Bitmap.Config.ARGB_8888).apply {
             Utils.matToBitmap(mat, this)
             mat.release()
         }
