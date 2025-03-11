@@ -1,3 +1,0 @@
-Phone: Google Pixel 8
-Screen Timeout: 30 Mins
-Rotation: Screen Rotation Locked
