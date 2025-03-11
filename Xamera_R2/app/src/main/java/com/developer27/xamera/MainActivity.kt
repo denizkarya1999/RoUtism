@@ -107,7 +107,7 @@ class MainActivity : AppCompatActivity() {
         // Prevent screen from turning off
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // Lock screen orientation to portrait (choose as needed)
+        // Lock screen orientation to portrait
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         // Install the splash screen (Android 12+)
