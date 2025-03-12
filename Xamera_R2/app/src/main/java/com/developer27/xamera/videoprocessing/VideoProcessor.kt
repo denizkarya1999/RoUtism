@@ -6,7 +6,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.util.Log
-import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -101,7 +100,6 @@ class VideoProcessor(private val context: Context) {
     fun reset() {
         rawDataList.clear()
         smoothDataList.clear()
-        Toast.makeText(context, "VideoProc Reset", Toast.LENGTH_SHORT).show()
     }
 
     // Processes a frame asynchronously and returns a Pair (outputBitmap, videoBitmap).

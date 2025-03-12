@@ -43,6 +43,8 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
+import java.util.Timer
+import java.util.TimerTask
 
 class MainActivity : AppCompatActivity() {
     private lateinit var viewBinding: ActivityMainBinding
@@ -67,6 +69,11 @@ class MainActivity : AppCompatActivity() {
 
     // New flag to clear prediction when returning from an external intent.
     private var shouldClearPrediction = false
+
+    // Timer for periodic export every second
+    private var exportTimer: Timer? = null
+    // Counter for number of batches exported.
+    private var batchCount = 0
 
     private val REQUIRED_PERMISSIONS = arrayOf(
         Manifest.permission.CAMERA,
@@ -210,7 +217,98 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getColorStateList(this, R.color.red)
         viewBinding.processedFrameView.visibility = View.VISIBLE
 
+        // Clear any previous trace data and reset the batch counter.
         videoProcessor?.reset()
+        batchCount = 0
+
+        // Start a timer that exports the drawn line every 1 second and then clears it.
+        exportTimer = Timer()
+        exportTimer?.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                runOnUiThread {
+                    exportCurrentLine()
+                    videoProcessor?.reset()
+                }
+            }
+        }, 1000, 1000) // 1 second delay and repeat every 1 second
+    }
+
+    // Helper function to export the current drawn line as a JPEG image.
+    private fun exportCurrentLine() {
+        try {
+            val traceBitmap = videoProcessor?.exportTraceForDataCollection()
+            if (traceBitmap != null) {
+                val screenshotPath = getProcessedImageOutputPath()
+                val screenshotFile = File(screenshotPath)
+                FileOutputStream(screenshotFile).use { outputStream ->
+                    traceBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+                    outputStream.flush()
+                }
+                // Increment the batch counter (no individual toast shown)
+                batchCount++
+                Log.d("MainActivity", "Batch #$batchCount exported: $screenshotPath")
+            } else {
+                Log.e("MainActivity", "Failed to export trace: Bitmap is null.")
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error exporting trace", e)
+        }
+    }
+
+    private fun stopProcessingAndRecording() {
+        isRecording = false
+        isProcessing = false
+
+        // Cancel the periodic export timer.
+        exportTimer?.cancel()
+        exportTimer = null
+
+        // Optionally perform a final export.
+        try {
+            val traceBitmap = videoProcessor?.exportTraceForDataCollection()
+            if (traceBitmap != null) {
+                val screenshotPath = getProcessedImageOutputPath()
+                val screenshotFile = File(screenshotPath)
+                FileOutputStream(screenshotFile).use { outputStream ->
+                    traceBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+                    outputStream.flush()
+                }
+                // Increment the batch counter for the final export.
+                batchCount++
+                Log.d("MainActivity", "Final batch exported: $screenshotPath")
+            } else {
+                Log.e("MainActivity", "Failed to export trace: Bitmap is null.")
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error exporting trace", e)
+        }
+
+        // Update UI and clean up the overlay.
+        viewBinding.startProcessingButton.text = "Start Tracking"
+        viewBinding.startProcessingButton.backgroundTintList =
+            ContextCompat.getColorStateList(this, R.color.blue)
+        viewBinding.processedFrameView.visibility = View.GONE
+        viewBinding.processedFrameView.setImageBitmap(null)
+
+        val outputPath = getProcessedImageOutputPath()
+        processedFrameRecorder = ProcessedFrameRecorder(outputPath)
+        with(Settings.ExportData) {
+            if (frameIMG) {
+                val bitmap = videoProcessor?.exportTraceForDataCollection()
+                if (bitmap != null) {
+                    // processedFrameRecorder?.save(bitmap)
+                }
+            }
+        }
+
+        inferenceResult = "Study ML Inference in Rollity" // Temporary message
+        viewBinding.predictedEmotionTextView.text = inferenceResult
+
+        // Retrieve tracking coordinates.
+        trackingCoordinates = videoProcessor?.getTrackingCoordinatesString() ?: ""
+
+        // Show a single Toast message with the total number of batches saved.
+        Toast.makeText(this, "$batchCount batches have been saved", Toast.LENGTH_LONG).show()
     }
 
     // Helper function to crop a bitmap to its non-white content.
@@ -238,67 +336,6 @@ class MainActivity : AppCompatActivity() {
             return Bitmap.createBitmap(1, 1, bitmap.config).apply { eraseColor(android.graphics.Color.WHITE) }
         }
         return Bitmap.createBitmap(bitmap, minX, minY, maxX - minX + 1, maxY - minY + 1)
-    }
-
-    private fun stopProcessingAndRecording() {
-        isRecording = false
-        isProcessing = false
-
-        // *************************************
-        // Algorithm: Save only the drawn line (excluding camera preview and bounding box).
-        // Use the exportTraceForDataCollection() method to retrieve a bitmap containing only the drawn trace for data collection.
-        try {
-            val traceBitmap = videoProcessor?.exportTraceForDataCollection()
-            if (traceBitmap != null) {
-                // Generate a file path to save the exported trace.
-                val screenshotPath = getProcessedImageOutputPath() // reusing existing method to get a file path.
-                val screenshotFile = File(screenshotPath)
-                FileOutputStream(screenshotFile).use { outputStream ->
-                    // Compress and write the bitmap to file (JPEG with quality 90).
-                    traceBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
-                    outputStream.flush()
-                }
-                Toast.makeText(this, "Exported trace saved: $screenshotPath", Toast.LENGTH_SHORT).show()
-                Log.d("MainActivity", "Exported trace saved successfully: $screenshotPath")
-            } else {
-                Log.e("MainActivity", "Failed to export trace: Bitmap is null.")
-            }
-        } catch (e: Exception) {
-            Toast.makeText(this, "Error exporting trace: ${e.message}", Toast.LENGTH_SHORT).show()
-            Log.e("MainActivity", "Error exporting trace", e)
-        }
-        // *************************************
-
-        // Now hide the overlay and update UI after exporting the trace.
-        viewBinding.startProcessingButton.text = "Start Tracking"
-        viewBinding.startProcessingButton.backgroundTintList =
-            ContextCompat.getColorStateList(this, R.color.blue)
-        viewBinding.processedFrameView.visibility = View.GONE
-        viewBinding.processedFrameView.setImageBitmap(null)
-
-        val outputPath = getProcessedImageOutputPath()
-        processedFrameRecorder = ProcessedFrameRecorder(outputPath)
-        with(Settings.ExportData) {
-            if (frameIMG) {
-                // For data collection, you could also use exportTraceForDataCollection() here.
-                val bitmap = videoProcessor?.exportTraceForDataCollection()
-                if (bitmap != null) {
-                    // TODO <Deniz Acikbas>: Investigate how ProcessedFrameRecorder class works.
-                    // processedFrameRecorder?.save(bitmap)
-                }
-            }
-        }
-
-        // TODO <Deniz Acikbas>: Study how digit inference model is implemented in Rollity.
-        // inferenceResult = runDigitRecognitionInference()
-        inferenceResult = "Study ML Inference in Rollity" // Temporary message
-        viewBinding.predictedEmotionTextView.text = inferenceResult
-
-        // Retrieve tracking coordinates.
-        trackingCoordinates = videoProcessor?.getTrackingCoordinatesString() ?: ""
-
-        // TODO <Deniz Acikbas>: Study how parameters are passing to the ARCore and think about how this will happen in RoUtism.
-        // launch3DActivity()
     }
 
     // Helper function to capture a view (including its drawing/overlay) as a Bitmap.
