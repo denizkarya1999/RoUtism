@@ -209,19 +209,22 @@ class VideoProcessor(private val context: Context) {
         return scaledBitmap
     }
 
-    // NEW FUNCTION: Creates a fixed-size (based on the device's screen size) white, square Bitmap that encapsulates the drawn spline trace
-// and returns the full-size image (without forcing small drawings to scale up) for data collection.
+// NEW FUNCTION: Creates a fixed-size (based on 80% of the device's screen size) white, square Bitmap
+// that encapsulates the drawn spline trace (with padding) and returns the full-size image
+// for data collection. If the drawn trace exceeds the effective area, it is scaled down; otherwise, its original size is preserved.
     fun exportTraceForDataCollection(): Bitmap {
         // Ensure there is some trace data.
         if (smoothDataList.isEmpty()) {
-            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
+            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+                .apply { eraseColor(Color.WHITE) }
         }
 
-        // Obtain screen dimensions (choose the smaller dimension to form a square)
+        // Obtain screen dimensions (choose the smaller dimension)
         val metrics = context.resources.displayMetrics
         val screenWidth = metrics.widthPixels
         val screenHeight = metrics.heightPixels
-        val fixedSize = min(screenWidth, screenHeight).toDouble()
+        // Use 75% of the smaller screen dimension for the fixed pane size.
+        val fixedSize = (min(screenWidth, screenHeight) * 0.75).toDouble()
 
         // 1. Compute the bounding box of the trace points.
         var minX = Double.MAX_VALUE
@@ -273,7 +276,7 @@ class VideoProcessor(private val context: Context) {
         val originalColor = Settings.Trace.splineLineColor
         val originalThickness = Settings.Trace.lineThickness
         Settings.Trace.splineLineColor = Scalar(0.0, 0.0, 0.0) // Black
-        Settings.Trace.lineThickness = 1  // As thin as possible
+        Settings.Trace.lineThickness = 3  // As thin as possible
         // 11. Draw the spline curve using the adjusted points.
         TraceRenderer.drawSplineCurve(adjustedPoints, mat)
         // 12. Restore the original settings.

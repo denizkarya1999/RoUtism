@@ -221,7 +221,7 @@ class MainActivity : AppCompatActivity() {
         videoProcessor?.reset()
         batchCount = 0
 
-        // Start a timer that exports the drawn line every 1 second and then clears it.
+        // Start a timer that exports the drawn line every 0.5 seconds and then clears it.
         exportTimer = Timer()
         exportTimer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
@@ -230,7 +230,7 @@ class MainActivity : AppCompatActivity() {
                     videoProcessor?.reset()
                 }
             }
-        }, 1000, 1000) // 1 second delay and repeat every 1 second
+        }, 500, 500) // 0.5 second delay and repeat every 0.5 seconds
     }
 
     // Helper function to export the current drawn line as a JPEG image.
