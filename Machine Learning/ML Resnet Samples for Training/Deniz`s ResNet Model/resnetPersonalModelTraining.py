@@ -50,10 +50,12 @@ def main():
     #     deniz/    (e.g., 80 images)
     #     cat/      (e.g., 80 images)
     #     dogs/     (e.g., 80 images)
+    #     birds/     (e.g., 80 images)
     #   val/
     #     deniz/    (e.g., 20 images)
     #     cat/      (e.g., 20 images)
     #     dogs/     (e.g., 20 images)
+    #     birds/     (e.g., 20 images)
     data_dir = 'data'  # Change this to your dataset root directory
     
     # Create datasets for training and validation.
