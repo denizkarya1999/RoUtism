@@ -1,0 +1,37 @@
+Data Size Allocations
+
+Angry (97 total)
+Train: 78
+Val: 19
+
+Anxiety (73 total)
+Train: 58
+Val: 15
+
+Boredom (89 total)
+Train: 71
+Val: 18
+
+Curiosity (67 total)
+Train: 54
+Val: 13
+
+Excitement (148 total)
+Train: 118
+Val: 30
+
+Jumpscare (6 total)
+Train: 5
+Val: 1
+
+Narcissm (16 total)
+Train: 13
+Val: 3
+
+Sadness (92 total)
+Train: 74
+Val: 18
+
+Shame (12 total)
+Train: 10
+Val: 2
