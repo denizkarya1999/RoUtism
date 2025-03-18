@@ -129,8 +129,8 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
-    # Reduced number of epochs to 10
-    num_epochs = 10
+    # Reduced number of epochs to 20
+    num_epochs = 20
 
     # -------------------------------------------------------------------------
     # (OPTIONAL) MIXED-PRECISION TRAINING SETUP
