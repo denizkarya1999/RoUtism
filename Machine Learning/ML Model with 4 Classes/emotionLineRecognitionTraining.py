@@ -61,17 +61,16 @@ def main():
     ])
 
     # -------------------------------------------------------------------------
-    # 2. DATASET LOADING
+    # 2. DATASET LOADING (DATA DIRECTORY WITH 2 CLASSES: ANGRY, HAPPY)
     # -------------------------------------------------------------------------
-    # If you only have a single folder of 1,568 images, we perform a random split.
-    data_dir = 'data'
+    data_dir = 'data'  # This folder should have subfolders "Angry" and "Happy"
     full_dataset = datasets.ImageFolder(data_dir, transform=data_transforms)
-    
-    # For a dataset of 1,568 images, we split it into 80% training and 20% validation.
-    total_size = len(full_dataset)  # ~1,568 images
-    val_size = int(0.2 * total_size)  # ~313 images (approx.)
+
+    # For example, if you have 1,000 total images, 80% (800) for training and 20% (200) for validation
+    total_size = len(full_dataset)
+    val_size = int(0.2 * total_size)
     train_size = total_size - val_size
-    
+
     train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
     # Override the validation dataset's transform to use the validation transforms
     val_dataset.dataset.transform = val_transforms
@@ -89,7 +88,7 @@ def main():
         num_workers=num_workers,
         pin_memory=True
     )
-    
+
     val_loader = DataLoader(
         val_dataset,
         batch_size=batch_size,
@@ -107,7 +106,7 @@ def main():
         'val': len(val_dataset)
     }
     class_names = full_dataset.classes
-    
+
     print("Classes detected:", class_names)
     print("Training images:", dataset_sizes['train'])
     print("Validation images:", dataset_sizes['val'])
@@ -117,6 +116,7 @@ def main():
     # -------------------------------------------------------------------------
     model = models.resnet18(pretrained=True)
     num_ftrs = model.fc.in_features
+    # Since we have 2 classes, we set the output to 2
     model.fc = nn.Linear(num_ftrs, len(class_names))
 
     # -------------------------------------------------------------------------
@@ -129,8 +129,7 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
-    # Reduced number of epochs to 20
-    num_epochs = 20
+    num_epochs = 20  # Adjust as needed
 
     # -------------------------------------------------------------------------
     # (OPTIONAL) MIXED-PRECISION TRAINING SETUP

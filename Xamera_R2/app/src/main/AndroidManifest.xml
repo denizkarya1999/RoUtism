@@ -14,7 +14,6 @@
     <!-- Permission to write to external storage, only required for Android versions up to 28 (Android 9) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"/>
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
@@ -46,8 +45,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity android:name=".AboutXameraActivity" />
         <activity android:name=".SettingsActivity" />
+
+        <!-- Register EmotionActivity for emotion inference -->
+        <activity
+            android:name="com.developer27.xamera.inference.EmotionActivity"
+            android:exported="true" />
+
         <activity
             android:name="com.xamera.ar.core.components.java.sharedcamera.SharedCameraActivity"
             android:exported="true"

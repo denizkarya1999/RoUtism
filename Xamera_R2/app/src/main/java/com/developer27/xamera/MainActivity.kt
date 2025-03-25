@@ -23,6 +23,7 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.view.WindowManager
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,6 +32,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.developer27.xamera.routism.camera.CameraHelper
 import com.developer27.xamera.routism.databinding.ActivityMainBinding
+import com.developer27.xamera.inference.EmotionActivity
 import com.developer27.xamera.routism.videoprocessing.ProcessedFrameRecorder
 import com.developer27.xamera.routism.videoprocessing.Settings
 import com.developer27.xamera.routism.videoprocessing.VideoProcessor
@@ -113,10 +115,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         // Prevent screen from turning off
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
         // Lock screen orientation to portrait
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
         // Install the splash screen (Android 12+)
         installSplashScreen()
 
@@ -132,7 +132,6 @@ class MainActivity : AppCompatActivity() {
 
         // Hide the processed frame view initially.
         viewBinding.processedFrameView.visibility = View.GONE
-
         // Set default text for the predicted emotion TextView.
         viewBinding.predictedEmotionTextView.text = "No Prediction Yet"
 
@@ -197,6 +196,12 @@ class MainActivity : AppCompatActivity() {
             viewBinding.predictedEmotionTextView.text = "No Prediction Yet"
         }
 
+        // Register the inference button (added under the "C" button)
+        val inferenceButton: Button = findViewById(R.id.inferenceButton)
+        inferenceButton.setOnClickListener {
+            launchEmotionActivity()
+        }
+
         // Load ML models.
         loadTFLiteModelOnStartupThreaded("YOLOv3_float32.tflite")
         loadTFLiteModelOnStartupThreaded("DigitRecog_float32.tflite")
@@ -207,6 +212,14 @@ class MainActivity : AppCompatActivity() {
                 cameraHelper.updateShutterSpeed()
             }
         }
+    }
+
+    /**
+     * Launches the EmotionActivity which allows the user to select an image for emotion inference.
+     */
+    private fun launchEmotionActivity() {
+        val intent = Intent(this, EmotionActivity::class.java)
+        startActivity(intent)
     }
 
     private fun startProcessingAndRecording() {
@@ -346,7 +359,7 @@ class MainActivity : AppCompatActivity() {
         return bitmap
     }
 
-    // TODO <Deniz Acikbas>: Study how digit inference model is implemented in Rollity.
+    // TODO: Study how digit inference model is implemented in Rollity.
     private fun runDigitRecognitionInference(): String {
         val digitBitmap = videoProcessor?.exportTraceForInference()
         if (digitBitmap == null) {
@@ -366,7 +379,7 @@ class MainActivity : AppCompatActivity() {
         return predictedDigit.toString()
     }
 
-    // TODO <Deniz Acikbas>: Study how digit inference model is implemented in Rollity.
+    // TODO: Study how digit inference model is implemented in Rollity.
     private fun convertToGrayscale(bitmap: Bitmap): Bitmap {
         val grayscaleBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(grayscaleBitmap)
@@ -378,7 +391,7 @@ class MainActivity : AppCompatActivity() {
         return grayscaleBitmap
     }
 
-    // TODO <Deniz Acikbas>: Study how digit inference model is implemented in Rollity.
+    // TODO: Study how digit inference model is implemented in Rollity.
     private fun convertBitmapToGrayscaleByteBuffer(bitmap: Bitmap): ByteBuffer {
         val inputSize = bitmap.width * bitmap.height
         val byteBuffer = ByteBuffer.allocateDirect(inputSize * 4)
@@ -393,7 +406,7 @@ class MainActivity : AppCompatActivity() {
         return byteBuffer
     }
 
-    // TODO <Deniz Acikbas>: Study how parameters are passing to the ARCore and think about how this will happen in RoUtism.
+    // TODO: Study how parameters are passing to the ARCore and think about how this will happen in RoUtism.
     private fun launch3DActivity() {
         // Send the accumulated prediction information to the 3D launcher.
         val intent = Intent(this, com.xamera.ar.core.components.java.sharedcamera.SharedCameraActivity::class.java)
