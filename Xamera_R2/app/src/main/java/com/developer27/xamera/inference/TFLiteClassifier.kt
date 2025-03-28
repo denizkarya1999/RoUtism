@@ -13,7 +13,6 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
-import kotlin.math.abs
 import kotlin.math.exp
 
 class TFLiteClassifier(activity: Activity) {
@@ -24,6 +23,7 @@ class TFLiteClassifier(activity: Activity) {
         private const val LABELS_FILENAME = "labels.txt" // File in assets containing the labels
         private const val INPUT_SIZE = 224
         private const val BYTES_PER_CHANNEL = 4  // float32
+        private const val NUM_THREADS = 4      // Adjust number of threads for performance
 
         // Normalization values (as used during training)
         private const val MEAN_R = 0.485f
@@ -35,12 +35,19 @@ class TFLiteClassifier(activity: Activity) {
     }
 
     // Load labels from assets (one label per line).
-    // Modified to skip the first line if it appears to be a package name.
+    // If the order doesn't match your model, adjust accordingly.
     private val labels: List<String> = loadLabels(activity)
     // Example: If needed, uncomment the next line:
     // private val labels: List<String> = loadLabels(activity).reversed()
 
-    private var tflite: Interpreter = Interpreter(loadModelFile(activity, MODEL_FILENAME))
+    // Create TFLite interpreter with options for improved performance.
+    private var tflite: Interpreter = Interpreter(
+        loadModelFile(activity, MODEL_FILENAME),
+        Interpreter.Options().apply {
+            setNumThreads(NUM_THREADS)
+            // Optional: add GPU delegate or NNAPI delegate here if available.
+        }
+    )
 
     @Throws(IOException::class)
     private fun loadModelFile(activity: Activity, modelFilename: String): MappedByteBuffer {
@@ -76,12 +83,12 @@ class TFLiteClassifier(activity: Activity) {
 
     /**
      * Classifies the given Bitmap and returns a multi-line message showing:
-     * - The absolute (positive) output value for each class.
-     * - The predicted label based on the highest absolute output value.
-     * - The overall accuracy rate (computed as the softmax probability from the absolute outputs).
+     * - The raw output value for each class.
+     * - The predicted label based on the highest output value.
+     * - The overall confidence (computed as the softmax probability for the predicted label).
      */
     fun classifyImage(bitmap: Bitmap): String {
-        // Resize the bitmap to the model input size.
+        // Resize the bitmap to the model's expected input size.
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false)
         val inputBuffer = convertBitmapToByteBuffer(resizedBitmap)
 
@@ -91,27 +98,30 @@ class TFLiteClassifier(activity: Activity) {
         // Run inference.
         tflite.run(inputBuffer, output)
 
-        // Get raw output values.
+        // Get raw output values (logits).
         val rawOutput = output[0]
 
-        // Determine the predicted index based on the absolute raw value.
-        val predictedIndex = rawOutput.indices.maxByOrNull { abs(rawOutput[it]) } ?: -1
-        val predictedLabel = labels[predictedIndex]
+        // Determine the predicted index based on the raw output value.
+        val predictedIndex = rawOutput.indices.maxByOrNull { rawOutput[it] } ?: -1
+        val predictedLabel = labels.getOrElse(predictedIndex) { "Unknown" }
 
-        // Compute softmax probabilities based on the absolute values.
-        val absOutputs = rawOutput.map { abs(it) }
-        val expValues = absOutputs.map { exp(it.toDouble()) }
+        // Compute softmax probabilities from the raw outputs.
+        val expValues = rawOutput.map { exp(it.toDouble()) }
         val sumExp = expValues.sum()
-        val predictedConfidence = expValues[predictedIndex] / sumExp * 100
+        val predictedConfidence = if (sumExp != 0.0) {
+            expValues[predictedIndex] / sumExp * 100
+        } else {
+            0.0
+        }
 
         // Build the multi-line message.
         val message = buildString {
             append("Possible classes:\n")
             for (i in labels.indices) {
-                append("${labels[i]}: ${abs(rawOutput[i])}\n")
+                append("${labels[i]}: ${rawOutput[i]}\n")
             }
-            append("\nModel predicted: $predictedLabel (value: ${abs(rawOutput[predictedIndex])})\n")
-            append("Overall accuracy rate: ${"%.2f".format(predictedConfidence)}%")
+            append("\nModel predicted: $predictedLabel (value: ${rawOutput[predictedIndex]})\n")
+            append("Overall confidence: ${"%.2f".format(predictedConfidence)}%")
         }
 
         Log.d(TAG, message)
@@ -125,15 +135,16 @@ class TFLiteClassifier(activity: Activity) {
         val pixels = IntArray(INPUT_SIZE * INPUT_SIZE)
         bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
 
-        // Convert each pixel to normalized float values using addition instead of subtraction.
+        // Convert each pixel to normalized float values.
         for (pixel in pixels) {
             val r = ((pixel shr 16) and 0xFF) / 255.0f
             val g = ((pixel shr 8) and 0xFF) / 255.0f
             val b = (pixel and 0xFF) / 255.0f
 
-            byteBuffer.putFloat((r + MEAN_R) / STD_R)
-            byteBuffer.putFloat((g + MEAN_G) / STD_G)
-            byteBuffer.putFloat((b + MEAN_B) / STD_B)
+            // Normalize using (value - mean) / std.
+            byteBuffer.putFloat((r - MEAN_R) / STD_R)
+            byteBuffer.putFloat((g - MEAN_G) / STD_G)
+            byteBuffer.putFloat((b - MEAN_B) / STD_B)
         }
         return byteBuffer
     }

@@ -1,2 +1,4 @@
-Happy
-Sad
+Excitement
+Sadness
+Angry
+Anxiety
