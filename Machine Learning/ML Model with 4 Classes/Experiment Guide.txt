@@ -1,0 +1,9 @@
+Experiment Notes
+ 1- Open the video and Xemotion at the same time.
+ 2- Play the video and track hand movements until the video ends.
+ 3- Once the video ends, move the lines into a safe place in C drive and create a folder for the user with 4 emotions in it.
+ 4- Copy the frames from the video into the user folder.
+ 5- Rename each line as "line_", video frame as "videoslice_".
+ 6- Run deleteEmptyBox.py to remove empty boxes along with associated video frame images.
+ 7- Rename the lines with your name. For instance "deniz(1)" etc.
+ 8- Look at video frames and lines and categorize your emotions.
