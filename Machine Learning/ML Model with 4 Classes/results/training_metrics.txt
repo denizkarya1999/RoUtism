@@ -1,0 +1,8 @@
+Final Training Metrics (Epoch 100):
+Final Training Loss: 0.8603
+Final Overall Accuracy: 0.6219
+Per-Class Accuracy and Counts:
+  Angry - Accuracy: 0.5868 (Predicted Correctly: 71/121 items)
+  Anxiety - Accuracy: 0.5632 (Predicted Correctly: 147/261 items)
+  Excitement - Accuracy: 0.7382 (Predicted Correctly: 234/317 items)
+  Sadness - Accuracy: 0.5500 (Predicted Correctly: 132/240 items)

@@ -69,7 +69,8 @@ class CustomDataset(Dataset):
         return image, label
 
 # -----------------------------------------------------------------------------
-# 3. MAIN FUNCTION: Data transforms, dataset loading, model training, saving, and plotting.
+# 3. MAIN FUNCTION: Data transforms, dataset loading, model training, saving, plotting,
+#    and saving final training metrics in text.
 # -----------------------------------------------------------------------------
 def main():
     # 0. ENABLE CUDNN BENCHMARK FOR FASTER TRAINING
@@ -119,7 +120,7 @@ def main():
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-4)
-    num_epochs = 100
+    num_epochs = 100  # Change this value for more epochs
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs, eta_min=1e-6)
 
     use_mixed_precision = True
@@ -132,6 +133,7 @@ def main():
     class_accuracy_history = {class_name: [] for class_name in custom_classes}
 
     # 5. TRAINING LOOP (ONLY TRAINING PHASE) WITH PER-CLASS ACCURACY
+    # In each epoch we will track the number of correct predictions and total items per class.
     for epoch in range(num_epochs):
         print(f'Epoch {epoch}/{num_epochs - 1}')
         print('-' * 10)
@@ -185,7 +187,7 @@ def main():
         for idx, class_name in enumerate(custom_classes):
             if class_total[idx] > 0:
                 acc = class_correct[idx] / class_total[idx]
-                print(f'Class: {class_name:10s} - Acc: {acc:.4f} ({class_correct[idx]}/{class_total[idx]})')
+                print(f'Class: {class_name:10s} - Acc: {acc:.4f} (Predicted: {class_correct[idx]}/{class_total[idx]})')
                 class_accuracy_history[class_name].append(acc)
             else:
                 print(f'Class: {class_name:10s} - No samples available.')
@@ -195,13 +197,51 @@ def main():
 
     print('Training complete')
 
-    # 6. SAVE THE TRAINED MODEL
+    # Capture the final per-class totals and correct prediction counts from the last epoch.
+    final_class_total = class_total
+    final_class_correct = class_correct
+
+    # Create the directories if they don't exist.
+    saved_models_dir = "saved_models"
+    results_dir = "results"
+    os.makedirs(saved_models_dir, exist_ok=True)
+    os.makedirs(results_dir, exist_ok=True)
+
+    # 6. SAVE THE TRAINED MODEL IN THE SAVED_MODELS FOLDER
     exporter = ModelExporter(model, custom_classes)
-    save_path = os.path.join("saved_models", "resnet18_custom.pth")
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    save_path = os.path.join(saved_models_dir, "resnet18_custom.pth")
     exporter.save(save_path)
 
-    # 7. PLOT TRAINING LOSS AND ACCURACY IN THE SAME GRAPH
+    # 7. SAVE FINAL METRICS TO TEXT FILE (INCLUDING FINAL EPOCH NUMBER AS epoch+1)
+    final_epoch_display = num_epochs  # Because epochs are zero-indexed; e.g., for 100 epochs, display "100"
+    final_overall_accuracy = accuracy_history[-1]
+    final_training_loss = loss_history[-1]
+    # Create a dictionary for the final per-class accuracy (from the last recorded epoch).
+    final_class_accuracy = {class_name: class_accuracy_history[class_name][-1] for class_name in custom_classes}
+
+    # Build the metrics text including the count details.
+    metrics_text = (
+        f"Final Training Metrics (Epoch {final_epoch_display}):\n"
+        f"Final Training Loss: {final_training_loss:.4f}\n"
+        f"Final Overall Accuracy: {final_overall_accuracy:.4f}\n"
+        "Per-Class Accuracy and Counts:\n"
+    )
+    for idx, class_name in enumerate(custom_classes):
+        metrics_text += (
+            f"  {class_name} - Accuracy: {final_class_accuracy[class_name]:.4f} "
+            f"(Predicted Correctly: {final_class_correct[idx]}/{final_class_total[idx]} items)\n"
+        )
+
+    # Print final training metrics to the console.
+    print(metrics_text)
+
+    # Save the metrics to a text file for later reference.
+    metrics_save_path = os.path.join(results_dir, "training_metrics.txt")
+    with open(metrics_save_path, "w") as file:
+        file.write(metrics_text)
+    print(f"Training metrics saved to {metrics_save_path}")
+
+    # 8. PLOT TRAINING LOSS AND ACCURACY IN THE SAME GRAPH
     epochs = range(1, num_epochs + 1)
     plt.figure(figsize=(10, 6))
     plt.plot(epochs, loss_history, marker='o', color='red', label='Loss')
@@ -212,7 +252,7 @@ def main():
     plt.legend()
     plt.show()
 
-    # 8. PLOT PER-CLASS ACCURACY CURVES
+    # 9. PLOT PER-CLASS ACCURACY CURVES
     plt.figure(figsize=(10, 6))
     for class_name in custom_classes:
         plt.plot(epochs, class_accuracy_history[class_name], marker='o', label=f'{class_name} Accuracy')
