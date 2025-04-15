@@ -100,7 +100,7 @@ def main():
 
     train_loader = DataLoader(
         dataset,
-        batch_size=64,
+        batch_size=32,
         shuffle=True,
         num_workers=4,
         pin_memory=True
@@ -109,8 +109,8 @@ def main():
     print("Classes detected:", custom_classes)
     print("Total images:", len(dataset))
 
-    # 3. LOAD & MODIFY RESNET18
-    model = models.resnet18(pretrained=True)
+    # 3. LOAD & MODIFY RESNET50
+    model = models.resnet50(pretrained=True)
     num_ftrs = model.fc.in_features
     model.fc = nn.Linear(num_ftrs, len(custom_classes))
 
@@ -197,6 +197,27 @@ def main():
 
     print('Training complete')
 
+    # -------------------------------------------------------------------------
+    # 4. Compute Confusion Matrix for the 4 Emotion Classes
+    # -------------------------------------------------------------------------
+    from sklearn.metrics import confusion_matrix
+    model.eval()
+    all_preds = []
+    all_labels = []
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=False)
+    with torch.no_grad():
+        for inputs, labels in dataloader:
+            inputs = inputs.to(device, non_blocking=True)
+            labels = labels.to(device, non_blocking=True)
+            with torch.cuda.amp.autocast(enabled=use_mixed_precision):
+                outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+    cm = confusion_matrix(all_labels, all_preds)
+    print("Confusion Matrix:")
+    print(cm)
+
     # Capture the final per-class totals and correct prediction counts from the last epoch.
     final_class_total = class_total
     final_class_correct = class_correct
@@ -241,26 +262,52 @@ def main():
         file.write(metrics_text)
     print(f"Training metrics saved to {metrics_save_path}")
 
-    # 8. PLOT TRAINING LOSS AND ACCURACY IN THE SAME GRAPH
+    # -------------------------------------------------------------------------
+    # 5. PLOT SEPARATE GRAPHS FOR TRAINING LOSS AND OVERALL ACCURACY
+    # -------------------------------------------------------------------------
     epochs = range(1, num_epochs + 1)
+    
+    # Plot Training Loss
     plt.figure(figsize=(10, 6))
     plt.plot(epochs, loss_history, marker='o', color='red', label='Loss')
-    plt.plot(epochs, accuracy_history, marker='o', color='blue', label='Overall Accuracy')
-    plt.title("Training Loss and Overall Accuracy")
+    plt.title("Training Loss over Epochs")
     plt.xlabel("Epoch")
-    plt.ylabel("Value")
+    plt.ylabel("Loss")
     plt.legend()
     plt.show()
 
-    # 9. PLOT PER-CLASS ACCURACY CURVES
+    # Plot Overall Accuracy
     plt.figure(figsize=(10, 6))
-    for class_name in custom_classes:
-        plt.plot(epochs, class_accuracy_history[class_name], marker='o', label=f'{class_name} Accuracy')
-    plt.title("Per-Class Accuracy Over Epochs")
+    plt.plot(epochs, accuracy_history, marker='o', color='blue', label='Overall Accuracy')
+    plt.title("Overall Accuracy over Epochs")
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
     plt.legend()
     plt.show()
+
+    # 9. PLOT CONFUSION MATRIX FOR 4 EMOTION CLASSES WITH PERCENTAGES
+    plt.figure(figsize=(10, 6))
+    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.title("Confusion Matrix for 4 Emotion Classes")
+    plt.colorbar()
+    tick_marks = range(len(custom_classes))
+    plt.xticks(tick_marks, custom_classes, rotation=45)
+    plt.yticks(tick_marks, custom_classes)
+
+    # Calculate percentages per row (each row sums to 100%)
+    cm_sum = cm.sum(axis=1)[:, None]  # Reshape for broadcasting
+    cm_perc = (cm / cm_sum.astype(float)) * 100
+
+    # Annotate cells with percentage values
+    for i in range(cm.shape[0]):
+       for j in range(cm.shape[1]):
+            plt.text(j, i, f"{cm_perc[i, j]:.2f}%", ha="center", va="center", 
+                     color="white" if cm[i, j] > cm.max()/2. else "black")
+
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.show()
+
 
 if __name__ == '__main__':
     main()
