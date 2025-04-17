@@ -15,12 +15,12 @@ from sklearn.cluster import KMeans
 # ======================= Configuration =======================
 DATA_ROOT     = "data"  # Root directory with 'train' & 'val' subfolders
 CLASSES       = ["Angry", "Anxiety", "Excitement", "Sadness"]
-NUM_EPOCHS    = 4      # Total number of training epochs
-BATCH_SIZE    = 32       # DataLoader batch size
+NUM_EPOCHS    = 100      # Total number of training epochs
+BATCH_SIZE    = 16       # DataLoader batch size
 LEARNING_RATE = 1e-4     # Learning rate for optimizer
 WEIGHT_DECAY  = 1e-4     # Weight decay for optimizer
 USE_MIXED     = True     # Mixed-precision training flag
-TSNE_SAMPLES  = 2048     # Max samples for t-SNE embedding
+TSNE_SAMPLES  = 2880     # Max samples for t-SNE embedding
 
 # ======================= Model Exporter =======================
 class ModelExporter:
