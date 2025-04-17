@@ -1,313 +1,319 @@
 import os
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.backends.cudnn as cudnn
 from torchvision import transforms, models
 from torch.utils.data import DataLoader, Dataset
-import torch.backends.cudnn as cudnn
 from PIL import Image
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+from sklearn.manifold import TSNE
+from sklearn.cluster import KMeans
 
-# -----------------------------------------------------------------------------
-# 1. MODEL EXPORTER: Saves model state and class names to a .pth file.
-# -----------------------------------------------------------------------------
+# ======================= Configuration =======================
+# Paths, hyperparameters, and flags
+DATA_ROOT     = "data"                     # Root directory for 'train' and 'val' subfolders
+CLASSES       = ["Angry", "Anxiety", "Excitement", "Sadness"]  # Emotion categories
+NUM_EPOCHS    = 100                        # Number of training epochs
+BATCH_SIZE    = 32                         # Batch size for DataLoader
+LEARNING_RATE = 1e-4                       # Initial learning rate for optimizer
+WEIGHT_DECAY  = 1e-4                       # L2 regularization coefficient
+USE_MIXED     = True                       # Enable mixed-precision training
+TSNE_SAMPLES  = 2048                       # Max number of feature vectors for t-SNE
+
+# ======================= Model Exporter =======================
 class ModelExporter:
-    def __init__(self, model, class_names):
-        """
-        Args:
-            model: Trained PyTorch model.
-            class_names: List of class names.
-        """
+    """
+    Utility to save a trained PyTorch model and its class names.
+    """
+    def __init__(self, model: nn.Module, class_names: list[str]):
         self.model = model
         self.class_names = class_names
 
-    def save(self, file_path):
-        """Save the model's state dictionary along with class names."""
+    def save(self, path: str):
+        """
+        Save model state and class names to a .pth checkpoint.
+        """
         checkpoint = {
-            'model_state_dict': self.model.state_dict(),
-            'class_names': self.class_names
+            "model_state_dict": self.model.state_dict(),
+            "class_names": self.class_names
         }
-        torch.save(checkpoint, file_path)
-        print(f"Model saved to {file_path}")
+        torch.save(checkpoint, path)
+        print(f"Model saved to {path}\n")
 
-# -----------------------------------------------------------------------------
-# 2. CUSTOM DATASET: Define your own dataset to load images from custom classes.
-# -----------------------------------------------------------------------------
+# ======================= Custom Dataset =======================
 class CustomDataset(Dataset):
-    def __init__(self, data_dir, class_names, transform=None):
-        """
-        Args:
-            data_dir (str): Directory with all the images organized in subfolders.
-            class_names (list): List of class names.
-            transform: Transformations to apply to the images.
-        """
-        self.data_dir = data_dir
-        self.class_names = class_names
+    """
+    PyTorch Dataset for loading images organized in class-named subfolders.
+    Directory structure must be: phase_dir/<class_name>/*.jpg
+    """
+    def __init__(self, phase_dir: str, class_names: list[str], transform=None):
+        self.paths: list[str] = []
+        self.labels: list[int] = []
         self.transform = transform
-        self.image_paths = []
-        self.labels = []
-
-        # Expecting a directory structure: data_dir/class_name/image.jpg
-        for idx, class_name in enumerate(class_names):
-            class_folder = os.path.join(data_dir, class_name)
-            if not os.path.isdir(class_folder):
-                print(f"Warning: {class_folder} does not exist.")
-                continue
-            for img_file in os.listdir(class_folder):
-                if img_file.lower().endswith(('png', 'jpg', 'jpeg')):
-                    self.image_paths.append(os.path.join(class_folder, img_file))
+        # Iterate through each class folder and collect file paths and labels
+        for idx, cls in enumerate(class_names):
+            cls_dir = os.path.join(phase_dir, cls)
+            if not os.path.isdir(cls_dir):
+                raise FileNotFoundError(f"Missing folder: {cls_dir}")
+            for fname in os.listdir(cls_dir):
+                if fname.lower().endswith((".png", ".jpg", ".jpeg")):
+                    self.paths.append(os.path.join(cls_dir, fname))
                     self.labels.append(idx)
+        if not self.paths:
+            raise RuntimeError(f"No images found in {phase_dir}")
 
-    def __len__(self):
-        return len(self.image_paths)
+    def __len__(self) -> int:
+        # Total number of samples
+        return len(self.paths)
 
-    def __getitem__(self, index):
-        image = Image.open(self.image_paths[index]).convert('RGB')
-        label = self.labels[index]
+    def __getitem__(self, idx: int):
+        # Load image and apply transform if provided
+        img = Image.open(self.paths[idx]).convert("RGB")
         if self.transform:
-            image = self.transform(image)
-        return image, label
+            img = self.transform(img)
+        return img, self.labels[idx]
 
-# -----------------------------------------------------------------------------
-# 3. MAIN FUNCTION: Data transforms, dataset loading, model training, saving, plotting,
-#    and saving final training metrics in text.
-# -----------------------------------------------------------------------------
+# ======================= Helper Functions =======================
+def train_one_epoch(model, loader, criterion, optimizer, scaler, device):
+    """
+    Train the model for a single epoch.
+    Returns:
+        avg_loss, accuracy
+    """
+    model.train()
+    running_loss, correct = 0.0, 0
+    for X, y in loader:
+        X, y = X.to(device), y.to(device)
+        optimizer.zero_grad(set_to_none=True)
+        with torch.cuda.amp.autocast(enabled=USE_MIXED):
+            out = model(X)
+            loss = criterion(out, y)
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+        running_loss += loss.item() * X.size(0)
+        preds = out.argmax(dim=1)
+        correct += (preds == y).sum().item()
+    avg_loss = running_loss / len(loader.dataset)
+    accuracy = correct / len(loader.dataset)
+    return avg_loss, accuracy
+
+
+def validate(model, loader, device):
+    """
+    Evaluate the model on the validation set.
+    Returns:
+        accuracy
+    """
+    model.eval()
+    correct = 0
+    with torch.no_grad():
+        for X, y in loader:
+            X, y = X.to(device), y.to(device)
+            with torch.cuda.amp.autocast(enabled=USE_MIXED):
+                out = model(X)
+            preds = out.argmax(dim=1)
+            correct += (preds == y).sum().item()
+    return correct / len(loader.dataset)
+
+
+def compute_confusion(model, loader, device):
+    """
+    Generate confusion matrix for predictions on loader.
+    Returns:
+        cm: numpy array [num_classes x num_classes]
+    """
+    model.eval()
+    y_true, y_pred = [], []
+    with torch.no_grad():
+        for X, y in loader:
+            X = X.to(device)
+            with torch.cuda.amp.autocast(enabled=USE_MIXED):
+                out = model(X)
+            preds = out.argmax(dim=1).cpu().tolist()
+            y_pred.extend(preds)
+            y_true.extend(y.tolist())
+    return confusion_matrix(y_true, y_pred)
+
+
+def extract_features(model, loader, device, max_samples=TSNE_SAMPLES):
+    """
+    Extract penultimate-layer features for all samples, then randomly
+    sample up to max_samples for t-SNE.
+    Returns:
+        features: np.ndarray [num_samples x feature_dim]
+    """
+    # Define extractor by removing final classification layer
+    extractor = nn.Sequential(*list(model.children())[:-1], nn.Flatten()).to(device)
+    feats = []
+    with torch.no_grad():
+        for X, _ in loader:
+            f = extractor(X.to(device)).cpu()
+            feats.append(f)
+    feats = torch.cat(feats, dim=0).numpy()
+    idxs = np.random.choice(len(feats), min(len(feats), max_samples), replace=False)
+    return feats[idxs]
+
+
+def compute_tsne_kmeans(features, n_clusters=len(CLASSES)):
+    """
+    Run t-SNE to embed features into 2D, then KMeans cluster.
+    Returns:
+        emb: np.ndarray [n_samples x 2]
+        centers: np.ndarray [n_clusters x 2]
+        labels: np.ndarray [n_samples]
+    """
+    emb = TSNE(n_components=2, random_state=42).fit_transform(features)
+    km  = KMeans(n_clusters=n_clusters, random_state=42).fit(emb)
+    return emb, km.cluster_centers_, km.labels_
+
+
+def plot_metrics(loss_hist, train_acc_hist, val_acc_hist):
+    """
+    Plot training loss and 
+    training & validation accuracy over epochs.
+    """
+    epochs = range(1, len(loss_hist)+1)
+    plt.figure()
+    plt.plot(epochs, loss_hist, 'o-', label='Loss')
+    plt.title('Training Loss')
+    plt.xlabel('Epoch')
+    plt.legend()
+    plt.show()
+
+    plt.figure()
+    plt.plot(epochs, train_acc_hist, 'o-', label='Train Acc')
+    plt.plot(epochs, val_acc_hist,   'o-', label='Val Acc')
+    plt.title('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend()
+    plt.show()
+
+
+def plot_confusion(cm):
+    """
+    Display confusion matrix heatmap with counts.
+    """
+    plt.figure()
+    plt.imshow(cm, cmap=plt.cm.Blues, interpolation='nearest')
+    plt.colorbar()
+    ticks = range(len(CLASSES))
+    plt.xticks(ticks, CLASSES, rotation=45)
+    plt.yticks(ticks, CLASSES)
+    for i in range(len(CLASSES)):
+        for j in range(len(CLASSES)):
+            plt.text(j, i, f"{cm[i,j]}", ha='center', va='center',
+                     color='white' if cm[i,j]>cm.max()/2 else 'black')
+    plt.title('Confusion Matrix')
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.show()
+
+
+def plot_tsne(emb, centers, labels):
+    """
+    Scatter plot of 2D t-SNE embedding colored by KMeans labels,
+    with cluster centers marked.
+    """
+    plt.figure()
+    plt.scatter(emb[:,0], emb[:,1], c=labels, s=5, cmap='tab10')
+    plt.scatter(centers[:,0], centers[:,1], marker='x', c='k', s=100)
+    plt.title('t-SNE + KMeans Clustering')
+    plt.show()
+
+# ======================= Main Function =======================
 def main():
-    # 0. ENABLE CUDNN BENCHMARK FOR FASTER TRAINING
+    # Enable CUDNN autotuning for performance
     cudnn.benchmark = True
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    # 1. DATA TRANSFORMS
-    data_transforms = transforms.Compose([
-        transforms.RandomRotation(15),             # Rotate up to ±15 degrees
-        transforms.RandomAffine(
-            degrees=0,
-            translate=(0.1, 0.1),                   # Shift up to 10% in x and y
-            scale=(0.8, 1.2),                       # Scale between 80% and 120%
-            shear=10                                # Shear angle
-        ),
-        transforms.RandomHorizontalFlip(),           # Random horizontal flip
+    # ------------------ Data Preparation ------------------
+    train_tf = transforms.Compose([
+        transforms.RandomRotation(15),
+        transforms.RandomAffine(0, translate=(0.1,0.1), scale=(0.8,1.2), shear=10),
+        transforms.RandomHorizontalFlip(),
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
+        transforms.Normalize([0.485,0.456,0.406],[0.229,0.224,0.225])
+    ])
+    val_tf = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485,0.456,0.406],[0.229,0.224,0.225])
     ])
 
-    # 2. DATASET LOADING (USING THE ENTIRE DATASET FOR TRAINING)
-    custom_classes = ['Angry', 'Anxiety', 'Excitement', 'Sadness']
-    data_dir = 'data'  # This folder should contain subfolders for each class.
-    dataset = CustomDataset(data_dir, custom_classes, transform=data_transforms)
+    train_ds = CustomDataset(os.path.join(DATA_ROOT, 'train'), CLASSES, train_tf)
+    val_ds   = CustomDataset(os.path.join(DATA_ROOT, 'val'),   CLASSES, val_tf)
 
     train_loader = DataLoader(
-        dataset,
-        batch_size=32,
-        shuffle=True,
-        num_workers=4,
-        pin_memory=True
+        train_ds, batch_size=BATCH_SIZE, shuffle=True,
+        num_workers=4, pin_memory=True
+    )
+    val_loader   = DataLoader(
+        val_ds,   batch_size=BATCH_SIZE, shuffle=False,
+        num_workers=4, pin_memory=True
     )
 
-    print("Classes detected:", custom_classes)
-    print("Total images:", len(dataset))
-
-    # 3. LOAD & MODIFY RESNET50
-    model = models.resnet50(pretrained=True)
-    num_ftrs = model.fc.in_features
-    model.fc = nn.Linear(num_ftrs, len(custom_classes))
-
-    # 4. PREPARE FOR TRAINING
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = model.to(device)
+    # ------------------ Model Setup ------------------
+    model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
+    model.fc = nn.Linear(model.fc.in_features, len(CLASSES))
+    model.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-4)
-    num_epochs = 100  # Change this value for more epochs
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs, eta_min=1e-6)
+    optimizer = optim.Adam(
+        model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY
+    )
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=NUM_EPOCHS, eta_min=1e-6
+    )
+    scaler = torch.cuda.amp.GradScaler(enabled=USE_MIXED)
 
-    use_mixed_precision = True
-    scaler = torch.cuda.amp.GradScaler(enabled=use_mixed_precision)
-
-    # Lists to record loss and overall accuracy history per epoch.
-    loss_history = []
-    accuracy_history = []
-    # Dictionary to record per-class accuracy history.
-    class_accuracy_history = {class_name: [] for class_name in custom_classes}
-
-    # 5. TRAINING LOOP (ONLY TRAINING PHASE) WITH PER-CLASS ACCURACY
-    # In each epoch we will track the number of correct predictions and total items per class.
-    for epoch in range(num_epochs):
-        print(f'Epoch {epoch}/{num_epochs - 1}')
-        print('-' * 10)
-
-        model.train()
-        running_loss = 0.0
-        running_corrects = 0
-
-        # Initialize per-class counters.
-        num_classes = len(custom_classes)
-        class_correct = [0] * num_classes  # Correct predictions per class
-        class_total = [0] * num_classes    # Total samples per class
-
-        for inputs, labels in train_loader:
-            inputs = inputs.to(device, non_blocking=True)
-            labels = labels.to(device, non_blocking=True)
-
-            optimizer.zero_grad()
-
-            with torch.set_grad_enabled(True):
-                with torch.cuda.amp.autocast(enabled=use_mixed_precision):
-                    outputs = model(inputs)
-                    _, preds = torch.max(outputs, 1)
-                    loss = criterion(outputs, labels)
-
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
-
-            running_loss += loss.item() * inputs.size(0)
-            running_corrects += torch.sum(preds == labels.data)
-
-            # Update per-class counters.
-            for i in range(num_classes):
-                # Create a mask for samples belonging to class 'i'
-                class_mask = (labels == i)
-                class_total[i] += class_mask.sum().item()
-                if class_mask.sum().item() > 0:
-                    class_correct[i] += (preds[class_mask] == labels[class_mask]).sum().item()
-
+    # ------------------ Training Loop ------------------
+    loss_hist, train_acc_hist, val_acc_hist = [], [], []
+    for epoch in range(1, NUM_EPOCHS+1):
+        train_loss, train_acc = train_one_epoch(
+            model, train_loader, criterion, optimizer, scaler, device
+        )
+        val_acc = validate(model, val_loader, device)
         scheduler.step()
 
-        epoch_loss = running_loss / len(dataset)
-        epoch_acc = running_corrects.double() / len(dataset)
-        loss_history.append(epoch_loss)
-        accuracy_history.append(epoch_acc.item())
-
-        print(f'Training Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
-
-        # Compute and print per-class accuracies; also record for plotting.
-        for idx, class_name in enumerate(custom_classes):
-            if class_total[idx] > 0:
-                acc = class_correct[idx] / class_total[idx]
-                print(f'Class: {class_name:10s} - Acc: {acc:.4f} (Predicted: {class_correct[idx]}/{class_total[idx]})')
-                class_accuracy_history[class_name].append(acc)
-            else:
-                print(f'Class: {class_name:10s} - No samples available.')
-                class_accuracy_history[class_name].append(0.0)
-
-        print("\n")
-
-    print('Training complete')
-
-    # -------------------------------------------------------------------------
-    # 4. Compute Confusion Matrix for the 4 Emotion Classes
-    # -------------------------------------------------------------------------
-    from sklearn.metrics import confusion_matrix
-    model.eval()
-    all_preds = []
-    all_labels = []
-    dataloader = DataLoader(dataset, batch_size=32, shuffle=False)
-    with torch.no_grad():
-        for inputs, labels in dataloader:
-            inputs = inputs.to(device, non_blocking=True)
-            labels = labels.to(device, non_blocking=True)
-            with torch.cuda.amp.autocast(enabled=use_mixed_precision):
-                outputs = model(inputs)
-            _, preds = torch.max(outputs, 1)
-            all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
-    cm = confusion_matrix(all_labels, all_preds)
-    print("Confusion Matrix:")
-    print(cm)
-
-    # Capture the final per-class totals and correct prediction counts from the last epoch.
-    final_class_total = class_total
-    final_class_correct = class_correct
-
-    # Create the directories if they don't exist.
-    saved_models_dir = "saved_models"
-    results_dir = "results"
-    os.makedirs(saved_models_dir, exist_ok=True)
-    os.makedirs(results_dir, exist_ok=True)
-
-    # 6. SAVE THE TRAINED MODEL IN THE SAVED_MODELS FOLDER
-    exporter = ModelExporter(model, custom_classes)
-    save_path = os.path.join(saved_models_dir, "resnet18_custom.pth")
-    exporter.save(save_path)
-
-    # 7. SAVE FINAL METRICS TO TEXT FILE (INCLUDING FINAL EPOCH NUMBER AS epoch+1)
-    final_epoch_display = num_epochs  # Because epochs are zero-indexed; e.g., for 100 epochs, display "100"
-    final_overall_accuracy = accuracy_history[-1]
-    final_training_loss = loss_history[-1]
-    # Create a dictionary for the final per-class accuracy (from the last recorded epoch).
-    final_class_accuracy = {class_name: class_accuracy_history[class_name][-1] for class_name in custom_classes}
-
-    # Build the metrics text including the count details.
-    metrics_text = (
-        f"Final Training Metrics (Epoch {final_epoch_display}):\n"
-        f"Final Training Loss: {final_training_loss:.4f}\n"
-        f"Final Overall Accuracy: {final_overall_accuracy:.4f}\n"
-        "Per-Class Accuracy and Counts:\n"
-    )
-    for idx, class_name in enumerate(custom_classes):
-        metrics_text += (
-            f"  {class_name} - Accuracy: {final_class_accuracy[class_name]:.4f} "
-            f"(Predicted Correctly: {final_class_correct[idx]}/{final_class_total[idx]} items)\n"
+        loss_hist.append(train_loss)
+        train_acc_hist.append(train_acc)
+        val_acc_hist.append(val_acc)
+        print(
+            f"Epoch {epoch}/{NUM_EPOCHS}  "
+            f"Loss {train_loss:.4f}  "
+            f"TrainAcc {train_acc:.4f}  ValAcc {val_acc:.4f}"
         )
 
-    # Print final training metrics to the console.
-    print(metrics_text)
+    # ------------------ Evaluation ------------------
+    cm = compute_confusion(model, val_loader, device)
+    features = extract_features(model, val_loader, device)
+    emb, centers, labels = compute_tsne_kmeans(features)
 
-    # Save the metrics to a text file for later reference.
-    metrics_save_path = os.path.join(results_dir, "training_metrics.txt")
-    with open(metrics_save_path, "w") as file:
-        file.write(metrics_text)
-    print(f"Training metrics saved to {metrics_save_path}")
+    # ------------------ Visualization ------------------
+    plot_metrics(loss_hist, train_acc_hist, val_acc_hist)
+    plot_confusion(cm)
+    plot_tsne(emb, centers, labels)
 
-    # -------------------------------------------------------------------------
-    # 5. PLOT SEPARATE GRAPHS FOR TRAINING LOSS AND OVERALL ACCURACY
-    # -------------------------------------------------------------------------
-    epochs = range(1, num_epochs + 1)
-    
-    # Plot Training Loss
-    plt.figure(figsize=(10, 6))
-    plt.plot(epochs, loss_history, marker='o', color='red', label='Loss')
-    plt.title("Training Loss over Epochs")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.show()
+    # ------------------ Save Artifacts ------------------
+    os.makedirs('saved_models', exist_ok=True)
+    ModelExporter(model, CLASSES).save('saved_models/resnet50_emotion.pth')
 
-    # Plot Overall Accuracy
-    plt.figure(figsize=(10, 6))
-    plt.plot(epochs, accuracy_history, marker='o', color='blue', label='Overall Accuracy')
-    plt.title("Overall Accuracy over Epochs")
-    plt.xlabel("Epoch")
-    plt.ylabel("Accuracy")
-    plt.legend()
-    plt.show()
+    os.makedirs('results', exist_ok=True)
+    metrics = (
+        f"Final Loss: {loss_hist[-1]:.4f}\n"
+        f"Final Train Acc: {train_acc_hist[-1]:.4f}\n"
+        f"Final Val Acc: {val_acc_hist[-1]:.4f}\n"
+    )
+    with open('results/training_metrics.txt', 'w', encoding='utf-8') as f:
+        f.write(metrics)
 
-    # 9. PLOT CONFUSION MATRIX FOR 4 EMOTION CLASSES WITH PERCENTAGES
-    plt.figure(figsize=(10, 6))
-    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-    plt.title("Confusion Matrix for 4 Emotion Classes")
-    plt.colorbar()
-    tick_marks = range(len(custom_classes))
-    plt.xticks(tick_marks, custom_classes, rotation=45)
-    plt.yticks(tick_marks, custom_classes)
-
-    # Calculate percentages per row (each row sums to 100%)
-    cm_sum = cm.sum(axis=1)[:, None]  # Reshape for broadcasting
-    cm_perc = (cm / cm_sum.astype(float)) * 100
-
-    # Annotate cells with percentage values
-    for i in range(cm.shape[0]):
-       for j in range(cm.shape[1]):
-            plt.text(j, i, f"{cm_perc[i, j]:.2f}%", ha="center", va="center", 
-                     color="white" if cm[i, j] > cm.max()/2. else "black")
-
-    plt.xlabel("Predicted Label")
-    plt.ylabel("True Label")
-    plt.show()
-
-
+# Entry point
 if __name__ == '__main__':
     main()
