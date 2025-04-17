@@ -1,3 +1,14 @@
-Final Loss: 0.9531
-Final Train Acc: 0.5536
-Final Val Acc: 0.2431
+Final Epoch: 4
+Final Loss: 0.9593
+Final Overall Train Acc: 0.5625 (56.25%)
+Final Overall Val   Acc: 0.2500 (25.00%)
+Per-Class Train Acc & Counts:
+  Angry: 44/84 (0.5238) (52.38%)
+  Anxiety: 47/84 (0.5595) (55.95%)
+  Excitement: 29/84 (0.3452) (34.52%)
+  Sadness: 48/84 (0.5714) (57.14%)
+Per-Class Val Acc & Counts:
+  Angry: 5/36 (0.1389) (13.89%)
+  Anxiety: 3/36 (0.0833) (8.33%)
+  Excitement: 2/36 (0.0556) (5.56%)
+  Sadness: 26/36 (0.7222) (72.22%)
