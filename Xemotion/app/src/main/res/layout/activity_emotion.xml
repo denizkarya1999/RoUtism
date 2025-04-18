@@ -44,6 +44,7 @@
                 android:paddingStart="8dp" />
         </LinearLayout>
 
+        <!-- Button to pick multiple images -->
         <Button
             android:id="@+id/selectImageButton"
             android:layout_width="wrap_content"
@@ -57,16 +58,16 @@
             android:textColor="#00274C"
             android:textSize="18sp" />
 
-        <!-- Optional: Single image preview (hidden in multi-image scenarios) -->
+        <!-- Optional single-image preview (hidden by default) -->
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="match_parent"
             android:layout_height="300dp"
             android:layout_marginTop="10dp"
             android:scaleType="centerInside"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
-        <!-- Optional: Single result text (hidden in multi-image scenarios) -->
+        <!-- Optional single result text (hidden by default) -->
         <TextView
             android:id="@+id/resultTextView"
             android:layout_width="match_parent"
@@ -76,7 +77,8 @@
             android:text="Inference result will appear here."
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#FFCB05" />
+            android:textColor="@color/yellow"
+            android:visibility="gone" />
 
         <!-- Container for displaying dynamic multi-image results -->
         <LinearLayout
