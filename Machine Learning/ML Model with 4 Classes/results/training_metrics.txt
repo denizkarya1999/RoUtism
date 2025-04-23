@@ -12,3 +12,9 @@ Per-Class Val Acc & Counts:
   Anxiety: 34/216 (0.1574) (15.74%)
   Excitement: 102/216 (0.4722) (47.22%)
   Sadness: 130/216 (0.6019) (60.19%)
+Per-Class Ave Acc & Counts:
+  Angry: 515/720 (0.7152) (71.52%)
+  Anxiety: 494/720 (0.6861) (68.61%)
+  Excitement: 547/720 (0.7597) (75.95%)
+  Sadness: 576/720 (0.8000) (80%)
+Final Average Accuracy: 2132/2880 (0.7403) (74.03%)
