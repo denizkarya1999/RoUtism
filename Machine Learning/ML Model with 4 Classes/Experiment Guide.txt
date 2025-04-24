@@ -6,4 +6,4 @@ Experiment Notes
  5- Rename each line as "line_", video frame as "videoslice_".
  6- Run deleteEmptyBox.py to remove empty boxes along with associated video frame images.
  7- Rename the lines with your name. For instance "deniz(1)" etc.
- 8- Look at video frames and lines and categorize your emotions.
+ 8- Look at video frames and lines and categorize your emotions into emotion classes {Sadness, Anxiety, Excitement and Angry}.
