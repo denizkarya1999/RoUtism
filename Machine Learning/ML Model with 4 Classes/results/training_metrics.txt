@@ -1,20 +1,21 @@
 Final Epoch: 100
-Final Loss: 0.2261
-Final Overall Train Acc: 0.9082 (90.82%)
-Final Overall Val   Acc: 0.3704 (37.04%)
+Final Train Loss: 0.8952
+Final Val Loss:   2.0677
+Final Overall Train Acc: 0.6078 (60.78%)
+Final Overall Val   Acc: 0.3465 (34.65%)
 Per-Class Train Acc & Counts:
-  Angry: 462/504 (0.9167) (91.67%)
-  Anxiety: 460/504 (0.9127) (91.27%)
-  Excitement: 445/504 (0.8829) (88.29%)
-  Sadness: 446/504 (0.8849) (88.49%)
+  Angry: 906/1512 (0.5992) (59.92%)
+  Anxiety: 854/1512 (0.5648) (56.48%)
+  Excitement: 887/1512 (0.5866) (58.66%)
+  Sadness: 954/1512 (0.6310) (63.10%)
 Per-Class Val Acc & Counts:
-  Angry: 53/216 (0.2454) (24.54%)
-  Anxiety: 34/216 (0.1574) (15.74%)
-  Excitement: 102/216 (0.4722) (47.22%)
-  Sadness: 130/216 (0.6019) (60.19%)
+  Angry: 205/648 (0.3164) (31.64%)
+  Anxiety: 177/648 (0.2731) (27.31%)
+  Excitement: 170/648 (0.2623) (26.23%)
+  Sadness: 339/648 (0.5231) (52.31%)
 Per-Class Ave Acc & Counts:
-  Angry: 515/720 (0.7152) (71.52%)
-  Anxiety: 494/720 (0.6861) (68.61%)
-  Excitement: 547/720 (0.7597) (75.95%)
-  Sadness: 576/720 (0.8000) (80%)
-Final Average Accuracy: 2132/2880 (0.7403) (74.03%)
+  Angry: 1111/2160 (0.5144) (51.44%)
+  Anxiety: 1031/2160 (0.4773) (47.73%)
+  Excitement: 1057/2160 (0.4894) (48.94%)
+  Sadness: 1293/2160 (0.5986) (59.86%)
+Final Average Accuracy: 4492/8640 (0.5199) (51.99%)
