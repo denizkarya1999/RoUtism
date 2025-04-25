@@ -49,6 +49,13 @@ class EmotionActivity : AppCompatActivity() {
         binding.selectImageButton.setOnClickListener {
             pickImages.launch(arrayOf("image/*"))
         }
+
+        // When the title container is clicked, open the URL in a browser.
+        binding.titleContainer.setOnClickListener {
+            val url = "https://www.developer27.com"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        }
     }
 
     override fun onDestroy() {
@@ -112,20 +119,27 @@ class EmotionActivity : AppCompatActivity() {
         // Our label set in TFLiteClassifier: ["Angry", "Anxiety", "Excitement", "Sadness"]
         // We'll find the best label from the 4 probabilities (after softmax).
         val yellow = ContextCompat.getColor(this, R.color.yellow)
+        val total = results.size
+
+        // 1) Add a header that says "Selected Image(s)" with an emoji
+        if (total > 0) {
+            binding.resultsContainer.addView(TextView(this).apply {
+                text = "\uD83D\uDDBC\uFE0F Selected Image(s):"
+                setTextColor(yellow)
+                textSize = 18f
+                setPadding(0, 8, 0, 12) // some spacing
+            })
+        }
 
         // We'll also track summary counts
         val labelCounts = mutableMapOf<String, Int>()
-        val total = results.size
 
-        // For each image, pick the label with highest probability
+        // 2) For each image, pick the label with highest probability
         results.forEachIndexed { idx, (bestLabel, probArray) ->
-            // bestLabel is the top label from the classifier
-            // probArray is the entire probability distribution (size=4)
             // Count the best label
             labelCounts[bestLabel] = (labelCounts[bestLabel] ?: 0) + 1
 
-            // Format them to show each label's percentage if you want, or just top label
-            // Here we only show top label and its confidence
+            // Format them to show each label's percentage
             val labelIndex = classifier.labels.indexOf(bestLabel)
             val bestConf = if (labelIndex in probArray.indices) probArray[labelIndex] else 0f
             val pctStr = String.format("%.2f", bestConf * 100f)
@@ -139,7 +153,7 @@ class EmotionActivity : AppCompatActivity() {
             })
         }
 
-        // Show summary with counts & percentages
+        // 3) Show summary with counts & percentages if more than 1 image
         if (total > 1) {
             binding.resultsContainer.addView(TextView(this).apply {
                 text = "\n📋 Summary:"
@@ -148,7 +162,6 @@ class EmotionActivity : AppCompatActivity() {
                 setPadding(0, 12, 0, 4)
             })
 
-            // Summaries for each label
             classifier.labels.forEach { lbl ->
                 val cnt = labelCounts[lbl] ?: 0
                 val pct = (cnt / total.toFloat()) * 100f

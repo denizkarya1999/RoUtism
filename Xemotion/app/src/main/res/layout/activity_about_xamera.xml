@@ -28,7 +28,9 @@
             android:layout_width="58dp"
             android:layout_height="58dp"
             android:background="@android:color/transparent"
-            android:src="@mipmap/xamera_launcher"
+            android:src="@drawable/xemotion_logo"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
             android:contentDescription="@string/switch_camera" />
 
         <!-- Title Text -->
@@ -82,7 +84,7 @@
             android:id="@+id/textViewVersion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Version: 1.0 (Pre-Beta)"
+            android:text="Version: 1.0 (ML Experiment Preview)"
             android:textColor="@color/darkBlue"
             android:layout_marginTop="8dp" />
 
@@ -98,7 +100,7 @@
             android:id="@+id/textViewReleaseDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Release Date: Estimated as April 2025"
+            android:text="Release Date: April 25th 2025"
             android:textColor="@color/darkBlue"
             android:layout_marginTop="8dp" />
 
@@ -106,7 +108,7 @@
             android:id="@+id/textViewDevelopers"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Developers: Deniz Acikbas, Soham Naik, Christian Nwobu, Sai Dheeraj Chunduru"
+            android:text="Developers: Deniz Acikbas, Christian Nwobu, Sai Dheeraj Chunduru"
             android:textColor="@color/darkBlue"
             android:layout_marginTop="8dp" />
 
@@ -123,14 +125,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Lab: Trustworthy AIoT Lab"
-            android:textColor="@color/darkBlue"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            android:id="@+id/textViewCourse"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Course: ENGR 492 - Experiential Honors Directed Research Project"
             android:textColor="@color/darkBlue"
             android:layout_marginTop="8dp" />
 

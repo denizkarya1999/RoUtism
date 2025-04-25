@@ -1,0 +1,7 @@
+org.opencv.OpenCV-4.10.0-pngs-0 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\build\generated\res\pngs\release
+org.opencv.OpenCV-4.10.0-resValues-1 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\build\generated\res\resValues\release
+org.opencv.OpenCV-4.10.0-mergeReleaseResources-2 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\build\intermediates\incremental\release\mergeReleaseResources\merged.dir
+org.opencv.OpenCV-4.10.0-mergeReleaseResources-3 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\build\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+org.opencv.OpenCV-4.10.0-release-4 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\build\intermediates\merged_res\release\mergeReleaseResources
+org.opencv.OpenCV-4.10.0-java-5 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\java\res
+org.opencv.OpenCV-4.10.0-release-6 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\src\release\res

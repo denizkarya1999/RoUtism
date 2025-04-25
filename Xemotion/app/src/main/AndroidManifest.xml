@@ -28,9 +28,9 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/xamera_launcher"
+        android:icon="@drawable/xemotion_logo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/xamera_launcher_round"
+        android:roundIcon="@drawable/xemotion_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.Xamera"
         tools:targetApi="31"
@@ -48,12 +48,9 @@
 
         <activity android:name=".AboutXameraActivity" />
         <activity android:name=".SettingsActivity" />
-
-        <!-- Register EmotionActivity for emotion inference -->
         <activity
             android:name="com.developer27.xemotion.inference.EmotionActivity"
             android:exported="true" />
-
         <activity
             android:name="com.xamera.ar.core.components.java.sharedcamera.SharedCameraActivity"
             android:exported="true"
@@ -62,7 +59,6 @@
             android:launchMode="singleTask"
             android:screenOrientation="fullSensor"
             android:resizeableActivity="false">
-            <!-- No launcher intent-filter -->
         </activity>
 
         <!-- ARCore meta-data with override in case of conflicts -->

@@ -19,7 +19,6 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.view.WindowManager
-import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,7 +27,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.developer27.xemotion.camera.CameraHelper
 import com.developer27.xemotion.databinding.ActivityMainBinding
-import com.developer27.xemotion.inference.EmotionActivity
 import com.developer27.xemotion.inference.TFLiteClassifier
 import com.developer27.xemotion.videoprocessing.ProcessedFrameRecorder
 import com.developer27.xemotion.videoprocessing.VideoProcessor
@@ -64,10 +62,6 @@ class MainActivity : AppCompatActivity() {
     private var isProcessing = false
     private var isProcessingFrame = false
 
-    // Inference result
-    private var inferenceResult = ""
-    private var trackingCoordinates: String = ""
-
     // Timer for periodic export
     private var exportTimer: Timer? = null
     private var batchCount = 0
@@ -94,31 +88,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Our TextureView listener is ALWAYS set in onCreate().
+     * Our TextureView listener
      */
     private val textureListener = object : TextureView.SurfaceTextureListener {
         @SuppressLint("MissingPermission")
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
             Log.d(TAG, "onSurfaceTextureAvailable: $width x $height")
             if (allPermissionsGranted()) {
-                Log.d(TAG, "Permissions are granted, opening camera.")
                 cameraHelper.openCamera()
             } else {
                 requestPermissionLauncher.launch(REQUIRED_PERMISSIONS)
             }
         }
 
-        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
-            Log.d(TAG, "onSurfaceTextureSizeChanged: $width x $height")
-        }
-
-        override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
-            Log.d(TAG, "onSurfaceTextureDestroyed")
-            return false
-        }
-
+        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {}
+        override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean = false
         override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
-            Log.d(TAG, "onSurfaceTextureUpdated (frame available).")
             if (isProcessing) {
                 processFrameWithVideoProcessor()
             }
@@ -145,16 +130,14 @@ class MainActivity : AppCompatActivity() {
         cameraHelper = CameraHelper(this, viewBinding, sharedPreferences)
         videoProcessor = VideoProcessor(this)
 
-        // Initially, hide the processed frame and the predictedEmotionTextView
+        // Initially, hide the processed frame and predicted text
         viewBinding.processedFrameView.visibility = View.GONE
-        // KEY CHANGE: Hide the prediction text when the app starts
         viewBinding.predictedEmotionTextView.visibility = View.GONE
-        // (We can set its text if we want, but keep it hidden.)
 
-        // Set the texture listener right away
+        // Set the texture listener
         viewBinding.viewFinder.surfaceTextureListener = textureListener
 
-        // Title container (open website)
+        // Title container (example: open your website)
         viewBinding.titleContainer.setOnClickListener {
             val url = "https://www.developer27.com"
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
@@ -166,24 +149,16 @@ class MainActivity : AppCompatActivity() {
                 val camGranted = perms[Manifest.permission.CAMERA] ?: false
                 val micGranted = perms[Manifest.permission.RECORD_AUDIO] ?: false
                 if (camGranted && micGranted) {
-                    Log.d(TAG, "Permissions granted via launcher.")
                     if (viewBinding.viewFinder.isAvailable) {
                         cameraHelper.openCamera()
-                    } else {
-                        Log.d(TAG, "TextureView not yet available; wait for onSurfaceTextureAvailable.")
                     }
                 } else {
                     Toast.makeText(this, "Camera & Audio permissions are required.", Toast.LENGTH_SHORT).show()
                 }
             }
-
-        // If already granted
         if (allPermissionsGranted()) {
             if (viewBinding.viewFinder.isAvailable) {
-                Log.d(TAG, "TextureView is already available, opening camera.")
                 cameraHelper.openCamera()
-            } else {
-                Log.d(TAG, "TextureView not yet available; camera opens in onSurfaceTextureAvailable.")
             }
         } else {
             requestPermissionLauncher.launch(REQUIRED_PERMISSIONS)
@@ -197,7 +172,9 @@ class MainActivity : AppCompatActivity() {
                 startProcessingAndRecording()
             }
         }
-        viewBinding.switchCameraButton.setOnClickListener { switchCamera() }
+        viewBinding.switchCameraButton.setOnClickListener {
+            switchCamera()
+        }
         viewBinding.aboutButton.setOnClickListener {
             startActivity(Intent(this, AboutXameraActivity::class.java))
         }
@@ -205,36 +182,19 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
         viewBinding.clearPredictionButton.setOnClickListener {
-            if (isRecording) {
-                stopProcessingAndRecording()
-            }
-            // Clear any text
+            if (isRecording) stopProcessingAndRecording()
             viewBinding.predictedEmotionTextView.text = ""
-        }
-        findViewById<Button>(R.id.inferenceButton).setOnClickListener {
-            launchEmotionActivity()
         }
 
         // Load YOLO model
         loadTFLiteModelOnStartupThreaded("YOLOv3_float32.tflite")
 
         // Create TFLiteClassifier with "resnet50_emotion.tflite"
-        emotionClassifier = TFLiteClassifier(
-            context = this,
-            modelFileName = "resnet50_emotion.tflite"
-        )
+        emotionClassifier = TFLiteClassifier(this, "resnet50_emotion.tflite")
 
         cameraHelper.setupZoomControls()
     }
 
-    private fun launchEmotionActivity() {
-        val intent = Intent(this, EmotionActivity::class.java)
-        startActivity(intent)
-    }
-
-    /**
-     * Start capturing/processing
-     */
     private fun startProcessingAndRecording() {
         isRecording = true
         isProcessing = true
@@ -243,8 +203,6 @@ class MainActivity : AppCompatActivity() {
         viewBinding.startProcessingButton.backgroundTintList =
             ContextCompat.getColorStateList(this, R.color.red)
         viewBinding.processedFrameView.visibility = View.VISIBLE
-
-        // Show the predictedEmotionTextView again once we start tracking
         viewBinding.predictedEmotionTextView.visibility = View.VISIBLE
         viewBinding.predictedEmotionTextView.text = "Tracking..."
 
@@ -265,9 +223,6 @@ class MainActivity : AppCompatActivity() {
         }, 500, 500)
     }
 
-    /**
-     * Stop capturing/processing
-     */
     private fun stopProcessingAndRecording() {
         isRecording = false
         isProcessing = false
@@ -291,8 +246,6 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getColorStateList(this, R.color.blue)
         viewBinding.processedFrameView.visibility = View.GONE
         viewBinding.processedFrameView.setImageBitmap(null)
-
-        // Hide predictedEmotionTextView once stopped
         viewBinding.predictedEmotionTextView.text = ""
         viewBinding.predictedEmotionTextView.visibility = View.GONE
     }
@@ -312,25 +265,33 @@ class MainActivity : AppCompatActivity() {
             Log.e(TAG, "Error saving batch: ${e.message}")
         }
 
-        // 2) Inference
+        // 2) Inference (example: classifyLine)
         val result = emotionClassifier.classifyLine(traceBitmap)
 
         // 3) Display result
         viewBinding.predictedEmotionTextView.visibility = View.VISIBLE
         viewBinding.predictedEmotionTextView.text = result
 
-        // 4) Log
+        // 4) Also log the prediction to a text file
         appendPredictionToLog(result)
     }
 
+    /**
+     * Log each inference result to a text file in the device's Documents directory.
+     */
     private fun appendPredictionToLog(prediction: String) {
+        // We'll add a timestamp + the model's predicted label.
         val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
         val line = "$timestamp => $prediction"
+
         val docDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        if (!docDir.exists()) docDir.mkdirs()
+        if (!docDir.exists()) {
+            docDir.mkdirs()
+        }
         val logFile = File(docDir, "RoEmotion_Predictions_Log.txt")
+
         try {
-            logFile.appendText(line + "\n")
+            logFile.appendText("$line\n")
         } catch (e: IOException) {
             Log.e(TAG, "Error writing prediction log: ${e.message}")
         }
@@ -340,6 +301,7 @@ class MainActivity : AppCompatActivity() {
         if (isProcessingFrame) return
         val bitmap = viewBinding.viewFinder.bitmap ?: return
         isProcessingFrame = true
+
         videoProcessor?.processFrame(bitmap) { processedFrames ->
             runOnUiThread {
                 processedFrames?.let { (outputBitmap, _) ->
@@ -355,11 +317,11 @@ class MainActivity : AppCompatActivity() {
     private fun getProcessedImageOutputPath(): String {
         @Suppress("DEPRECATION")
         val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-        val routismDir = File(picturesDir, "RoEmotion_ML_Training_Data")
-        if (!routismDir.exists()) {
-            routismDir.mkdirs()
+        val roEmotionDir = File(picturesDir, "RoEmotion_ML_Training_Data")
+        if (!roEmotionDir.exists()) {
+            roEmotionDir.mkdirs()
         }
-        return File(routismDir, "Inference_${System.currentTimeMillis()}.jpg").absolutePath
+        return File(roEmotionDir, "Inference_${System.currentTimeMillis()}.jpg").absolutePath
     }
 
     private fun loadTFLiteModelOnStartupThreaded(modelName: String) {
@@ -389,12 +351,9 @@ class MainActivity : AppCompatActivity() {
                                 Log.d(TAG, "GPU delegate unavailable, CPU only.", e)
                             }
                         }
-                        when (modelName) {
-                            "YOLOv3_float32.tflite" -> {
-                                yoloInterpreter = Interpreter(loadMappedFile(bestLoadedPath), options)
-                                videoProcessor?.setInterpreter(yoloInterpreter!!)
-                            }
-                            else -> Log.d(TAG, "No YOLO logic for $modelName")
+                        if (modelName == "YOLOv3_float32.tflite") {
+                            yoloInterpreter = Interpreter(loadMappedFile(bestLoadedPath), options)
+                            videoProcessor?.setInterpreter(yoloInterpreter!!)
                         }
                     } catch (e: Exception) {
                         Toast.makeText(this, "Error loading TFLite model: ${e.message}", Toast.LENGTH_LONG).show()
@@ -439,9 +398,7 @@ class MainActivity : AppCompatActivity() {
 
     private var isFrontCamera = false
     private fun switchCamera() {
-        if (isRecording) {
-            stopProcessingAndRecording()
-        }
+        if (isRecording) stopProcessingAndRecording()
         isFrontCamera = !isFrontCamera
         cameraHelper.isFrontCamera = isFrontCamera
         cameraHelper.closeCamera()
@@ -453,10 +410,7 @@ class MainActivity : AppCompatActivity() {
         cameraHelper.startBackgroundThread()
 
         if (viewBinding.viewFinder.isAvailable && allPermissionsGranted()) {
-            Log.d(TAG, "onResume: TextureView isAvailable => openCamera()")
             cameraHelper.openCamera()
-        } else {
-            Log.d(TAG, "onResume: Wait for surfaceTextureListener or permissions")
         }
 
         if (shouldClearPrediction) {

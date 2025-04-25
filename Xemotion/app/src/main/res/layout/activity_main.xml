@@ -46,7 +46,9 @@
             android:layout_width="58dp"
             android:layout_height="58dp"
             android:background="@android:color/transparent"
-            android:src="@mipmap/xamera_launcher"
+            android:src="@drawable/xemotion_logo"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
             android:contentDescription="@string/switch_camera" />
 
         <!-- Title Text -->
@@ -149,18 +151,6 @@
             android:backgroundTint="@color/red"
             android:elevation="2dp"
             android:text="C"
-            android:textColor="@android:color/white"
-            android:textSize="24sp" />
-
-        <!-- Inference Button (launches EmotionActivity) -->
-        <Button
-            android:id="@+id/inferenceButton"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="@color/green"
-            android:elevation="2dp"
-            android:text="I"
             android:textColor="@android:color/white"
             android:textSize="24sp" />
     </LinearLayout>

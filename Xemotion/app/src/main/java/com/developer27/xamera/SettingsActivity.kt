@@ -3,8 +3,8 @@ package com.developer27.xemotion
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import com.developer27.xemotion.R
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -18,16 +18,23 @@ class SettingsActivity : AppCompatActivity() {
             .commit()
     }
 
-    class SettingsFragment : PreferenceFragmentCompat() {
-        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-            setPreferencesFromResource(R.xml.root_preferences, rootKey)
-        }
-    }
-
     override fun onBackPressed() {
         super.onBackPressed()
         // Save settings and go back to MainActivity with result
         setResult(RESULT_OK, Intent())
         finish()
+    }
+
+    class SettingsFragment : PreferenceFragmentCompat() {
+        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+            setPreferencesFromResource(R.xml.root_preferences, rootKey)
+
+            // Listen for taps on our new preference
+            findPreference<Preference>("key_launch_emotion_activity")?.setOnPreferenceClickListener {
+                // Launch the EmotionActivity
+                startActivity(Intent(requireContext(), com.developer27.xemotion.inference.EmotionActivity::class.java))
+                true
+            }
+        }
     }
 }
