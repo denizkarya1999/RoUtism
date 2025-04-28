@@ -1,0 +1,121 @@
+Epoch,Phase,Loss,Accuracy
+0,train,0.0873,0.9682
+   Class 'Basmati' Accuracy: 0.9542
+   Class 'Ipsala' Accuracy: 0.9884
+   Class 'Jasmine' Accuracy: 0.9602
+   Class 'Karacadag' Accuracy: 0.9702
+
+0,val,0.0048,0.9981
+   Class 'Basmati' Accuracy: 1.0000
+   Class 'Ipsala' Accuracy: 1.0000
+   Class 'Jasmine' Accuracy: 0.9923
+   Class 'Karacadag' Accuracy: 1.0000
+
+1,train,0.0415,0.9834
+   Class 'Basmati' Accuracy: 0.9803
+   Class 'Ipsala' Accuracy: 0.9949
+   Class 'Jasmine' Accuracy: 0.9776
+   Class 'Karacadag' Accuracy: 0.9808
+
+1,val,0.0020,0.9993
+   Class 'Basmati' Accuracy: 0.9973
+   Class 'Ipsala' Accuracy: 1.0000
+   Class 'Jasmine' Accuracy: 1.0000
+   Class 'Karacadag' Accuracy: 1.0000
+
+2,train,0.0355,0.9854
+   Class 'Basmati' Accuracy: 0.9812
+   Class 'Ipsala' Accuracy: 0.9957
+   Class 'Jasmine' Accuracy: 0.9814
+   Class 'Karacadag' Accuracy: 0.9834
+
+2,val,0.0009,0.9998
+   Class 'Basmati' Accuracy: 0.9997
+   Class 'Ipsala' Accuracy: 1.0000
+   Class 'Jasmine' Accuracy: 0.9997
+   Class 'Karacadag' Accuracy: 1.0000
+
+3,train,0.0308,0.9874
+   Class 'Basmati' Accuracy: 0.9803
+   Class 'Ipsala' Accuracy: 0.9960
+   Class 'Jasmine' Accuracy: 0.9870
+   Class 'Karacadag' Accuracy: 0.9862
+
+3,val,0.0009,0.9998
+   Class 'Basmati' Accuracy: 0.9997
+   Class 'Ipsala' Accuracy: 1.0000
+   Class 'Jasmine' Accuracy: 0.9997
+   Class 'Karacadag' Accuracy: 1.0000
+
+4,train,0.0299,0.9875
+   Class 'Basmati' Accuracy: 0.9817
+   Class 'Ipsala' Accuracy: 0.9959
+   Class 'Jasmine' Accuracy: 0.9860
+   Class 'Karacadag' Accuracy: 0.9862
+
+4,val,0.0006,0.9997
+   Class 'Basmati' Accuracy: 0.9997
+   Class 'Ipsala' Accuracy: 1.0000
+   Class 'Jasmine' Accuracy: 0.9993
+   Class 'Karacadag' Accuracy: 1.0000
+
+5,train,0.0301,0.9869
+   Class 'Basmati' Accuracy: 0.9794
+   Class 'Ipsala' Accuracy: 0.9963
+   Class 'Jasmine' Accuracy: 0.9876
+   Class 'Karacadag' Accuracy: 0.9844
+
+5,val,0.0006,0.9998
+   Class 'Basmati' Accuracy: 0.9993
+   Class 'Ipsala' Accuracy: 1.0000
+   Class 'Jasmine' Accuracy: 1.0000
+   Class 'Karacadag' Accuracy: 1.0000
+
+6,train,0.0273,0.9887
+   Class 'Basmati' Accuracy: 0.9843
+   Class 'Ipsala' Accuracy: 0.9960
+   Class 'Jasmine' Accuracy: 0.9871
+   Class 'Karacadag' Accuracy: 0.9875
+
+6,val,0.0006,0.9999
+   Class 'Basmati' Accuracy: 0.9997
+   Class 'Ipsala' Accuracy: 1.0000
+   Class 'Jasmine' Accuracy: 1.0000
+   Class 'Karacadag' Accuracy: 1.0000
+
+7,train,0.0247,0.9893
+   Class 'Basmati' Accuracy: 0.9857
+   Class 'Ipsala' Accuracy: 0.9971
+   Class 'Jasmine' Accuracy: 0.9871
+   Class 'Karacadag' Accuracy: 0.9875
+
+7,val,0.0003,0.9999
+   Class 'Basmati' Accuracy: 0.9997
+   Class 'Ipsala' Accuracy: 1.0000
+   Class 'Jasmine' Accuracy: 1.0000
+   Class 'Karacadag' Accuracy: 1.0000
+
+8,train,0.0216,0.9904
+   Class 'Basmati' Accuracy: 0.9805
+   Class 'Ipsala' Accuracy: 0.9980
+   Class 'Jasmine' Accuracy: 0.9938
+   Class 'Karacadag' Accuracy: 0.9894
+
+8,val,0.0005,0.9998
+   Class 'Basmati' Accuracy: 0.9993
+   Class 'Ipsala' Accuracy: 1.0000
+   Class 'Jasmine' Accuracy: 1.0000
+   Class 'Karacadag' Accuracy: 1.0000
+
+9,train,0.0207,0.9913
+   Class 'Basmati' Accuracy: 0.9848
+   Class 'Ipsala' Accuracy: 0.9970
+   Class 'Jasmine' Accuracy: 0.9938
+   Class 'Karacadag' Accuracy: 0.9895
+
+9,val,0.0004,0.9999
+   Class 'Basmati' Accuracy: 0.9997
+   Class 'Ipsala' Accuracy: 1.0000
+   Class 'Jasmine' Accuracy: 1.0000
+   Class 'Karacadag' Accuracy: 1.0000
+
