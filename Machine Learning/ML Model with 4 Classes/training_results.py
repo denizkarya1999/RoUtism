@@ -8,8 +8,8 @@ from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
 
 # We'll assume we have exactly 4 classes:
-#CLASSES = ["Angry", "Anxiety", "Excitement", "Sadness"]
-CLASSES = ["Basmati", "Ipsala", "Jasmine", "Karacadag"]
+CLASSES = ["angry", "fear", "neutral", "sad"]
+#CLASSES = ["Basmati", "Ipsala", "Jasmine", "Karacadag"]
 
 log_file = 'training_log.txt'  # Path to your log file
 
@@ -259,8 +259,8 @@ if avg_final_acc_dict:
 # 8) TSNE + KMeans for the 4 classes: Angry, Anxiety, Excitement, Sadness
 # -------------------------------------------------------------
 n_clusters = 4  # 'Angry', 'Anxiety', 'Excitement', 'Sadness'
-#cluster_names = ["Angry", "Anxiety", "Excitement", "Sadness"]
-cluster_names = ["Basmati", "Ipsala", "Jasmine", "Karacadag"]
+cluster_names = ["angry", "fear", "neutral", "sad"]
+#cluster_names = ["Basmati", "Ipsala", "Jasmine", "Karacadag"]
 
 # Suppose we have 200 random samples, each with 64-dim features
 num_samples = 200

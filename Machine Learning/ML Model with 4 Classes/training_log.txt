@@ -1,121 +1,141 @@
 Epoch,Phase,Loss,Accuracy
-0,train,1.3696,0.3022
-   Class 'Angry' Accuracy: 0.2612
-   Class 'Anxiety' Accuracy: 0.2275
-   Class 'Excitement' Accuracy: 0.2434
-   Class 'Sadness' Accuracy: 0.4769
+0,train,1.4188,0.4954
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.1064
+   Class 'sad' Accuracy: 0.9251
 
-0,val,1.2603,0.3993
-   Class 'Angry' Accuracy: 0.4923
-   Class 'Anxiety' Accuracy: 0.2346
-   Class 'Excitement' Accuracy: 0.2238
-   Class 'Sadness' Accuracy: 0.6466
+0,val,1.4026,0.5185
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-1,train,1.3195,0.3485
-   Class 'Angry' Accuracy: 0.3181
-   Class 'Anxiety' Accuracy: 0.2242
-   Class 'Excitement' Accuracy: 0.2440
-   Class 'Sadness' Accuracy: 0.6078
+1,train,1.3587,0.5230
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-1,val,1.2806,0.3843
-   Class 'Angry' Accuracy: 0.4645
-   Class 'Anxiety' Accuracy: 0.0571
-   Class 'Excitement' Accuracy: 0.3519
-   Class 'Sadness' Accuracy: 0.6636
+1,val,1.3559,0.5185
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-2,train,1.3135,0.3595
-   Class 'Angry' Accuracy: 0.3578
-   Class 'Anxiety' Accuracy: 0.2639
-   Class 'Excitement' Accuracy: 0.2097
-   Class 'Sadness' Accuracy: 0.6065
+2,train,1.3530,0.5230
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-2,val,1.2732,0.3700
-   Class 'Angry' Accuracy: 0.1312
-   Class 'Anxiety' Accuracy: 0.5417
-   Class 'Excitement' Accuracy: 0.1728
-   Class 'Sadness' Accuracy: 0.6343
+2,val,1.3732,0.5185
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-3,train,1.2933,0.3770
-   Class 'Angry' Accuracy: 0.3565
-   Class 'Anxiety' Accuracy: 0.2950
-   Class 'Excitement' Accuracy: 0.2593
-   Class 'Sadness' Accuracy: 0.5972
+3,train,1.3560,0.5230
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-3,val,1.2807,0.3893
-   Class 'Angry' Accuracy: 0.2083
-   Class 'Anxiety' Accuracy: 0.5062
-   Class 'Excitement' Accuracy: 0.0509
-   Class 'Sadness' Accuracy: 0.7917
+3,val,1.3392,0.5185
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-4,train,1.2892,0.3810
-   Class 'Angry' Accuracy: 0.3644
-   Class 'Anxiety' Accuracy: 0.2923
-   Class 'Excitement' Accuracy: 0.2731
-   Class 'Sadness' Accuracy: 0.5939
+4,train,1.3573,0.5207
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 0.9956
 
-4,val,1.2545,0.3993
-   Class 'Angry' Accuracy: 0.4614
-   Class 'Anxiety' Accuracy: 0.2886
-   Class 'Excitement' Accuracy: 0.1173
-   Class 'Sadness' Accuracy: 0.7299
+4,val,1.4223,0.5185
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-5,train,1.2815,0.3917
-   Class 'Angry' Accuracy: 0.3545
-   Class 'Anxiety' Accuracy: 0.3062
-   Class 'Excitement' Accuracy: 0.2784
-   Class 'Sadness' Accuracy: 0.6276
+5,train,1.3576,0.5207
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 0.9956
 
-5,val,1.3186,0.3900
-   Class 'Angry' Accuracy: 0.5077
-   Class 'Anxiety' Accuracy: 0.1759
-   Class 'Excitement' Accuracy: 0.2515
-   Class 'Sadness' Accuracy: 0.6250
+5,val,1.3561,0.5185
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-6,train,1.2648,0.4033
-   Class 'Angry' Accuracy: 0.3862
-   Class 'Anxiety' Accuracy: 0.3188
-   Class 'Excitement' Accuracy: 0.3022
-   Class 'Sadness' Accuracy: 0.6058
+6,train,1.3788,0.5230
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-6,val,1.2651,0.4047
-   Class 'Angry' Accuracy: 0.3380
-   Class 'Anxiety' Accuracy: 0.2577
-   Class 'Excitement' Accuracy: 0.2315
-   Class 'Sadness' Accuracy: 0.7917
+6,val,1.4198,0.5132
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 0.9898
 
-7,train,1.2471,0.4016
-   Class 'Angry' Accuracy: 0.3750
-   Class 'Anxiety' Accuracy: 0.3221
-   Class 'Excitement' Accuracy: 0.3300
-   Class 'Sadness' Accuracy: 0.5794
+7,train,1.3495,0.5230
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-7,val,1.2868,0.4024
-   Class 'Angry' Accuracy: 0.4398
-   Class 'Anxiety' Accuracy: 0.2886
-   Class 'Excitement' Accuracy: 0.1728
-   Class 'Sadness' Accuracy: 0.7083
+7,val,1.3726,0.5185
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-8,train,1.2311,0.4119
-   Class 'Angry' Accuracy: 0.3975
-   Class 'Anxiety' Accuracy: 0.3591
-   Class 'Excitement' Accuracy: 0.3009
-   Class 'Sadness' Accuracy: 0.5899
+8,train,1.3415,0.5230
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-8,val,1.2980,0.3989
-   Class 'Angry' Accuracy: 0.3796
-   Class 'Anxiety' Accuracy: 0.3287
-   Class 'Excitement' Accuracy: 0.1883
-   Class 'Sadness' Accuracy: 0.6991
+8,val,1.3552,0.5185
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-9,train,1.2326,0.4112
-   Class 'Angry' Accuracy: 0.3730
-   Class 'Anxiety' Accuracy: 0.3274
-   Class 'Excitement' Accuracy: 0.3307
-   Class 'Sadness' Accuracy: 0.6138
+9,train,1.3201,0.5230
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 
-9,val,1.3114,0.3962
-   Class 'Angry' Accuracy: 0.4444
-   Class 'Anxiety' Accuracy: 0.2762
-   Class 'Excitement' Accuracy: 0.1497
-   Class 'Sadness' Accuracy: 0.7145
+9,val,1.3500,0.5185
+   Class 'angry' Accuracy: 0.0000
+   Class 'fear' Accuracy: 0.0000
+   Class 'happy' Accuracy: 0.0000
+   Class 'neutral' Accuracy: 0.0000
+   Class 'sad' Accuracy: 1.0000
 

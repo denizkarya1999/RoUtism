@@ -1,5 +1,6 @@
 Experiment Notes
- 1- Open the video and Xemotion at the same time.
+ 1- Place "experiment_template" folder into C drive and name it with the persons name.
+ 2- Open the video and Xemotion at the same time.
  2- Play the video and track hand movements until the video ends.
  3- Once the video ends, move the lines into a safe place in C drive and create a folder for the user with 4 emotions in it.
  4- Copy the frames from the video into the user folder.
