@@ -1,121 +1,121 @@
 Epoch,Phase,Loss,Accuracy
-0,train,0.0873,0.9682
-   Class 'Basmati' Accuracy: 0.9542
-   Class 'Ipsala' Accuracy: 0.9884
-   Class 'Jasmine' Accuracy: 0.9602
-   Class 'Karacadag' Accuracy: 0.9702
+0,train,1.3696,0.3022
+   Class 'Angry' Accuracy: 0.2612
+   Class 'Anxiety' Accuracy: 0.2275
+   Class 'Excitement' Accuracy: 0.2434
+   Class 'Sadness' Accuracy: 0.4769
 
-0,val,0.0048,0.9981
-   Class 'Basmati' Accuracy: 1.0000
-   Class 'Ipsala' Accuracy: 1.0000
-   Class 'Jasmine' Accuracy: 0.9923
-   Class 'Karacadag' Accuracy: 1.0000
+0,val,1.2603,0.3993
+   Class 'Angry' Accuracy: 0.4923
+   Class 'Anxiety' Accuracy: 0.2346
+   Class 'Excitement' Accuracy: 0.2238
+   Class 'Sadness' Accuracy: 0.6466
 
-1,train,0.0415,0.9834
-   Class 'Basmati' Accuracy: 0.9803
-   Class 'Ipsala' Accuracy: 0.9949
-   Class 'Jasmine' Accuracy: 0.9776
-   Class 'Karacadag' Accuracy: 0.9808
+1,train,1.3195,0.3485
+   Class 'Angry' Accuracy: 0.3181
+   Class 'Anxiety' Accuracy: 0.2242
+   Class 'Excitement' Accuracy: 0.2440
+   Class 'Sadness' Accuracy: 0.6078
 
-1,val,0.0020,0.9993
-   Class 'Basmati' Accuracy: 0.9973
-   Class 'Ipsala' Accuracy: 1.0000
-   Class 'Jasmine' Accuracy: 1.0000
-   Class 'Karacadag' Accuracy: 1.0000
+1,val,1.2806,0.3843
+   Class 'Angry' Accuracy: 0.4645
+   Class 'Anxiety' Accuracy: 0.0571
+   Class 'Excitement' Accuracy: 0.3519
+   Class 'Sadness' Accuracy: 0.6636
 
-2,train,0.0355,0.9854
-   Class 'Basmati' Accuracy: 0.9812
-   Class 'Ipsala' Accuracy: 0.9957
-   Class 'Jasmine' Accuracy: 0.9814
-   Class 'Karacadag' Accuracy: 0.9834
+2,train,1.3135,0.3595
+   Class 'Angry' Accuracy: 0.3578
+   Class 'Anxiety' Accuracy: 0.2639
+   Class 'Excitement' Accuracy: 0.2097
+   Class 'Sadness' Accuracy: 0.6065
 
-2,val,0.0009,0.9998
-   Class 'Basmati' Accuracy: 0.9997
-   Class 'Ipsala' Accuracy: 1.0000
-   Class 'Jasmine' Accuracy: 0.9997
-   Class 'Karacadag' Accuracy: 1.0000
+2,val,1.2732,0.3700
+   Class 'Angry' Accuracy: 0.1312
+   Class 'Anxiety' Accuracy: 0.5417
+   Class 'Excitement' Accuracy: 0.1728
+   Class 'Sadness' Accuracy: 0.6343
 
-3,train,0.0308,0.9874
-   Class 'Basmati' Accuracy: 0.9803
-   Class 'Ipsala' Accuracy: 0.9960
-   Class 'Jasmine' Accuracy: 0.9870
-   Class 'Karacadag' Accuracy: 0.9862
+3,train,1.2933,0.3770
+   Class 'Angry' Accuracy: 0.3565
+   Class 'Anxiety' Accuracy: 0.2950
+   Class 'Excitement' Accuracy: 0.2593
+   Class 'Sadness' Accuracy: 0.5972
 
-3,val,0.0009,0.9998
-   Class 'Basmati' Accuracy: 0.9997
-   Class 'Ipsala' Accuracy: 1.0000
-   Class 'Jasmine' Accuracy: 0.9997
-   Class 'Karacadag' Accuracy: 1.0000
+3,val,1.2807,0.3893
+   Class 'Angry' Accuracy: 0.2083
+   Class 'Anxiety' Accuracy: 0.5062
+   Class 'Excitement' Accuracy: 0.0509
+   Class 'Sadness' Accuracy: 0.7917
 
-4,train,0.0299,0.9875
-   Class 'Basmati' Accuracy: 0.9817
-   Class 'Ipsala' Accuracy: 0.9959
-   Class 'Jasmine' Accuracy: 0.9860
-   Class 'Karacadag' Accuracy: 0.9862
+4,train,1.2892,0.3810
+   Class 'Angry' Accuracy: 0.3644
+   Class 'Anxiety' Accuracy: 0.2923
+   Class 'Excitement' Accuracy: 0.2731
+   Class 'Sadness' Accuracy: 0.5939
 
-4,val,0.0006,0.9997
-   Class 'Basmati' Accuracy: 0.9997
-   Class 'Ipsala' Accuracy: 1.0000
-   Class 'Jasmine' Accuracy: 0.9993
-   Class 'Karacadag' Accuracy: 1.0000
+4,val,1.2545,0.3993
+   Class 'Angry' Accuracy: 0.4614
+   Class 'Anxiety' Accuracy: 0.2886
+   Class 'Excitement' Accuracy: 0.1173
+   Class 'Sadness' Accuracy: 0.7299
 
-5,train,0.0301,0.9869
-   Class 'Basmati' Accuracy: 0.9794
-   Class 'Ipsala' Accuracy: 0.9963
-   Class 'Jasmine' Accuracy: 0.9876
-   Class 'Karacadag' Accuracy: 0.9844
+5,train,1.2815,0.3917
+   Class 'Angry' Accuracy: 0.3545
+   Class 'Anxiety' Accuracy: 0.3062
+   Class 'Excitement' Accuracy: 0.2784
+   Class 'Sadness' Accuracy: 0.6276
 
-5,val,0.0006,0.9998
-   Class 'Basmati' Accuracy: 0.9993
-   Class 'Ipsala' Accuracy: 1.0000
-   Class 'Jasmine' Accuracy: 1.0000
-   Class 'Karacadag' Accuracy: 1.0000
+5,val,1.3186,0.3900
+   Class 'Angry' Accuracy: 0.5077
+   Class 'Anxiety' Accuracy: 0.1759
+   Class 'Excitement' Accuracy: 0.2515
+   Class 'Sadness' Accuracy: 0.6250
 
-6,train,0.0273,0.9887
-   Class 'Basmati' Accuracy: 0.9843
-   Class 'Ipsala' Accuracy: 0.9960
-   Class 'Jasmine' Accuracy: 0.9871
-   Class 'Karacadag' Accuracy: 0.9875
+6,train,1.2648,0.4033
+   Class 'Angry' Accuracy: 0.3862
+   Class 'Anxiety' Accuracy: 0.3188
+   Class 'Excitement' Accuracy: 0.3022
+   Class 'Sadness' Accuracy: 0.6058
 
-6,val,0.0006,0.9999
-   Class 'Basmati' Accuracy: 0.9997
-   Class 'Ipsala' Accuracy: 1.0000
-   Class 'Jasmine' Accuracy: 1.0000
-   Class 'Karacadag' Accuracy: 1.0000
+6,val,1.2651,0.4047
+   Class 'Angry' Accuracy: 0.3380
+   Class 'Anxiety' Accuracy: 0.2577
+   Class 'Excitement' Accuracy: 0.2315
+   Class 'Sadness' Accuracy: 0.7917
 
-7,train,0.0247,0.9893
-   Class 'Basmati' Accuracy: 0.9857
-   Class 'Ipsala' Accuracy: 0.9971
-   Class 'Jasmine' Accuracy: 0.9871
-   Class 'Karacadag' Accuracy: 0.9875
+7,train,1.2471,0.4016
+   Class 'Angry' Accuracy: 0.3750
+   Class 'Anxiety' Accuracy: 0.3221
+   Class 'Excitement' Accuracy: 0.3300
+   Class 'Sadness' Accuracy: 0.5794
 
-7,val,0.0003,0.9999
-   Class 'Basmati' Accuracy: 0.9997
-   Class 'Ipsala' Accuracy: 1.0000
-   Class 'Jasmine' Accuracy: 1.0000
-   Class 'Karacadag' Accuracy: 1.0000
+7,val,1.2868,0.4024
+   Class 'Angry' Accuracy: 0.4398
+   Class 'Anxiety' Accuracy: 0.2886
+   Class 'Excitement' Accuracy: 0.1728
+   Class 'Sadness' Accuracy: 0.7083
 
-8,train,0.0216,0.9904
-   Class 'Basmati' Accuracy: 0.9805
-   Class 'Ipsala' Accuracy: 0.9980
-   Class 'Jasmine' Accuracy: 0.9938
-   Class 'Karacadag' Accuracy: 0.9894
+8,train,1.2311,0.4119
+   Class 'Angry' Accuracy: 0.3975
+   Class 'Anxiety' Accuracy: 0.3591
+   Class 'Excitement' Accuracy: 0.3009
+   Class 'Sadness' Accuracy: 0.5899
 
-8,val,0.0005,0.9998
-   Class 'Basmati' Accuracy: 0.9993
-   Class 'Ipsala' Accuracy: 1.0000
-   Class 'Jasmine' Accuracy: 1.0000
-   Class 'Karacadag' Accuracy: 1.0000
+8,val,1.2980,0.3989
+   Class 'Angry' Accuracy: 0.3796
+   Class 'Anxiety' Accuracy: 0.3287
+   Class 'Excitement' Accuracy: 0.1883
+   Class 'Sadness' Accuracy: 0.6991
 
-9,train,0.0207,0.9913
-   Class 'Basmati' Accuracy: 0.9848
-   Class 'Ipsala' Accuracy: 0.9970
-   Class 'Jasmine' Accuracy: 0.9938
-   Class 'Karacadag' Accuracy: 0.9895
+9,train,1.2326,0.4112
+   Class 'Angry' Accuracy: 0.3730
+   Class 'Anxiety' Accuracy: 0.3274
+   Class 'Excitement' Accuracy: 0.3307
+   Class 'Sadness' Accuracy: 0.6138
 
-9,val,0.0004,0.9999
-   Class 'Basmati' Accuracy: 0.9997
-   Class 'Ipsala' Accuracy: 1.0000
-   Class 'Jasmine' Accuracy: 1.0000
-   Class 'Karacadag' Accuracy: 1.0000
+9,val,1.3114,0.3962
+   Class 'Angry' Accuracy: 0.4444
+   Class 'Anxiety' Accuracy: 0.2762
+   Class 'Excitement' Accuracy: 0.1497
+   Class 'Sadness' Accuracy: 0.7145
 
