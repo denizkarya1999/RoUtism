@@ -1,10 +1,18 @@
 Experiment Notes
  1- Place "experiment_template" folder into C drive and name it with the persons name.
- 2- Open the video and Xemotion at the same time.
- 2- Play the video and track hand movements until the video ends.
- 3- Once the video ends, move the lines into a safe place in C drive and create a folder for the user with 4 emotions in it.
- 4- Copy the frames from the video into the user folder.
- 5- Rename each line as "line_", video frame as "videoslice_".
- 6- Run deleteEmptyBox.py to remove empty boxes along with associated video frame images.
- 7- Rename the lines with your name. For instance "deniz(1)" etc.
- 8- Look at video frames and lines and categorize your emotions into emotion classes {Sadness, Anxiety, Excitement and Angry}.
+ 2- Open the video on a different device, Xemotion on the smart phone and web camera of the laptop or PC at the same time.
+ 3- Start recording on Laptop or PC.
+ 4- Start tracking on Xemotion.
+ 5- Start the video on mobile device.
+ 6- Once the video ends, stop tracking on Xemotion.
+ 7- Move the lines created in "RoEmotion_ML_Training_Data" on mobile device to Laptop`s "{yourName}/Lines" folder located in C drive.
+ 8- Move the Laptop`s recorded webcam video to ""{yourName}" folder located in C drive and rename the file as "experiment.mp4".
+ 9- Open terminal and trigger "python3 face_recognition.py" file which will trigger the DeepFace Face-Based Emotion Recognition Algorithm.
+ 10- Once the process is complete, face_recognition.py will create an "emotions_log.txt" file which you should trigger another algorithm.
+ 11- Now on terminal trigger "python3 organize_lines_by_emotion.py" command.
+ 12- organize_lines_by_emotion.py will ask your name, when you must enter your name.
+ 13- organize_lines_by_emotion.py will create a "Classes" folder which you should carefully go back to "~/Machine Learning/ML Model with 4 Classes/data" and place the lines.
+ 14- Replace "train" and "val" folders there, which will put your line images.
+ 15- Once this process is done delete "{yourName}" on C drive.
+ 16- To train the Machine Learning Model, please locate to "~/Machine Learning/ML Model with 4 Classes" and read "Great Lakes Computers Training Instructions.txt".
+ 
