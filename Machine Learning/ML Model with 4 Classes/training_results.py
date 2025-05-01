@@ -7,9 +7,8 @@ import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
 
-# We'll assume we have exactly 4 classes:
-CLASSES = ["angry", "fear", "neutral", "sad"]
-#CLASSES = ["Basmati", "Ipsala", "Jasmine", "Karacadag"]
+# We'll assume we have exactly 3 classes:
+CLASSES = ["happy", "fear", "sad"]
 
 log_file = 'training_log.txt'  # Path to your log file
 
@@ -48,7 +47,7 @@ for line in lines:
         epoch_data[current_phase]['acc'].append(epoch_acc)
         continue
 
-    # Match lines like: "Class 'Angry' Accuracy: 0.2500"
+    # Match lines like: "Class 'happy' Accuracy: 0.2500"
     class_match = re.match(r"^Class '(.*?)' Accuracy: (\d+\.\d+)$", line)
     if class_match and current_epoch is not None and current_phase is not None:
         class_name = class_match.group(1)
@@ -256,29 +255,29 @@ if avg_final_acc_dict:
     )
 
 # -------------------------------------------------------------
-# 8) TSNE + KMeans for the 4 classes: Angry, Anxiety, Excitement, Sadness
+# 8) TSNE + KMeans for the 3 classes: happy, fear, sad
 # -------------------------------------------------------------
-n_clusters = 4  # 'Angry', 'Anxiety', 'Excitement', 'Sadness'
-cluster_names = ["angry", "fear", "neutral", "sad"]
-#cluster_names = ["Basmati", "Ipsala", "Jasmine", "Karacadag"]
+n_clusters = 3  # We now have 3 classes
+cluster_names = ["happy", "fear", "sad"]
 
-# Suppose we have 200 random samples, each with 64-dim features
 num_samples = 200
 feat_dim    = 64
 dummy_feats = np.random.randn(num_samples, feat_dim)
 
 # t-SNE -> 2D
+from sklearn.manifold import TSNE
 tsne = TSNE(n_components=2, random_state=42)
 emb  = tsne.fit_transform(dummy_feats)  # shape: [200, 2]
 
-# KMeans with 4 clusters
+# KMeans with 3 clusters
+from sklearn.cluster import KMeans
 kmeans = KMeans(n_clusters=n_clusters, random_state=42)
 kmeans.fit(emb)
 labels  = kmeans.labels_
 centers = kmeans.cluster_centers_
 
 # Create color / label mapping
-colors = ['red', 'green', 'blue', 'purple']
+colors = ['red', 'green', 'blue']  # 3 colors
 plt.figure(figsize=(6, 5))
 
 for i in range(n_clusters):
@@ -291,7 +290,7 @@ for i in range(n_clusters):
 # Show cluster centers
 plt.scatter(centers[:, 0], centers[:, 1], c='black', marker='X', s=150, label='Centers')
 
-plt.title("t-SNE + KMeans (4 Clusters)")
+plt.title("t-SNE + KMeans (3 Clusters)")
 plt.legend()
 plt.savefig(os.path.join("results", "tsne_kmeans.jpg"), dpi=300)
 plt.close()

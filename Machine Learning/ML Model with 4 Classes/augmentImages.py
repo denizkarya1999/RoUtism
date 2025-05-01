@@ -5,17 +5,18 @@ import torchvision.transforms as transforms
 def get_augmentation_pipeline():
     """Define the augmentation pipeline."""
     augmentation_pipeline = transforms.Compose([
-        transforms.RandomRotation(15),             # Random rotation within ±15 degrees
-        transforms.RandomHorizontalFlip(),           # Random horizontal flip
-        transforms.ColorJitter(                      # Random adjustments for brightness, contrast, saturation, and hue
+        transforms.RandomRotation(15),             # Random rotation ±15°
+        transforms.RandomHorizontalFlip(),         # Random horizontal flip
+        transforms.ColorJitter(                   # Random brightness/contrast/saturation/hue
             brightness=0.2,
             contrast=0.2,
             saturation=0.2,
             hue=0.1
         ),
-        transforms.RandomResizedCrop(224,           # Random crop and resize to 224x224 pixels
+        transforms.RandomResizedCrop(224,         # Random crop & resize to 224×224
                                      scale=(0.8, 1.0),
-                                     ratio=(0.9, 1.1))
+                                     ratio=(0.9, 1.1)),
+        transforms.Resize((79, 68))               # Finally, force EXACT 79×68 (height×width)
     ])
     return augmentation_pipeline
 
@@ -51,7 +52,7 @@ def augment_images_inplace(source_dir, num_augments=5):
                 print(f"Saved augmented image: {output_path}")
 
 if __name__ == '__main__':
-    # Use the directory where this source code is located.
+    # Use the directory where this script is located.
     source_directory = os.path.dirname(os.path.abspath(__file__))
     
     # Number of augmentations to create per image.
