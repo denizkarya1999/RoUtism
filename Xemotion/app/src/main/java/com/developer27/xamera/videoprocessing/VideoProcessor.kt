@@ -5,6 +5,7 @@ package com.developer27.xemotion.videoprocessing
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Rect
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -133,8 +134,11 @@ class VideoProcessor(private val context: Context) {
     }
 
     /**
-     * Processes a frame (bitmap) asynchronously,
-     * returns (processedBitmap, debugBitmap).
+     * Processes a frame (bitmap) asynchronously.
+     * Returns (debugOverlayBitmap, croppedRegion).
+     *
+     *  - debugOverlay: thresholded + contour + lines (for visible debugging).
+     *  - croppedRegion: bounding box from the original color/grayscale frame.
      */
     fun processFrame(
         bitmap: Bitmap,
@@ -144,7 +148,7 @@ class VideoProcessor(private val context: Context) {
             val result: Pair<Bitmap, Bitmap>? = try {
                 when (Settings.DetectionMode.current) {
                     Settings.DetectionMode.Mode.CONTOUR -> processFrameInternalCONTOUR(bitmap)
-                    Settings.DetectionMode.Mode.YOLO -> processFrameInternalYOLO(bitmap)
+                    Settings.DetectionMode.Mode.YOLO    -> processFrameInternalYOLO(bitmap)
                 }
             } catch (e: Exception) {
                 Log.d("VideoProcessor", "Error processing frame: ${e.message}", e)
@@ -156,30 +160,55 @@ class VideoProcessor(private val context: Context) {
         }
     }
 
+    /**
+     * 1) Threshold & blur to find contours.
+     * 2) Draw lines on cMat for debugging.
+     * 3) Create a debug overlay (white blob + lines).
+     * 4) Also crop from the original frame if boundingRect is found.
+     * 5) Return the debug overlay as the FIRST image (so you see lines),
+     *    and the cropped region as the SECOND image.
+     */
     private fun processFrameInternalCONTOUR(bitmap: Bitmap): Pair<Bitmap, Bitmap>? {
         return try {
-            val (pMat, pBmp) = Preprocessing.preprocessFrame(bitmap)
-            val (center, cMat) = ContourDetection.processContourDetection(pMat)
+            // Step A: Preprocess => (pMat = thresholded Mat, pBmp = debug grayscale)
+            val (pMat, _) = Preprocessing.preprocessFrame(bitmap)
+
+            // Step B: Contour detection => (center, boundingRect, cMat)
+            val (center, boundingRect, cMat) = ContourDetection.processContourDetection(pMat)
+
+            // Draw lines on cMat
             TraceRenderer.drawTrace(center, cMat)
 
-            val outBmp = Bitmap.createBitmap(
-                cMat.cols(),
-                cMat.rows(),
-                Bitmap.Config.ARGB_8888
-            ).also {
-                Utils.matToBitmap(cMat, it)
+            // Convert cMat to a "debug overlay" => shows white blob & lines
+            val debugOverlayBmp = Bitmap.createBitmap(cMat.cols(), cMat.rows(), Bitmap.Config.ARGB_8888)
+            Utils.matToBitmap(cMat, debugOverlayBmp)
+
+            // If boundingRect is found, crop from the original color frame
+            val croppedRegion = if (boundingRect != null) {
+                extractBoundingBoxRegion(bitmap, boundingRect)
+            } else {
+                // No contour => fallback to a 1x1 black or debugOverlay
+                // We'll just fallback to debugOverlay here
+                debugOverlayBmp
             }
+
+            // Clean up
             pMat.release()
             cMat.release()
 
-            // Return (processedFrame, preprocessedFrame)
-            outBmp to pBmp
+            // Return debugOverlay FIRST so you see lines on screen
+            // and the cropped region as the second item
+            return debugOverlayBmp to croppedRegion
+
         } catch (e: Exception) {
-            Log.d("VideoProcessor", "Error processing frame: ${e.message}", e)
+            Log.d("VideoProcessor", "Error in processFrameInternalCONTOUR: ${e.message}", e)
             null
         }
     }
 
+    /**
+     * YOLO-based detection (unchanged from prior code).
+     */
     private suspend fun processFrameInternalYOLO(bitmap: Bitmap): Pair<Bitmap, Bitmap> =
         withContext(Dispatchers.IO) {
             val (inputW, inputH, outputShape) = getModelDimensions()
@@ -188,8 +217,11 @@ class VideoProcessor(private val context: Context) {
             val m = Mat().also { Utils.bitmapToMat(bitmap, it) }
 
             if (Settings.DetectionMode.enableYOLOinference && tfliteInterpreter != null) {
-                val out =
-                    Array(outputShape[0]) { Array(outputShape[1]) { FloatArray(outputShape[2]) } }
+                val out = Array(outputShape[0]) {
+                    Array(outputShape[1]) {
+                        FloatArray(outputShape[2])
+                    }
+                }
                 val inputBuffer = TensorImage(DataType.FLOAT32).apply { load(letterboxed) }
                 tfliteInterpreter?.run(inputBuffer.buffer, out)
 
@@ -217,9 +249,13 @@ class VideoProcessor(private val context: Context) {
                 Utils.matToBitmap(m, it)
                 m.release()
             }
+            // We'll pair the YOLO result (yoloBmp) with the letterboxed input
             yoloBmp to letterboxed
         }
 
+    /**
+     * Return model input & output shapes (for YOLO).
+     */
     fun getModelDimensions(): Triple<Int, Int, List<Int>> {
         val inTensor = tfliteInterpreter?.getInputTensor(0)
         val inShape = inTensor?.shape()
@@ -228,7 +264,6 @@ class VideoProcessor(private val context: Context) {
                 ) to (
                 inShape?.getOrNull(2) ?: 416
                 )
-
         val outTensor = tfliteInterpreter?.getOutputTensor(0)
         val outShape = outTensor?.shape()?.toList() ?: listOf(1, 5, 3549)
 
@@ -236,20 +271,35 @@ class VideoProcessor(private val context: Context) {
     }
 
     /**
-     * Exports a larger, data-collection version of the trace.
+     * Crop boundingRect from the original color/grayscale frame.
+     */
+    private fun extractBoundingBoxRegion(srcBitmap: Bitmap, boundingRect: Rect): Bitmap {
+        val left = boundingRect.left.coerceAtLeast(0)
+        val top = boundingRect.top.coerceAtLeast(0)
+        val right = boundingRect.right.coerceAtMost(srcBitmap.width)
+        val bottom = boundingRect.bottom.coerceAtMost(srcBitmap.height)
+
+        if (left >= right || top >= bottom) {
+            // Invalid bounding box => fallback
+            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        }
+        val width = right - left
+        val height = bottom - top
+        return Bitmap.createBitmap(srcBitmap, left, top, width, height)
+    }
+
+    /**
+     * Exports a data-collection version of the *trace* (no bounding box logic).
      */
     fun exportTraceForDataCollection(): Bitmap {
-        // 1) Snapshot the data so we don't get concurrent modification.
         val snapshot = smoothDataList.toList()
-
-        // 2) If empty, return a fallback (here we use black 1x1).
         if (snapshot.isEmpty()) {
             return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply {
                 eraseColor(Color.BLACK)
             }
         }
 
-        // -- Step 1: Calculate bounding box of all points (the typical logic) --
+        // 1) bounding box among the smoothed points
         var minX = Double.MAX_VALUE
         var minY = Double.MAX_VALUE
         var maxX = Double.MIN_VALUE
@@ -264,53 +314,40 @@ class VideoProcessor(private val context: Context) {
 
         val width = (maxX - minX).coerceAtLeast(1.0)
         val height = (maxY - minY).coerceAtLeast(1.0)
-        val padding = 30.0  // you can adjust
+        val padding = 30.0
 
         val matWidth = (width + 2 * padding).toInt().coerceAtLeast(1)
         val matHeight = (height + 2 * padding).toInt().coerceAtLeast(1)
 
-        // -- Step 2: Create a black Mat to draw on (instead of white) --
-        val mat = Mat(
-            matHeight,
-            matWidth,
-            CvType.CV_8UC4,
-            Scalar(0.0, 0.0, 0.0, 255.0) // black background
-        )
+        // 2) black Mat
+        val mat = Mat(matHeight, matWidth, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 255.0))
 
-        // -- Step 3: Adjust points so they fit in the new mat with padding --
+        // 3) shift points by padding
         val adjustedPoints = snapshot.map {
-            Point(
-                (it.x - minX) + padding,
-                (it.y - minY) + padding
-            )
+            Point((it.x - minX) + padding, (it.y - minY) + padding)
         }
 
-        // Temporarily store original color & thickness
+        // override color & thickness
         val originalColor = Settings.Trace.splineLineColor
         val originalThickness = Settings.Trace.lineThickness
 
-        // -- Step 4: Force the line to be WHITE (instead of any color) --
         Settings.Trace.splineLineColor = Scalar(255.0, 255.0, 255.0)
-        Settings.Trace.lineThickness = 10  // can choose thickness if needed
+        Settings.Trace.lineThickness = 10
 
-        // -- Step 5: Draw the line / spline on the black mat --
+        // 4) draw
         TraceRenderer.drawSplineCurve(adjustedPoints, mat)
 
-        // Restore the original settings
+        // restore color
         Settings.Trace.splineLineColor = originalColor
         Settings.Trace.lineThickness = originalThickness
 
-        // -- Step 6: Convert the drawn mat to a Bitmap --
-        val intermediateBitmap = Bitmap.createBitmap(
-            matWidth,
-            matHeight,
-            Bitmap.Config.ARGB_8888
-        ).apply {
+        // 5) convert mat -> Bitmap
+        val intermediateBitmap = Bitmap.createBitmap(matWidth, matHeight, Bitmap.Config.ARGB_8888).apply {
             Utils.matToBitmap(mat, this)
             mat.release()
         }
 
-        // -- Step 7: Finally, scale it to 79×68 (or your chosen size).
+        // 6) scale to 79×68
         val finalWidth = 79
         val finalHeight = 68
         return Bitmap.createScaledBitmap(intermediateBitmap, finalWidth, finalHeight, true)
@@ -376,7 +413,6 @@ object TraceRenderer {
 
     private fun applySplineInterpolation(data: List<Point>): Pair<PolynomialSplineFunction, PolynomialSplineFunction> {
         val interpolator = SplineInterpolator()
-
         val xData = data.map { it.x }.toDoubleArray()
         val yData = data.map { it.y }.toDoubleArray()
         val tData = data.indices.map { it.toDouble() }.toDoubleArray()
@@ -461,13 +497,9 @@ object Preprocessing {
             Imgproc.morphologyEx(bMat, it, Imgproc.MORPH_CLOSE, k)
             bMat.release()
         }
-        val bmp = Bitmap.createBitmap(
-            cMat.cols(),
-            cMat.rows(),
-            Bitmap.Config.ARGB_8888
-        ).also {
-            Utils.matToBitmap(cMat, it)
-        }
+        val bmp = Bitmap.createBitmap(cMat.cols(), cMat.rows(), Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(cMat, bmp)
+
         return cMat to bmp
     }
 }
@@ -478,10 +510,12 @@ object Preprocessing {
 object ContourDetection {
 
     /**
-     * Find largest contour, draw it, compute bounding box,
-     * optionally draw bounding box, compute center, return (center, finalMat).
+     * 1) Finds the largest contour.
+     * 2) Draws it on the thresholded Mat.
+     * 3) Computes bounding rectangle => returns an Android Rect.
+     * 4) Uses image moments => returns (center, boundingRect, finalMat).
      */
-    fun processContourDetection(mat: Mat): Pair<Point?, Mat> {
+    fun processContourDetection(mat: Mat): Triple<Point?, Rect?, Mat> {
         val contours = mutableListOf<MatOfPoint>()
         val hierarchy = Mat()
         Imgproc.findContours(
@@ -495,15 +529,14 @@ object ContourDetection {
 
         if (contours.isEmpty()) {
             Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2BGR)
-            return null to mat
+            return Triple(null, null, mat)
         }
 
-        // Largest contour by area
         val largestContour = contours.maxByOrNull { Imgproc.contourArea(it) }
-        if (largestContour == null) {
-            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2BGR)
-            return null to mat
-        }
+            ?: run {
+                Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2BGR)
+                return Triple(null, null, mat)
+            }
 
         // Draw the largest contour
         Imgproc.drawContours(
@@ -514,28 +547,35 @@ object ContourDetection {
             Settings.BoundingBox.boxThickness
         )
 
-        // Compute bounding rectangle
-        val boundingRect = Imgproc.boundingRect(largestContour)
+        // Compute bounding rect
+        val cvRect = Imgproc.boundingRect(largestContour)
+        val boundingRect = Rect(
+            cvRect.x,
+            cvRect.y,
+            cvRect.x + cvRect.width,
+            cvRect.y + cvRect.height
+        )
+
         if (Settings.BoundingBox.enableBoundingBox) {
             Imgproc.rectangle(
                 mat,
-                boundingRect,
+                cvRect,
                 Settings.BoundingBox.boxColor,
                 Settings.BoundingBox.boxThickness
             )
         }
 
-        // Center using image moments
         val m = Imgproc.moments(largestContour)
         val center = Point(m.m10 / m.m00, m.m01 / m.m00)
 
         // Convert to BGR
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2BGR)
-        return center to mat
+
+        return Triple(center, boundingRect, mat)
     }
 }
 
-// --------------------------------------------------
+//------------------------------------------------
 // YOLOHelper
 // --------------------------------------------------
 object YOLOHelper {
@@ -581,10 +621,8 @@ object YOLOHelper {
         bestDetection?.let { d ->
             Log.d(
                 "YOLOTest",
-                "BEST DETECTION: " +
-                        "conf=${"%.2f".format(d.confidence)}, " +
-                        "xC=${d.xCenter}, yC=${d.yCenter}, " +
-                        "w=${d.width}, h=${d.height}"
+                "BEST DETECTION: conf=${"%.2f".format(d.confidence)}, " +
+                        "xC=${d.xCenter}, yC=${d.yCenter}, w=${d.width}, h=${d.height}"
             )
         }
         return bestDetection
@@ -661,12 +699,12 @@ object YOLOHelper {
         return Pair(boundingBox, center)
     }
 
-    // Make YOLO bounding box *thin*, ignoring the thick settings
+    // Make YOLO bounding box thin
     fun drawBoundingBoxes(mat: Mat, box: BoundingBox) {
         val topLeft = Point(box.x1.toDouble(), box.y1.toDouble())
         val bottomRight = Point(box.x2.toDouble(), box.y2.toDouble())
 
-        // Use a small thickness for YOLO bounding boxes
+        // Small thickness for YOLO bounding boxes
         val YOLO_BOX_THICKNESS = 2
 
         Imgproc.rectangle(
@@ -674,13 +712,11 @@ object YOLOHelper {
             topLeft,
             bottomRight,
             Settings.BoundingBox.boxColor,
-            YOLO_BOX_THICKNESS // <<-- OVERRIDE the thick global setting
+            YOLO_BOX_THICKNESS
         )
 
         val label = "User_1 (${("%.2f".format(box.confidence * 100))}%)"
         val fontScale = 0.6
-
-        // We'll keep the label text thickness small, e.g. 1
         val textThickness = 1
         val baseline = IntArray(1)
 
@@ -694,7 +730,7 @@ object YOLOHelper {
         val textX = box.x1.toInt()
         val textY = (box.y1 - 5).toInt().coerceAtLeast(10)
 
-        // Thin label background
+        // Label background
         Imgproc.rectangle(
             mat,
             Point(textX.toDouble(), (textY + baseline[0]).toDouble()),
@@ -703,7 +739,7 @@ object YOLOHelper {
             Imgproc.FILLED
         )
 
-        // Put the text label with textThickness=1
+        // Put text
         Imgproc.putText(
             mat,
             label,
