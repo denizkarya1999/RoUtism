@@ -93,7 +93,7 @@ def main():
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
     # 9. Training loop
-    num_epochs = 20
+    num_epochs = 10
 
     # Open a file in append mode so we can write logs each epoch
     log_file_path = "training_log.txt"

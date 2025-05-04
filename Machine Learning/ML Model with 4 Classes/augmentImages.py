@@ -3,20 +3,26 @@ from PIL import Image
 import torchvision.transforms as transforms
 
 def get_augmentation_pipeline():
-    """Define the augmentation pipeline."""
+    """
+    Define a simpler, gentler augmentation pipeline for white-on-black line images.
+    """
     augmentation_pipeline = transforms.Compose([
-        transforms.RandomRotation(15),             # Random rotation ±15°
-        transforms.RandomHorizontalFlip(),         # Random horizontal flip
-        transforms.ColorJitter(                   # Random brightness/contrast/saturation/hue
-            brightness=0.2,
-            contrast=0.2,
-            saturation=0.2,
-            hue=0.1
+        # Smaller random rotation (±5°) instead of ±15°
+        transforms.RandomRotation(degrees=5),
+        
+        # Random horizontal flip with a lower probability
+        transforms.RandomHorizontalFlip(p=0.3),
+        
+        # Mild color jitter: only brightness & contrast; no saturation/hue
+        transforms.ColorJitter(
+            brightness=0.1,
+            contrast=0.1,
+            saturation=0.0,  # effectively disable saturation changes
+            hue=0.0          # disable hue changes
         ),
-        transforms.RandomResizedCrop(224,         # Random crop & resize to 224×224
-                                     scale=(0.8, 1.0),
-                                     ratio=(0.9, 1.1)),
-        transforms.Resize((79, 68))               # Finally, force EXACT 79×68 (height×width)
+        
+        # Finally, force EXACT 79×68 (height×width)
+        transforms.Resize((79, 68))
     ])
     return augmentation_pipeline
 
@@ -30,11 +36,12 @@ def augment_images_inplace(source_dir, num_augments=5):
     """
     augmentation_pipeline = get_augmentation_pipeline()
     
-    # Process each image in the source directory.
     for filename in os.listdir(source_dir):
+        # Only process typical image extensions
         if filename.lower().endswith(('png', 'jpg', 'jpeg')):
             image_path = os.path.join(source_dir, filename)
             try:
+                # Convert to 'RGB' so transforms.ColorJitter etc. won't complain
                 image = Image.open(image_path).convert('RGB')
             except Exception as e:
                 print(f"Error opening {image_path}: {e}")
@@ -42,20 +49,20 @@ def augment_images_inplace(source_dir, num_augments=5):
 
             base_filename, ext = os.path.splitext(filename)
             
-            # Generate multiple augmented versions for each image.
+            # Generate multiple augmented versions for each image
             for i in range(num_augments):
                 augmented_image = augmentation_pipeline(image)
-                # Create a new filename to avoid overwriting the original image.
+                
+                # Create a unique filename for each augmented image
                 output_filename = f"{base_filename}_aug{i}{ext}"
                 output_path = os.path.join(source_dir, output_filename)
+                
+                # Save the augmented image
                 augmented_image.save(output_path)
                 print(f"Saved augmented image: {output_path}")
 
 if __name__ == '__main__':
-    # Use the directory where this script is located.
     source_directory = os.path.dirname(os.path.abspath(__file__))
-    
-    # Number of augmentations to create per image.
     num_augmentations = 5
     
     augment_images_inplace(source_directory, num_augmentations)
