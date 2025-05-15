@@ -1,9 +1,51 @@
 Experiment Notes
- 1- Open the video and Xemotion at the same time.
- 2- Play the video and track hand movements until the video ends.
- 3- Once the video ends, move the lines into a safe place in C drive and create a folder for the user with 4 emotions in it.
- 4- Copy the frames from the video into the user folder.
- 5- Rename each line as "line_", video frame as "videoslice_".
- 6- Run deleteEmptyBox.py to remove empty boxes along with associated video frame images.
- 7- Rename the lines with your name. For instance "deniz(1)" etc.
- 8- Look at video frames and lines and categorize your emotions into emotion classes {Sadness, Anxiety, Excitement and Angry}.
+ 1- Open "CategorizeHeartBmp" folder.
+ 2- Wear Apple Watch on your other wrist.
+ 3- Go to "Main Screen".
+ 4- Click on "Heart Watch" App.
+ 5- Click on "Workout".
+ 6- Click on "Running" after workout.
+ 7- Set to "Mile" and click on "Start".
+ 8- Click on "Go".
+ 9- Open the video and Xemotion at the same time.
+ 10- Play the video and track hand movements until the video ends.
+ 11- On the iPhone go to "HeartWatch".
+ 12- Go to "Journal".
+ 13- Click on the latest "exercise".
+ 14- Take the screenshot of each log and ask ChatGPT to generate a log based on them.
+ 15- The prompt should be "Generate a txt file with timestamps and heart rate.
+ 16- Make sure it is "ChatGPT O4 Mini".
+ 17- Copy and paste the log from ChatGPT to Notepad.
+ 18- The notepad data should look like this;
+     2025-05-14 22:54:34 – 121 bpm
+     2025-05-14 22:54:39 – 131 bpm
+     2025-05-14 22:54:44 – 132 bpm
+     2025-05-14 22:54:45 – 133 bpm
+     2025-05-14 22:54:52 – 137 bpm
+     2025-05-14 22:54:57 – 142 bpm
+     2025-05-14 22:55:00 – 144 bpm
+     2025-05-14 22:55:05 – 149 bpm
+     2025-05-14 22:55:14 – 155 bpm
+     2025-05-14 22:55:16 – 154 bpm
+     2025-05-14 22:55:24 – 142 bpm
+     2025-05-14 22:55:28 – 134 bpm
+ 19- Run "python3 readHeartEmotion.py" which will categorize the emotions as detailed as half seconds like this;
+     Line(1) 22.54.34.000 — 121 bpm — Excited
+     Line(2) 22.54.34.005 — 121 bpm — Excited
+     Line(3) 22.54.34.000 — 121 bpm — Excited
+     Line(4) 22.54.34.005 — 121 bpm — Excited
+     Line(5) 22.54.35.000 — 121 bpm — Excited
+     Line(6) 22.54.35.005 — 121 bpm — Excited
+     Line(7) 22.54.36.000 — 121 bpm — Excited
+     Line(8) 22.54.36.005 — 121 bpm — Excited
+     Line(9) 22.54.37.000 — 121 bpm — Excited
+ 20- Place exported lines in "Lines" folder from phone.
+ 21- Place "deleteEmptyBox.py" into "Lines" folder.
+ 22- Run "python3 deleteEmptyBox.py" to delete empty boxes and delete deleteEmptyBox.py file.
+ 23- Inside "Lines", folder rename lines as "Line (1)", "Line (2)", "Line (3)" etc.
+ 24- Run "python3 categorizeLines.py" to place the lines inside "Lines" folder into different folders.
+ 25- "categorizeLines.py" places the lines into "Categorized" folder.
+ 26- Go back to "~\RoEmotion\Machine Learning\ML Model with 4 Classes" and place the classes into "data" folder.
+ 27- Make sure data is distributed as 70% train and 30% val.
+ 28- Repeat this guideline for the upcoming experiment.
+     
