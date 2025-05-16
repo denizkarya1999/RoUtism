@@ -1,51 +1,13 @@
 Experiment Notes
- 1- Open "CategorizeHeartBmp" folder.
- 2- Wear Apple Watch on your other wrist.
- 3- Go to "Main Screen".
- 4- Click on "Heart Watch" App.
- 5- Click on "Workout".
- 6- Click on "Running" after workout.
- 7- Set to "Mile" and click on "Start".
- 8- Click on "Go".
- 9- Open the video and Xemotion at the same time.
- 10- Play the video and track hand movements until the video ends.
- 11- On the iPhone go to "HeartWatch".
- 12- Go to "Journal".
- 13- Click on the latest "exercise".
- 14- Take the screenshot of each log and ask ChatGPT to generate a log based on them.
- 15- The prompt should be "Generate a txt file with timestamps and heart rate.
- 16- Make sure it is "ChatGPT O4 Mini".
- 17- Copy and paste the log from ChatGPT to Notepad.
- 18- The notepad data should look like this;
-     2025-05-14 22:54:34 – 121 bpm
-     2025-05-14 22:54:39 – 131 bpm
-     2025-05-14 22:54:44 – 132 bpm
-     2025-05-14 22:54:45 – 133 bpm
-     2025-05-14 22:54:52 – 137 bpm
-     2025-05-14 22:54:57 – 142 bpm
-     2025-05-14 22:55:00 – 144 bpm
-     2025-05-14 22:55:05 – 149 bpm
-     2025-05-14 22:55:14 – 155 bpm
-     2025-05-14 22:55:16 – 154 bpm
-     2025-05-14 22:55:24 – 142 bpm
-     2025-05-14 22:55:28 – 134 bpm
- 19- Run "python3 readHeartEmotion.py" which will categorize the emotions as detailed as half seconds like this;
-     Line(1) 22.54.34.000 — 121 bpm — Excited
-     Line(2) 22.54.34.005 — 121 bpm — Excited
-     Line(3) 22.54.34.000 — 121 bpm — Excited
-     Line(4) 22.54.34.005 — 121 bpm — Excited
-     Line(5) 22.54.35.000 — 121 bpm — Excited
-     Line(6) 22.54.35.005 — 121 bpm — Excited
-     Line(7) 22.54.36.000 — 121 bpm — Excited
-     Line(8) 22.54.36.005 — 121 bpm — Excited
-     Line(9) 22.54.37.000 — 121 bpm — Excited
- 20- Place exported lines in "Lines" folder from phone.
- 21- Place "deleteEmptyBox.py" into "Lines" folder.
- 22- Run "python3 deleteEmptyBox.py" to delete empty boxes and delete deleteEmptyBox.py file.
- 23- Inside "Lines", folder rename lines as "Line (1)", "Line (2)", "Line (3)" etc.
- 24- Run "python3 categorizeLines.py" to place the lines inside "Lines" folder into different folders.
- 25- "categorizeLines.py" places the lines into "Categorized" folder.
- 26- Go back to "~\RoEmotion\Machine Learning\ML Model with 4 Classes" and place the classes into "data" folder.
- 27- Make sure data is distributed as 70% train and 30% val.
- 28- Repeat this guideline for the upcoming experiment.
+ 1- Move the lines into "data" folder from smart phone.
+ 2- Create "Angry", "Anxious", "Sad" and "Excitement" classes.
+ 3- Look at the sliced video images at Dropbox file which supposed to look like this;
+     Video_Slice (1) to Video_Slice (170) - "Razor From Need For Speed Most Wanted Game Confronts You" - Angry
+     Video_Slice (170) to Video_Slice (318) - "You are being chased by police in Need For Speed Most Wanted Game" - Anxious
+     Video_Slice (318) to Video_Slice (446) - "Bumblebee`s Best Friend is Killed By Decepticons in Transformers" - Sad
+     Video_Slice (446) to Video_Slice (600) - "Rodimus Prime Beats Galvatron in Transformers G1" - Excitement
+ 4- Make sure the number of lines are equally distributed in data folder. Delete unnecessary lines that exceeds 600 lines or causing imbalance.
+ 5- Distribute classes into "train" and "val" as 70% of them should be "train" and 30% of them should be "val".
+ 6- Upload the data to the Great Lakes Clusters and read "Great Lakes Guidelines" to continue with this experiment.
+    
      
