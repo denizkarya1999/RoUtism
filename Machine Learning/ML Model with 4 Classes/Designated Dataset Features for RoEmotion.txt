@@ -1,0 +1,96 @@
+Designated Dataset Features for RoEmotion
+------------------------------------------------------
+
+Total Dataset Number Limit: 9200 Images
+ Angry: 2300 (Remove 775) Images
+ Anxious = 2300 (Remove 339) Images
+ Excitement = 2300 (Remove 552) Images
+ Sadness = 2300 (Remove 20) Images
+
+Designated Dataset Distribution:
+ Angry:
+  Train: 1610 Images
+  Val: 690 Images
+ Anxious:
+  Train: 1610 Images
+  Val: 690 Images
+ Excitement:
+  Train: 1610 Images
+  Val: 690 Images
+ Sadness:
+  Train: 1610 Images
+  Val: 690 Images
+
+Experiment Collection:
+6 People × (605 Images per Experiment × 3 Experiments)  
+
+Dataset Reduction Suggestions:
+ #1 Remove some unnecessary data (such as hand tilting) from the start.
+ #2 Remove potentially "natural" feelings since we are looking 4 emotions explicitly.
+ #3 Remove some unnecessary data (such as hand tilting) from the end.
+
+Validation Suggestions:
+ #1 When distributing between train and val, distribute train as the ones who already worked with project vs first time watchers.
+
+Removed Items:
+ Angry (552 Total):
+  127 - First 7 Transitional Data
+  70 - Frames 95-98 <Beautiful Woman>
+  144 - Frames 146-153 <Car Movement>
+  54 - Frames 154-156 <Razor Approaching to Car>
+  296 - Deniz Data 1 and Cycle 3
+  76 - Christian Cycle 1 Half Data
+ Anxious (339 Total):
+  60 - First 4 Transitional Data
+  279 - Deniz Data
+ Excitement (552 Total):
+  548 - First 24 and Last 10 Transitional Data
+  4 - Random Data
+ Sadness (20 Total):
+  12 - First 2 Unnecessary Data
+  8 - Transitional Data
+
+ Data Distribution (Train + Val):
+  Angry:
+   Train (Total 1610):
+   Val (Total 690):
+    23 - Haneen <Outsider>
+    222 - Meng <Outsider>
+    222 - Puneet <Outsider>
+    223 - Manuel <Outsider>
+  Anxious:
+   Train (Total 1610):
+   Val (Total 690):
+    23 - Haneen <Outsider>
+    222 - Meng <Outsider>
+    222 - Puneet <Outsider>
+    223 - Manuel <Outsider>
+  Excitement:
+   Train (Total 1610):
+   Val (Total 690):
+    23 - Haneen <Outsider>
+    222 - Meng <Outsider>
+    222 - Puneet <Outsider>
+    223 - Manuel <Outsider>
+  Sadness:
+   Train (Total 1610):
+   Val (Total 690):
+    23 - Haneen <Outsider>
+    222 - Meng <Outsider>
+    222 - Puneet <Outsider>
+    223 - Manuel <Outsider>
+
+ Augmentation Features
+  Note: Each image was augmented 5 times
+   Total (55,180 Images)
+     Training (38,640 Images)
+     Angry (9660 Images)
+     Anxious (9660 Images)
+     Excitement (9,660 Images)
+     Sadness (9,660 Images)
+    Validation (16,540 Images)
+     Angry (4,135 Images)
+     Anxious (4,135 Images)
+     Excitement (4,135 Images)
+     Sadness (4,135 Images)
+    

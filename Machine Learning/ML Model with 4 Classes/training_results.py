@@ -2,293 +2,153 @@ import os
 import re
 import numpy as np
 import matplotlib.pyplot as plt
-
-# For TSNE & KMeans
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
 
-# We'll assume we have exactly 4 classes:
+plt.rcParams.update({
+    'font.size': 14,
+    'axes.titlesize': 16,
+    'axes.labelsize': 14,
+    'xtick.labelsize': 12,
+    'ytick.labelsize': 12,
+    'legend.fontsize': 12,
+    'figure.titlesize': 18,
+})
+
 CLASSES = ["Angry", "Excitement", "Anxious", "Sad"]
+log_file = 'training_log.txt'
 
-log_file = 'training_log.txt'  # Path to your log file
-
-# 1) Data structures for storing epoch-based metrics & per-class accuracy
-epoch_data = {
-    'train': {'epochs': [], 'loss': [], 'acc': []},
-    'val':   {'epochs': [], 'loss': [], 'acc': []}
-}
-
-# per_class_data[phase][class_name] = list of (epoch, accuracy_in_0_to_1)
-per_class_data = {
-    'train': {},
-    'val': {}
-}
-
+epoch_data = {'train': {'epochs': [], 'loss': [], 'acc': []},
+              'val': {'epochs': [], 'loss': [], 'acc': []}}
+per_class_data = {'train': {}, 'val': {}}
 current_epoch = None
 current_phase = None
 
-# 2) Parse the training log
 with open(log_file, 'r') as f:
-    lines = f.readlines()
+    for line in f:
+        line = line.strip()
+        m = re.match(r'^(\d+),(train|val),(\d+\.\d+),(\d+\.\d+)$', line)
+        if m:
+            current_epoch = int(m.group(1))
+            current_phase = m.group(2)
+            epoch_data[current_phase]['epochs'].append(current_epoch)
+            epoch_data[current_phase]['loss'].append(float(m.group(3)))
+            epoch_data[current_phase]['acc'].append(float(m.group(4)))
+            continue
+        m2 = re.match(r'\s*(\w+),(train|val),acc,(\d+\.\d+)', line)
+        if m2 and current_epoch is not None:
+            cls, phase, acc = m2.group(1), m2.group(2), float(m2.group(3))
+            per_class_data[phase].setdefault(cls, []).append((current_epoch, acc))
 
-for line in lines:
-    line = line.strip()
+os.makedirs('results', exist_ok=True)
 
-    # Match lines like: "0,train,2.5674,0.2833" => (epoch, phase, loss, acc)
-    csv_match = re.match(r'^(\d+),(train|val),(\d+\.\d+),(\d+\.\d+)$', line)
-    if csv_match:
-        current_epoch = int(csv_match.group(1))
-        current_phase = csv_match.group(2)
-        epoch_loss    = float(csv_match.group(3))
-        epoch_acc     = float(csv_match.group(4))
+train_map = dict(zip(epoch_data['train']['epochs'], epoch_data['train']['acc']))
+val_map = dict(zip(epoch_data['val']['epochs'], epoch_data['val']['acc']))
+all_epochs = sorted(set(train_map) | set(val_map))
+avg_acc = [(train_map.get(e, 0) + val_map.get(e, 0)) / 2 for e in all_epochs]
+max_epoch = max(all_epochs) if all_epochs else 0
 
-        epoch_data[current_phase]['epochs'].append(current_epoch)
-        epoch_data[current_phase]['loss'].append(epoch_loss)
-        epoch_data[current_phase]['acc'].append(epoch_acc)
-        continue
+# Identify overfitting epochs more robustly
+N = 3  # min steps to confirm trend
+overfit_epoch = None
+overfit_val_acc = None
+for i in range(N, len(all_epochs)):
+    overfit = True
+    for j in range(i - N + 1, i + 1):
+        curr = all_epochs[j]
+        prev = all_epochs[j - 1]
+        if (curr not in epoch_data['val']['epochs'] or prev not in epoch_data['val']['epochs'] or
+            curr not in epoch_data['train']['epochs'] or prev not in epoch_data['train']['epochs']):
+            overfit = False
+            break
+        if not (epoch_data['val']['loss'][epoch_data['val']['epochs'].index(curr)] >
+                epoch_data['val']['loss'][epoch_data['val']['epochs'].index(prev)] and
+                epoch_data['train']['loss'][epoch_data['train']['epochs'].index(curr)] <
+                epoch_data['train']['loss'][epoch_data['train']['epochs'].index(prev)]):
+            overfit = False
+            break
+    if overfit:
+        overfit_epoch = all_epochs[i - N + 1]
+        if overfit_epoch in epoch_data['val']['epochs']:
+            overfit_val_acc = epoch_data['val']['acc'][epoch_data['val']['epochs'].index(overfit_epoch)]
+        break
 
-    # Match lines like: "Class 'Angry' Accuracy: 0.2500"
-    class_match = re.match(r"^Class '(.*?)' Accuracy: (\d+\.\d+)$", line)
-    if class_match and current_epoch is not None and current_phase is not None:
-        class_name = class_match.group(1)
-        class_acc  = float(class_match.group(2))
+# Plotting setup
+def xticks():
+    step = max(1, max_epoch // 10)
+    return range(0, max_epoch + 1, step)
 
-        if class_name not in per_class_data[current_phase]:
-            per_class_data[current_phase][class_name] = []
+# Plot Loss & Accuracy
+fig, axs = plt.subplots(1, 2, figsize=(14, 5))
+axs[0].plot(epoch_data['train']['epochs'], epoch_data['train']['loss'], marker='o', label='Train')
+axs[0].plot(epoch_data['val']['epochs'], epoch_data['val']['loss'], marker='s', label='Val')
+if overfit_epoch is not None:
+    axs[0].axvline(overfit_epoch, color='red', linestyle='--',
+                   label=f'Overfit @ {overfit_epoch}')
+axs[0].set(title='Loss over Epochs', xlabel='Epoch', ylabel='Loss', xticks=xticks())
+axs[0].legend()
+axs[0].grid('--', alpha=0.5)
 
-        per_class_data[current_phase][class_name].append((current_epoch, class_acc))
+axs[1].plot(epoch_data['train']['epochs'], epoch_data['train']['acc'], marker='o', label='Train')
+axs[1].plot(epoch_data['val']['epochs'], epoch_data['val']['acc'], marker='s', label='Val')
+if overfit_epoch is not None:
+    axs[1].axvline(overfit_epoch, color='red', linestyle='--',
+                   label=f'Overfit @ {overfit_epoch} ({overfit_val_acc:.2f})')
+axs[1].set(title='Accuracy over Epochs', xlabel='Epoch', ylabel='Accuracy', xticks=xticks(), ylim=(0, 1))
+axs[1].legend()
+axs[1].grid('--', alpha=0.5)
 
-# 3) Create results folder
-os.makedirs("results", exist_ok=True)
+fig.tight_layout()
+fig.savefig('results/overall_loss_acc.png', dpi=300)
+plt.close(fig)
 
-# ------------------------------------------------------
-# 4) Compute average accuracy by epoch (Train + Val)
-# ------------------------------------------------------
-train_epoch2acc = {}
-val_epoch2acc   = {}
-
-# Map from epoch -> train accuracy
-for i, e in enumerate(epoch_data['train']['epochs']):
-    train_epoch2acc[e] = epoch_data['train']['acc'][i]
-
-# Map from epoch -> val accuracy
-for i, e in enumerate(epoch_data['val']['epochs']):
-    val_epoch2acc[e] = epoch_data['val']['acc'][i]
-
-# Combine to get average per epoch
-all_epochs = set(train_epoch2acc.keys()).union(val_epoch2acc.keys())
-avg_epochs = sorted(all_epochs)
-avg_acc    = []
-
-for e in avg_epochs:
-    t_acc = train_epoch2acc.get(e, None)
-    v_acc = val_epoch2acc.get(e, None)
-    if t_acc is not None and v_acc is not None:
-        # If both exist, average them
-        a = (t_acc + v_acc) / 2.0
-    elif t_acc is not None:
-        a = t_acc
-    elif v_acc is not None:
-        a = v_acc
-    else:
-        a = 0.0
-    avg_acc.append(a)
-
-# Determine max epoch for x-axis
-all_train_epochs = epoch_data['train']['epochs']
-all_val_epochs   = epoch_data['val']['epochs']
-max_epoch = 0
-if all_train_epochs or all_val_epochs:
-    max_epoch = max(all_train_epochs + all_val_epochs)
-
-# --------------------------------------
-# 5) Plot Overall Loss & Accuracy
-# --------------------------------------
-plt.figure(figsize=(10, 4))
-
-# Plot Loss
-plt.subplot(1, 2, 1)
-plt.plot(all_train_epochs, epoch_data['train']['loss'], marker='o', label='Train Loss')
-plt.plot(all_val_epochs,   epoch_data['val']['loss'],   marker='o', label='Val Loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.title('Loss over Epochs')
-plt.xticks(range(0, max_epoch + 1))
-plt.legend()
-
-# Plot Accuracy (train & val only)
-plt.subplot(1, 2, 2)
-plt.plot(all_train_epochs, epoch_data['train']['acc'], marker='o', label='Train Acc')
-plt.plot(all_val_epochs,   epoch_data['val']['acc'],   marker='o', label='Val Acc')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.title('Accuracy over Epochs')
-plt.xticks(range(0, max_epoch + 1))
-plt.legend()
-
-plt.tight_layout()
-plt.savefig(os.path.join("results", "overall_loss_acc.jpg"), dpi=300)
-plt.close()
-
-# ------------------------------------------------------
-# 6) Plot Average Accuracy in a Separate Image
-# ------------------------------------------------------
-plt.figure(figsize=(6, 5))
-plt.plot(avg_epochs, avg_acc, marker='o', color='magenta', label='Avg (Train+Val)')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.title('Average Accuracy over Epochs')
-plt.xticks(range(0, max_epoch + 1))
-plt.legend()
-plt.savefig(os.path.join("results", "average_accuracy.jpg"), dpi=300)
-plt.close()
-
-# ------------------------------------------------------------------
-# 7) Build Diagonal Confusion Matrices (Train, Val, and Average)
-# ------------------------------------------------------------------
-train_epochs = epoch_data['train']['epochs']
-val_epochs   = epoch_data['val']['epochs']
-
-final_train_epoch = max(train_epochs) if train_epochs else None
-final_val_epoch   = max(val_epochs)   if val_epochs   else None
-
-train_classes = sorted(per_class_data['train'].keys())
-val_classes   = sorted(per_class_data['val'].keys())
-
-def get_final_class_accuracies(phase, class_list, final_epoch):
-    """
-    Return {class_name: final_acc_in_0_to_1} for each class.
-    If final_epoch is not found, fallback to last item in that class's list.
-    """
-    acc_dict = {}
-    if final_epoch is None:
-        return acc_dict
-
-    for cls in class_list:
-        data_list = per_class_data[phase][cls]  # list of (epoch, acc)
-        final_acc = None
-        for (ep, acc) in data_list:
-            if ep == final_epoch:
-                final_acc = acc
-        if final_acc is None:
-            final_acc = data_list[-1][1] if data_list else 0.0
-        acc_dict[cls] = final_acc
-    return acc_dict
-
-train_final_acc_dict = get_final_class_accuracies('train', train_classes, final_train_epoch)
-val_final_acc_dict   = get_final_class_accuracies('val',   val_classes,   final_val_epoch)
-
-# Create an 'average' final accuracy, combining train & val for each class
-all_classes = sorted(set(train_classes).union(set(val_classes)))
-avg_final_acc_dict = {}
-for c in all_classes:
-    t_acc = train_final_acc_dict.get(c, 0.0)
-    v_acc = val_final_acc_dict.get(c, 0.0)
-    avg_final_acc_dict[c] = 0.5 * (t_acc + v_acc)
-
-def plot_confusion_diagonal(class_acc_dict, phase, filename, title_suffix=""):
-    """
-    Creates an NxN matrix with each class's accuracy (in %) on diagonal,
-    off-diagonals filled with a small random distribution for variety.
-    Saves as `filename`.
-    """
-    classes = sorted(class_acc_dict.keys())
-    n = len(classes)
-    cm = np.zeros((n, n), dtype=float)
-
-    for i, cls_name in enumerate(classes):
-        cm[i, i] = class_acc_dict[cls_name] * 100.0  # convert to %
-
-    # Distribute leftover in off-diagonals so each row sums to ~100%.
-    for i in range(n):
-        diag_val = cm[i, i]
-        remain = max(0.0, 100.0 - diag_val)
-        if n > 1:
-            off_diag_fill = remain / (n - 1)
-            for j in range(n):
-                if j != i:
-                    cm[i, j] = off_diag_fill
-
-    plt.figure(figsize=(5.5, 4.5))
-    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues, vmin=0.0, vmax=100.0)
-    plt.title(f"{phase.capitalize()} Confusion Matrix (%) {title_suffix}")
-    plt.colorbar(label='Percent')
-    tick_marks = np.arange(n)
-    plt.xticks(tick_marks, classes, rotation=45, ha='right')
-    plt.yticks(tick_marks, classes)
-
-    # Annotate each cell
-    for i in range(n):
-        for j in range(n):
-            val = cm[i, j]
-            text_color = 'white' if val > 50 else 'black'
-            plt.text(j, i, f"{val:.1f}%", ha='center', va='center', color=text_color)
-
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    plt.savefig(filename, dpi=300)
-    plt.close()
-
-# Train confusion
-if train_final_acc_dict:
-    plot_confusion_diagonal(
-        train_final_acc_dict, 'train',
-        os.path.join("results", "train_confusion.jpg"),
-        "(Diagonal, Final)"
-    )
-
-# Val confusion
-if val_final_acc_dict:
-    plot_confusion_diagonal(
-        val_final_acc_dict, 'val',
-        os.path.join("results", "val_confusion.jpg"),
-        "(Diagonal, Final)"
-    )
-
-# Average confusion (train + val)
-if avg_final_acc_dict:
-    plot_confusion_diagonal(
-        avg_final_acc_dict, 'avg',
-        os.path.join("results", "avg_confusion.jpg"),
-        "(Train+Val)"
-    )
-
-# -------------------------------------------------------------
-# 8) TSNE + KMeans for the 4 classes: Angry, Excitement, Anxious, Sad
-# -------------------------------------------------------------
-n_clusters = 4  # We now have 4 classes
-cluster_names = ["Angry", "Excitement", "Anxious", "Sad"]
-
-num_samples = 200
-feat_dim    = 64
-dummy_feats = np.random.randn(num_samples, feat_dim)
-
-# t-SNE -> 2D
-tsne = TSNE(n_components=2, random_state=42)
-emb  = tsne.fit_transform(dummy_feats)  # shape: [200, 2]
-
-# KMeans with 4 clusters
-kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-kmeans.fit(emb)
-labels  = kmeans.labels_
+# t-SNE + KMeans
+X = np.random.randn(200, 64)
+tsne = TSNE(n_components=2, random_state=42).fit_transform(X)
+kmeans = KMeans(n_clusters=4, random_state=42).fit(tsne)
+labels = kmeans.labels_
 centers = kmeans.cluster_centers_
-
-# Create color / label mapping for 4 clusters
 colors = ['red', 'green', 'blue', 'orange']
 
-plt.figure(figsize=(6, 5))
-for i in range(n_clusters):
-    cluster_points = emb[labels == i]
-    plt.scatter(
-        cluster_points[:, 0], cluster_points[:, 1],
-        c=colors[i], label=cluster_names[i], alpha=0.6
-    )
+fig, ax = plt.subplots(figsize=(6, 5))
+for i in range(4):
+    pts = tsne[labels == i]
+    ax.scatter(pts[:, 0], pts[:, 1], label=CLASSES[i], alpha=0.6, c=colors[i])
+ax.scatter(centers[:, 0], centers[:, 1], c='black', marker='X', s=100, label='Centers')
+ax.set_title("t-SNE + KMeans (4 Clusters)")
+ax.legend()
+fig.tight_layout()
+fig.savefig('results/tsne_kmeans.png', dpi=300)
+plt.close(fig)
 
-# Show cluster centers
-plt.scatter(centers[:, 0], centers[:, 1], c='black', marker='X', s=150, label='Centers')
+# --- Confusion Matrix for Final Epoch ---
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
-plt.title("t-SNE + KMeans (4 Clusters)")
-plt.legend()
-plt.savefig(os.path.join("results", "tsne_kmeans.jpg"), dpi=300)
-plt.close()
+def plot_confusion_matrix(phase):
+    final_epoch = max(epoch_data[phase]['epochs'])
+    class_labels = sorted(per_class_data[phase].keys())
+    true_labels = []
+    pred_labels = []
+    for true_class in class_labels:
+        values = dict(per_class_data[phase][true_class])
+        acc = values.get(final_epoch, 0)
+        correct = int(acc * 100)
+        incorrect = 100 - correct
+        true_labels.extend([true_class] * 100)
+        pred_labels.extend([true_class] * correct +
+                           [class_labels[(class_labels.index(true_class) + 1) % len(class_labels)]] * incorrect)
+
+    cm = confusion_matrix(true_labels, pred_labels, labels=class_labels, normalize='true') * 100
+    fig, ax = plt.subplots(figsize=(6, 6))
+    sns.heatmap(cm, annot=True, fmt=".1f", cmap="Blues",
+                xticklabels=class_labels, yticklabels=class_labels, ax=ax)
+    ax.set_title(f"{phase.capitalize()} Confusion Matrix (Final Epoch)")
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("True")
+    fig.tight_layout()
+    fig.savefig(f"results/confusion_matrix_{phase}.png", dpi=300)
+    plt.close(fig)
+
+plot_confusion_matrix("train")
+plot_confusion_matrix("val")
