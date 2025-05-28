@@ -84,13 +84,48 @@ Removed Items:
   Note: Each image was augmented 5 times
    Total (55,180 Images)
      Training (38,640 Images)
-     Angry (9660 Images)
-     Anxious (9660 Images)
-     Excitement (9,660 Images)
-     Sadness (9,660 Images)
-    Validation (16,540 Images)
-     Angry (4,135 Images)
-     Anxious (4,135 Images)
-     Excitement (4,135 Images)
-     Sadness (4,135 Images)
+      Angry (9660 Images)
+      Anxious (9660 Images)
+      Excitement (9,660 Images)
+      Sadness (9,660 Images)
+     Validation (16,540 Images)
+      Angry (4,135 Images)
+      Anxious (4,135 Images)
+      Excitement (4,135 Images)
+      Sadness (4,135 Images)
+
+ Final Training Procedure (which achieved around 72% accuracy rate)
+  1- Implemented "FindDifferencesInImages.py"
+      "It first builds an average binary mask for each class (using only non-“aug” train images), then for every non-“aug” image in both train and val it resizes and binarizes it, computes the pixel-wise difference to its class template, overlays those differing pixels in red on the original mask, and saves the result into data2/<split>/<class>/."
+  2- Set target dataset to "data2" in "ResnetModelTraining.py" script.
+  3- Initiated the training by triggering "ResnetModelTraining.py"
+
+ Final Training Dataset (which achieved around 72% accuracy rate)
+  data2 - Total (9,196 Images without any augmentation)
+   Training Dataset (6,440 Images)
+    Angry (1610 Images)
+    Anxious (1610 Images)
+    Excitement (1610 Images)
+    Sadness (1610 Images)
+   Validation Dataset (2,756 Images) 
+    Angry (689 Images)
+    Anxious (689 Images)
+    Excitement (689 Images)
+    Sadness (689 Images)
+
+ Final Epoch Results
+ --------------------------------------------------
+  Epoch Cycle: 100
+   100,train,0.1469,0.7084
+    Angry,train,acc,0.4006
+    Anxious,train,acc,0.9547
+    Excitement,train,acc,0.9528
+    Sadness,train,acc,0.5255
+
+   100,val,0.0945,0.7308
+    Angry,val,acc,0.2163
+    Anxious,val,acc,0.9956
+    Excitement,val,acc,0.9971
+    Sadness,val,acc,0.7141
+
     
