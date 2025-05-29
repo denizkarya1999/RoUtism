@@ -62,8 +62,8 @@ object Settings {
             YOLO,
             TEMPLATE
         }
-        var current: Mode = Mode.CONTOUR
-        var enableYOLOinference = false
+        var current: Mode = Mode.YOLO
+        var enableYOLOinference = true
     }
 
     object Inference {
@@ -184,9 +184,10 @@ class VideoProcessor(private val context: Context) {
             }
         }
     }
+
     // --------------------------------------------------------------------------------
-// 1) CONTOUR DETECTION
-// --------------------------------------------------------------------------------
+    // 1) CONTOUR DETECTION
+    // --------------------------------------------------------------------------------
     private fun processFrameInternalCONTOUR(bitmap: Bitmap): Pair<Bitmap, Bitmap>? {
         val (pMat, _) = Preprocessing.preprocessFrame(bitmap)
         val (center, boundingRect, cMat) = ContourDetection.processContourDetection(pMat)
@@ -213,11 +214,11 @@ class VideoProcessor(private val context: Context) {
 
             // choose color based on whether the label contains a given emotion keyword
             val textColor = when {
-                classificationLabel.contains("Sadness", ignoreCase = true) -> Scalar(8.0, 223.0, 230.0)       // Blue
-                classificationLabel.contains("Anxious", ignoreCase = true) -> Scalar(255.0, 255.0, 0.0)     // Yellow
-                classificationLabel.contains("Excitement", ignoreCase = true) -> Scalar(8.0, 230.0, 74.0)   // Green
-                classificationLabel.contains("Angry", ignoreCase = true) -> Scalar(255.0, 102.0, 102.0)         // Red
-                else -> Scalar(255.0, 203.0, 5.0)                                                          // Default Maize
+                classificationLabel.contains("Sadness", ignoreCase = true) -> Scalar(8.0, 223.0, 230.0)   // Blue
+                classificationLabel.contains("Anxious", ignoreCase = true) -> Scalar(255.0, 255.0, 0.0)   // Yellow
+                classificationLabel.contains("Excitement", ignoreCase = true) -> Scalar(8.0, 230.0, 74.0) // Green
+                classificationLabel.contains("Angry", ignoreCase = true) -> Scalar(255.0, 102.0, 102.0)   // Red
+                else -> Scalar(255.0, 203.0, 5.0)                                                          // Maize
             }
 
             Imgproc.putText(
@@ -291,7 +292,10 @@ class VideoProcessor(private val context: Context) {
                     inputH
                 )
                 if (Settings.BoundingBox.enableBoundingBox) {
-                    YOLOHelper.drawBoundingBoxes(m, box, classificationLabel)
+                    // --- Only draw if the bounding box is valid (no empty boxes) ---
+                    if (box.x2 > box.x1 && box.y2 > box.y1) {
+                        YOLOHelper.drawBoundingBoxes(m, box, classificationLabel)
+                    }
                 }
                 TraceRenderer.drawTrace(centerPoint, m)
             }
@@ -826,41 +830,39 @@ object YOLOHelper {
 
     /**
      * Draw bounding box + classification label (passed in).
-     * - Bounding box thickness is now set to 50 (much larger).
-     * - Text color is Maize.
+     * - Now checks that (x2 > x1) && (y2 > y1) to avoid drawing an empty box.
      */
     fun drawBoundingBoxes(mat: Mat, box: BoundingBox, classificationLabel: String) {
+        // Safety check: don't draw if bounding box has non-positive width or height
+        if (box.x2 <= box.x1 || box.y2 <= box.y1) {
+            return
+        }
+
         val topLeft = Point(box.x1.toDouble(), box.y1.toDouble())
         val bottomRight = Point(box.x2.toDouble(), box.y2.toDouble())
 
         // choose color based on whether the label contains a given emotion keyword
         val textColor = when {
-            classificationLabel.contains("Sadness", ignoreCase = true) -> Scalar(8.0, 223.0, 230.0)       // Blue
-            classificationLabel.contains("Anxious", ignoreCase = true) -> Scalar(255.0, 255.0, 0.0)     // Yellow
-            classificationLabel.contains("Excitement", ignoreCase = true) -> Scalar(8.0, 230.0, 74.0)   // Green
-            classificationLabel.contains("Angry", ignoreCase = true) -> Scalar(255.0, 102.0, 102.0)         // Red
-            else -> Scalar(255.0, 203.0, 5.0)                                                          // Default Maize
+            classificationLabel.contains("Sadness", ignoreCase = true)  -> Scalar(8.0, 223.0, 230.0)    // Blue
+            classificationLabel.contains("Anxious", ignoreCase = true)  -> Scalar(255.0, 255.0, 0.0)    // Yellow
+            classificationLabel.contains("Excitement", ignoreCase = true)-> Scalar(8.0, 230.0, 74.0)    // Green
+            classificationLabel.contains("Angry", ignoreCase = true)    -> Scalar(255.0, 102.0, 102.0)  // Red
+            else                                                        -> Scalar(255.0, 203.0, 5.0)    // Default Maize
         }
 
-        // Use the same large thickness we have for contour bounding boxes:
+        // Draw the box
         val YOLO_BOX_THICKNESS = 10
-        Imgproc.rectangle(
-            mat,
-            topLeft,
-            bottomRight,
-            textColor,
-            YOLO_BOX_THICKNESS
-        )
+        Imgproc.rectangle(mat, topLeft, bottomRight, textColor, YOLO_BOX_THICKNESS)
 
-        // final label includes confidence + user classification label if not empty
-        val confString = "Conf:${("%.1f".format(box.confidence * 100))}%"
-        val yourLabel = if (classificationLabel.isNotEmpty()) classificationLabel else "User_1"
-        val label = "$yourLabel | $confString"
+        // Build the label text
+        val yourLabel = if (classificationLabel.isNotEmpty()) classificationLabel else "Tracking"
+        val label = "$yourLabel"
 
-        val fontScale = 1.0
+        val fontScale = 1.5
         val textThickness = 2
         val baseline = IntArray(1)
 
+        // Measure text size
         val textSize = Imgproc.getTextSize(
             label,
             Imgproc.FONT_HERSHEY_SIMPLEX,
@@ -868,22 +870,12 @@ object YOLOHelper {
             textThickness,
             baseline
         )
+        // Calculate Y so there's an extra 8px margin above the box
+        val margin = 50
         val textX = box.x1.toInt()
-        // Adjust if text would be above the top of the image
-        val textY = (box.y1 - 5).toInt().coerceAtLeast(textSize.height.toInt() + 7)
+        val textY = (box.y1 - baseline[0] - margin).toInt().coerceAtLeast((textSize.height + margin).toInt())
 
-        // Label background (optional). If you wish to see the text more clearly,
-        // uncomment the rectangle fill.
-        // Imgproc.rectangle(
-        //     mat,
-        //     Point(textX.toDouble(), (textY + baseline[0]).toDouble()),
-        //     Point((textX + textSize.width).toDouble(), (textY - textSize.height).toDouble()),
-        //     Settings.BoundingBox.boxColor,
-        //     Imgproc.FILLED
-        // )
-
-        // Maize-colored text for label
-        val maizeColor = Scalar(255.0, 203.0, 5.0) // BGR for #FBEC5D
+        // Draw the text
         Imgproc.putText(
             mat,
             label,
@@ -894,7 +886,6 @@ object YOLOHelper {
             textThickness
         )
     }
-
     /**
      * Create a letterboxed bitmap for YOLO input.
      */

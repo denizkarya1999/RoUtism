@@ -32,6 +32,7 @@ import com.developer27.xemotion.inference.PyTorchClassifier
 import com.developer27.xemotion.inference.PyTorchModuleLoader
 import com.developer27.xemotion.secondaryprocessing.TemplateMatcher
 import com.developer27.xemotion.videoprocessing.ProcessedFrameRecorder
+import com.developer27.xemotion.videoprocessing.Settings
 import com.developer27.xemotion.videoprocessing.VideoProcessor
 import com.developer27.xemotion.videoprocessing.YOLOHelper
 import com.google.android.filament.utils.Utils
@@ -89,12 +90,14 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val SETTINGS_REQUEST_CODE = 1
+
         private val ORIENTATIONS = SparseIntArray().apply {
             append(Surface.ROTATION_0, 90)
             append(Surface.ROTATION_90, 0)
             append(Surface.ROTATION_180, 270)
             append(Surface.ROTATION_270, 180)
         }
+
         private const val TAG = "MainActivity"
     }
 
@@ -202,8 +205,6 @@ class MainActivity : AppCompatActivity() {
         viewBinding.settingsButton.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
-        // (Optional) Clear prediction button is no longer needed for text,
-        // but you can still hide or remove it in your layout if desired.
         viewBinding.clearPredictionButton.setOnClickListener {
             // If recording was ongoing, stop it
             if (isRecording) stopProcessingAndRecording()
@@ -233,7 +234,15 @@ class MainActivity : AppCompatActivity() {
         videoProcessor?.reset()
         batchCount = 0
 
-        // Periodically export a "trace" bitmap and classify it
+        // ------------------------------------------------
+        // CHANGED CODE: use 500 ms if CONTOUR, 700 ms if YOLO
+        // ------------------------------------------------
+        val intervalMs = when (Settings.DetectionMode.current) {
+            Settings.DetectionMode.Mode.CONTOUR -> 500L
+            Settings.DetectionMode.Mode.YOLO    -> 700L
+            else -> 500L // fallback for TEMPLATE or any other
+        }
+
         exportTimer = Timer()
         exportTimer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
@@ -245,7 +254,7 @@ class MainActivity : AppCompatActivity() {
                     videoProcessor?.reset()
                 }
             }
-        }, 500, 500) // adjust times as needed
+        }, intervalMs, intervalMs)
     }
 
     private fun stopProcessingAndRecording() {
