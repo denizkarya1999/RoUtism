@@ -1,5 +1,5 @@
 {
-  "installationFolder": "C:\\Users\\dacikbas\\Desktop\\TAI_Lab_Projects\\RoEmotion\\Xemotion\\OpenCV-4.10.0\\build\\intermediates\\prefab_package\\debug\\prefab",
+  "installationFolder": "C:\\Users\\deniz\\AndroidStudioProjects\\RoEmotion\\Xemotion\\OpenCV-4.10.0\\build\\intermediates\\prefab_package\\debug\\prefab",
   "gradlePath": ":OpenCV-4.10.0",
   "packageInfo": {
     "packageName": "OpenCV-4.10.0",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "C:\\Users\\dacikbas\\Desktop\\TAI_Lab_Projects\\RoEmotion\\Xemotion\\OpenCV-4.10.0\\native\\jni\\include",
+        "moduleHeaders": "C:\\Users\\deniz\\AndroidStudioProjects\\RoEmotion\\Xemotion\\OpenCV-4.10.0\\native\\jni\\include",
         "moduleExportLibraries": [],
         "abis": []
       }

@@ -1,2 +1,0 @@
-ninja: Entering directory `C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\.cxx\RelWithDebInfo\x16e2y3z\x86_64'
-ninja: no work to do.

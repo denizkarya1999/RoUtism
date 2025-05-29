@@ -5,8 +5,8 @@ import tensorflow as tf
 # ========================
 # File Paths
 # ========================
-onnx_model_path = "resnet18_custom.onnx"
-tflite_model_path = "resnet18_custom.tflite"
+onnx_model_path = "resnet18_emotion.onnx"
+tflite_model_path = "resnet18_emotion.tflite"
 
 # ========================
 # 1. Load the ONNX Model

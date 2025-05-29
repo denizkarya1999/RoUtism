@@ -22,7 +22,6 @@
             android:paddingTop="16dp"
             android:paddingBottom="16dp">
 
-            <!-- Icon (ImageButton) -->
             <ImageButton
                 android:id="@+id/iconImageButton"
                 android:layout_width="58dp"
@@ -33,7 +32,6 @@
                 android:adjustViewBounds="true"
                 android:contentDescription="@string/switch_camera" />
 
-            <!-- Title Text -->
             <TextView
                 android:id="@+id/titleText"
                 android:layout_width="wrap_content"
@@ -80,6 +78,16 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/yellow"
+            android:visibility="gone" />
+
+        <!-- NEW: Optional overlay image right under the result text -->
+        <ImageView
+            android:id="@+id/resultImageView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
             android:visibility="gone" />
 
         <!-- Container for displaying dynamic multi-image results -->

@@ -1,3 +1,0 @@
-ninja: Entering directory `C:\Users\deniz\AndroidStudioProjects\RoUtism\Xamera_RoUtism\OpenCV-4.10.0\.cxx\Debug\2hk6r5k3\x86'
-[1/2] Building CXX object CMakeFiles/opencv_jni_shared.dir/dummy.cpp.o
-[2/2] Linking CXX static library libopencv_jni_shared.a
