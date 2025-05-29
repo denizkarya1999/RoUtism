@@ -33,6 +33,7 @@ import com.developer27.xemotion.inference.PyTorchModuleLoader
 import com.developer27.xemotion.secondaryprocessing.TemplateMatcher
 import com.developer27.xemotion.videoprocessing.ProcessedFrameRecorder
 import com.developer27.xemotion.videoprocessing.VideoProcessor
+import com.developer27.xemotion.videoprocessing.YOLOHelper
 import com.google.android.filament.utils.Utils
 import org.opencv.core.Mat
 import org.tensorflow.lite.Interpreter
@@ -140,9 +141,8 @@ class MainActivity : AppCompatActivity() {
         cameraHelper = CameraHelper(this, viewBinding, sharedPreferences)
         videoProcessor = VideoProcessor(this)
 
-        // Hide processed frame and predicted text initially
+        // Hide processed frame initially
         viewBinding.processedFrameView.visibility = View.GONE
-        viewBinding.predictedEmotionTextView.visibility = View.GONE
 
         // Set the texture listener
         viewBinding.viewFinder.surfaceTextureListener = textureListener
@@ -202,9 +202,13 @@ class MainActivity : AppCompatActivity() {
         viewBinding.settingsButton.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
+        // (Optional) Clear prediction button is no longer needed for text,
+        // but you can still hide or remove it in your layout if desired.
         viewBinding.clearPredictionButton.setOnClickListener {
+            // If recording was ongoing, stop it
             if (isRecording) stopProcessingAndRecording()
-            viewBinding.predictedEmotionTextView.text = ""
+            // Clear out the classification label from the VideoProcessor
+            videoProcessor?.classificationLabel = ""
         }
 
         // Load YOLO model (for object detection) on a background thread
@@ -225,8 +229,6 @@ class MainActivity : AppCompatActivity() {
         viewBinding.startProcessingButton.backgroundTintList =
             ContextCompat.getColorStateList(this, R.color.red)
         viewBinding.processedFrameView.visibility = View.VISIBLE
-        viewBinding.predictedEmotionTextView.visibility = View.VISIBLE
-        viewBinding.predictedEmotionTextView.text = "Tracking..."
 
         videoProcessor?.reset()
         batchCount = 0
@@ -270,8 +272,8 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getColorStateList(this, R.color.blue)
         viewBinding.processedFrameView.visibility = View.GONE
         viewBinding.processedFrameView.setImageBitmap(null)
-        viewBinding.predictedEmotionTextView.text = ""
-        viewBinding.predictedEmotionTextView.visibility = View.GONE
+        // Clear classification label from the bounding-box overlay
+        videoProcessor?.classificationLabel = ""
     }
 
     /**
@@ -295,16 +297,16 @@ class MainActivity : AppCompatActivity() {
         // 2) Classify using PyTorch
         val (bestLabel, probs) = emotionClassifier.classifyLine(traceBitmap)
 
-        // 3) Display result
-        viewBinding.predictedEmotionTextView.visibility = View.VISIBLE
-        // Example of showing best label + confidence
-        // (If you want more detail, parse the entire probs array.)
+        // Display or log results if you want more detail
         val bestIndex = probs.indices.maxByOrNull { probs[it] } ?: 0
         val confidence = probs[bestIndex] * 100f
         val textResult = "$bestLabel (${String.format("%.1f", confidence)}%)"
-        viewBinding.predictedEmotionTextView.text = textResult
 
-        // 4) Also log the prediction to a file
+        // 3) Instead of showing in a TextView, store it in VideoProcessor
+        //    so the label is drawn inside the bounding box next time we detect something.
+        videoProcessor?.classificationLabel = textResult
+
+        // 4) Also log the prediction to a file (optional)
         appendPredictionToLog(textResult)
     }
 
@@ -465,7 +467,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (shouldClearPrediction) {
-            viewBinding.predictedEmotionTextView.text = ""
+            videoProcessor?.classificationLabel = ""
             shouldClearPrediction = false
         }
     }

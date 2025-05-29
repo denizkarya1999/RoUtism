@@ -79,22 +79,27 @@ class EmotionActivity : AppCompatActivity() {
         binding.resultTextView.visibility = View.GONE
         resultImageView.visibility = View.GONE
 
+        // Load + classify images in background
         lifecycleScope.launch(Dispatchers.IO) {
             val bitmaps = mutableListOf<Bitmap>()
             try {
                 for (uri in uris) {
                     try {
+                        // In case the system wants to persist read permission
                         contentResolver.takePersistableUriPermission(
                             uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
                         )
-                    } catch (_: SecurityException) {}
+                    } catch (_: SecurityException) { }
                     val source = ImageDecoder.createSource(contentResolver, uri)
                     val bmp = ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+                        // optionally set a target size close to the classifier input
                         decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
                         decoder.setTargetSize(classifier.inputWidth, classifier.inputHeight)
                     }
                     bitmaps.add(bmp)
                 }
+
+                // Classify them
                 val results = classifier.classifyBatch(bitmaps)
 
                 withContext(Dispatchers.Main) {
@@ -115,6 +120,7 @@ class EmotionActivity : AppCompatActivity() {
         val total = results.size
 
         if (total > 1) {
+            // Multiple images
             binding.resultsContainer.addView(TextView(this).apply {
                 text = "\uD83D\uDDBC\uFE0F Selected Image(s):"
                 setTextColor(yellow)
@@ -124,7 +130,7 @@ class EmotionActivity : AppCompatActivity() {
             val labelCounts = mutableMapOf<String, Int>()
 
             results.forEachIndexed { idx, (_, probArray) ->
-                // compute top-3 indices
+                // compute top-3
                 val top3 = probArray
                     .withIndex()
                     .sortedByDescending { it.value }
@@ -136,7 +142,7 @@ class EmotionActivity : AppCompatActivity() {
 
                 val fileName = getFileName(uris[idx])
 
-                // horizontal row
+                // row
                 val row = LinearLayout(this).apply {
                     orientation = LinearLayout.HORIZONTAL
                     setPadding(0, 8, 0, 8)
@@ -162,8 +168,9 @@ class EmotionActivity : AppCompatActivity() {
                 }
                 row.addView(infoCol)
 
-                // overlay image
-                processFrameForOverlay(bitmaps[idx])?.let { overlay ->
+                // generate overlay
+                val overlay = processFrameForOverlay(bitmaps[idx])
+                if (overlay != null) {
                     row.addView(ImageView(this).apply {
                         val dp = 200
                         val px = (dp * resources.displayMetrics.density).toInt()
@@ -198,7 +205,7 @@ class EmotionActivity : AppCompatActivity() {
             }
 
         } else if (total == 1) {
-            // single-image: top-3 in resultTextView, overlay below
+            // single-image
             val (_, probArray) = results[0]
             val top3 = probArray
                 .withIndex()
@@ -215,15 +222,23 @@ class EmotionActivity : AppCompatActivity() {
             }
             binding.resultTextView.visibility = View.VISIBLE
 
-            processFrameForOverlay(bitmaps[0])?.let { overlay ->
+            val overlay = processFrameForOverlay(bitmaps[0])
+            if (overlay != null) {
                 resultImageView.setImageBitmap(overlay)
                 resultImageView.visibility = View.VISIBLE
             }
         }
     }
 
-    private fun processFrameForOverlay(bitmap: Bitmap): Bitmap? =
-        videoProcessor.processFrameSynchronous(bitmap)?.first
+    /**
+     * Example: uses the synchronous method in VideoProcessor to get an overlay.
+     */
+    private fun processFrameForOverlay(bitmap: Bitmap): Bitmap? {
+        // If you always want YOLO or contour detection, set the detection mode accordingly.
+        // Or you can change Settings.DetectionMode.current before calling this.
+        // For now, we just do a synchronous call:
+        return videoProcessor.processFrameSynchronous(bitmap)?.first
+    }
 
     private fun getFileName(uri: Uri): String =
         contentResolver.query(uri, null, null, null, null)?.use { c ->

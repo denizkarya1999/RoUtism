@@ -10,6 +10,7 @@ import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction
@@ -76,13 +77,15 @@ object Settings {
         var lineLimit = 50
         var splineStep = 0.01
 
-        var originalLineColor = Scalar(0.0, 39.0, 76.0)
-        var splineLineColor = Scalar(255.0, 203.0, 5.0)
-        var lineThickness = 100
+        // Colors and thickness
+        var originalLineColor = Scalar(0.0, 39.0, 76.0)    // Darkish
+        var splineLineColor   = Scalar(255.0, 203.0, 5.0) // Yellowish
+        var lineThickness     = 100
     }
 
     object BoundingBox {
         var enableBoundingBox = true
+        // Currently used for contour bounding boxes:
         var boxColor = Scalar(0.0, 39.0, 76.0)
         var boxThickness = 50
     }
@@ -109,6 +112,9 @@ object Settings {
 // VideoProcessor
 // --------------------------------------------------
 class VideoProcessor(private val context: Context) {
+
+    // We'll store the classification label here. If non-empty, we overlay it in the bounding box.
+    var classificationLabel: String = ""
 
     init {
         initOpenCV()
@@ -142,12 +148,13 @@ class VideoProcessor(private val context: Context) {
         bitmap: Bitmap,
         callback: (Pair<Bitmap, Bitmap>?) -> Unit
     ) {
+        // We launch a coroutine on a background thread for asynchronous processing
         CoroutineScope(Dispatchers.Default).launch {
             val result: Pair<Bitmap, Bitmap>? = try {
                 when (Settings.DetectionMode.current) {
-                    Settings.DetectionMode.Mode.CONTOUR -> processFrameInternalCONTOUR(bitmap)
-                    Settings.DetectionMode.Mode.YOLO    -> processFrameInternalYOLO(bitmap)
-                    Settings.DetectionMode.Mode.TEMPLATE-> processFrameInternalTEMPLATE(bitmap)
+                    Settings.DetectionMode.Mode.CONTOUR  -> processFrameInternalCONTOUR(bitmap)
+                    Settings.DetectionMode.Mode.YOLO     -> processFrameInternalYOLO(bitmap)
+                    Settings.DetectionMode.Mode.TEMPLATE -> processFrameInternalTEMPLATE(bitmap)
                 }
             } catch (e: Exception) {
                 Log.e("VideoProcessor", "Error processing frame: ${e.message}", e)
@@ -160,103 +167,122 @@ class VideoProcessor(private val context: Context) {
     }
 
     // --------------------------------------------------------------------------------
-    // SYNCHRONOUS METHOD: calls the synchronous internals
+    // OPTIONAL: SYNCHRONOUS PROCESSING (for single images)
     // --------------------------------------------------------------------------------
-    /**
-     * Synchronous method that just calls the corresponding internal function
-     * (contour, YOLO, or template) in a blocking manner.
-     */
     fun processFrameSynchronous(bitmap: Bitmap): Pair<Bitmap, Bitmap>? {
-        return try {
-            when (Settings.DetectionMode.current) {
-                Settings.DetectionMode.Mode.CONTOUR ->
-                    processFrameInternalCONTOURSynchronous(bitmap)
-
-                Settings.DetectionMode.Mode.YOLO ->
-                    processFrameInternalYOLOSynchronous(bitmap)
-
-                Settings.DetectionMode.Mode.TEMPLATE ->
-                    processFrameInternalTEMPLATESynchronous(bitmap)
+        // Because YOLO is partially asynchronous, we handle that with runBlocking if needed
+        return when (Settings.DetectionMode.current) {
+            Settings.DetectionMode.Mode.CONTOUR -> {
+                processFrameInternalCONTOUR(bitmap)
             }
-        } catch (e: Exception) {
-            Log.e("VideoProcessor", "Error in synchronous process: ${e.message}", e)
-            null
+            Settings.DetectionMode.Mode.YOLO -> {
+                // purely synchronous version
+                processFrameInternalYOLOSynchronous(bitmap)
+            }
+            Settings.DetectionMode.Mode.TEMPLATE -> {
+                processFrameInternalTEMPLATE(bitmap)
+            }
         }
     }
-
     // --------------------------------------------------------------------------------
-    // 1) CONTOUR DETECTION (Asynchronous internal)
-    // --------------------------------------------------------------------------------
+// 1) CONTOUR DETECTION
+// --------------------------------------------------------------------------------
     private fun processFrameInternalCONTOUR(bitmap: Bitmap): Pair<Bitmap, Bitmap>? {
-        // identical to the original asynchronous approach
-        return try {
-            val (pMat, _) = Preprocessing.preprocessFrame(bitmap)
-            val (center, boundingRect, cMat) = ContourDetection.processContourDetection(pMat)
+        val (pMat, _) = Preprocessing.preprocessFrame(bitmap)
+        val (center, boundingRect, cMat) = ContourDetection.processContourDetection(pMat)
 
-            // draw lines
-            TraceRenderer.drawTrace(center, cMat)
+        // If we found a boundingRect, draw label just above it
+        if (boundingRect != null && classificationLabel.isNotEmpty()) {
+            // Choose a little more vertical margin
+            val margin = 20
 
-            val debugOverlayBmp = Bitmap.createBitmap(cMat.cols(), cMat.rows(), Bitmap.Config.ARGB_8888)
-            Utils.matToBitmap(cMat, debugOverlayBmp)
+            // Measure text height so we can avoid clipping
+            val textSize = Imgproc.getTextSize(
+                classificationLabel,
+                Imgproc.FONT_HERSHEY_SIMPLEX,
+                2.0,
+                2,
+                null
+            )
+            val textHeight = textSize.height.toInt()
 
-            val cropped = boundingRect?.let { extractBoundingBoxRegion(bitmap, it) } ?: debugOverlayBmp
+            val textX = boundingRect.left.toDouble()
+            // Top of box minus margin minus text height
+            val textY = (boundingRect.top - margin - textHeight.toDouble())
+                .coerceAtLeast(textHeight.toDouble())
 
-            pMat.release()
-            cMat.release()
-            debugOverlayBmp to cropped
-        } catch (e: Exception) {
-            Log.e("VideoProcessor", "Error in processFrameInternalCONTOUR: ${e.message}", e)
-            null
+            // choose color based on whether the label contains a given emotion keyword
+            val textColor = when {
+                classificationLabel.contains("Sadness", ignoreCase = true) -> Scalar(8.0, 223.0, 230.0)       // Blue
+                classificationLabel.contains("Anxious", ignoreCase = true) -> Scalar(255.0, 255.0, 0.0)     // Yellow
+                classificationLabel.contains("Excitement", ignoreCase = true) -> Scalar(8.0, 230.0, 74.0)   // Green
+                classificationLabel.contains("Angry", ignoreCase = true) -> Scalar(255.0, 102.0, 102.0)         // Red
+                else -> Scalar(255.0, 203.0, 5.0)                                                          // Default Maize
+            }
+
+            Imgproc.putText(
+                cMat,
+                classificationLabel,
+                Point(textX, textY),
+                Imgproc.FONT_HERSHEY_SIMPLEX,  // you can pick any font here
+                2.0,
+                textColor,
+                2
+            )
         }
+
+        // draw the center trace
+        TraceRenderer.drawTrace(center, cMat)
+
+        val debugOverlayBmp = Bitmap.createBitmap(cMat.cols(), cMat.rows(), Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(cMat, debugOverlayBmp)
+
+        val cropped = boundingRect?.let { extractBoundingBoxRegion(bitmap, it) } ?: debugOverlayBmp
+
+        pMat.release()
+        cMat.release()
+        return debugOverlayBmp to cropped
     }
 
     // --------------------------------------------------------------------------------
-    // 1A) CONTOUR DETECTION (Synchronous internal)
-    // --------------------------------------------------------------------------------
-    private fun processFrameInternalCONTOURSynchronous(bitmap: Bitmap): Pair<Bitmap, Bitmap>? {
-        // same logic, no changes needed (just no coroutines).
-        return processFrameInternalCONTOUR(bitmap)
-    }
-
-    // --------------------------------------------------------------------------------
-    // 2) YOLO DETECTION (Asynchronous internal)
+    // 2) YOLO DETECTION (Asynchronous + synchronous helper)
     // --------------------------------------------------------------------------------
     private suspend fun processFrameInternalYOLO(bitmap: Bitmap): Pair<Bitmap, Bitmap> =
         withContext(Dispatchers.IO) {
-            val (debugOverlay, letterboxed) = processFrameInternalYOLOSynchronous(bitmap)
-            debugOverlay to letterboxed
+            processFrameInternalYOLOSynchronous(bitmap)
         }
 
-    // --------------------------------------------------------------------------------
-    // 2A) YOLO DETECTION (Synchronous internal)
-    // --------------------------------------------------------------------------------
     /**
-     * Replicates the YOLO logic **without** coroutines,
-     * returning (debugOverlay, letterboxed) directly.
+     * Synchronous YOLO for clarity. Returns (debugOverlay, letterboxed).
      */
     private fun processFrameInternalYOLOSynchronous(bitmap: Bitmap): Pair<Bitmap, Bitmap> {
-        val (inputW, inputH, outputShape) = getModelDimensions()
+        // 1) letterbox + model dims
+        val (inputW, inputH, _) = getModelDimensions()
         val (letterboxed, offsets) = YOLOHelper.createLetterboxedBitmap(bitmap, inputW, inputH)
 
+        // 2) convert original to Mat for drawing
         val m = Mat()
         Utils.bitmapToMat(bitmap, m)
 
         if (Settings.DetectionMode.enableYOLOinference && tfliteInterpreter != null) {
-            val out = Array(outputShape[0]) {
-                Array(outputShape[1]) {
-                    FloatArray(outputShape[2])
-                }
-            }
-            // prepare input
-            val inputBuffer = TensorImage(DataType.FLOAT32).apply {
-                load(letterboxed)
-            }
-            // run inference
-            tfliteInterpreter?.run(inputBuffer.buffer, out)
+            // --- BEGIN FIXED OUTPUT SHAPE ALLOCATION ---
+            // pull the true output tensor shape: [batch, numBoxes, elemsPerBox]
+            val shape       = tfliteInterpreter!!.getOutputTensor(0).shape()
+            val batch       = shape[0]        // should be 1
+            val numBoxes    = shape[1]        // e.g. 3549
+            val elemsPerBox = shape[2]        // e.g. 5 (x, y, w, h, conf)
 
-            // parse + draw
+            // allocate exactly [1][numBoxes][elemsPerBox]
+            val out = Array(batch) { Array(numBoxes) { FloatArray(elemsPerBox) } }
+            // --- END FIXED OUTPUT SHAPE ALLOCATION ---
+
+            // prepare input and run inference
+            val inputBuffer = TensorImage(DataType.FLOAT32).apply { load(letterboxed) }
+            tfliteInterpreter!!.run(inputBuffer.buffer, out)
+
+            // parse & draw your top detection
             YOLOHelper.parseTFLite(out)?.let { bestDetection ->
-                val (box, c) = YOLOHelper.rescaleInferencedCoordinates(
+                val (box, centerPoint) = YOLOHelper.rescaleInferencedCoordinates(
                     bestDetection,
                     bitmap.width,
                     bitmap.height,
@@ -265,24 +291,25 @@ class VideoProcessor(private val context: Context) {
                     inputH
                 )
                 if (Settings.BoundingBox.enableBoundingBox) {
-                    YOLOHelper.drawBoundingBoxes(m, box)
+                    YOLOHelper.drawBoundingBoxes(m, box, classificationLabel)
                 }
-                TraceRenderer.drawTrace(c, m)
+                TraceRenderer.drawTrace(centerPoint, m)
             }
         }
 
+        // convert Mat→Bitmap for overlay
         val debugOverlay = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
         Utils.matToBitmap(m, debugOverlay)
         m.release()
 
+        // return (overlay, letterboxed) so your caller can crop if desired
         return debugOverlay to letterboxed
     }
 
     // --------------------------------------------------------------------------------
-    // 3) TEMPLATE OVERLAY (Asynchronous internal)
+    // 3) TEMPLATE OVERLAY
     // --------------------------------------------------------------------------------
     private fun processFrameInternalTEMPLATE(bitmap: Bitmap): Pair<Bitmap, Bitmap>? {
-        // same logic as original
         val templateMat = Settings.Template.meanMaskAngry ?: return null
 
         val gMat = Mat().also {
@@ -292,7 +319,10 @@ class VideoProcessor(private val context: Context) {
             tmp.release()
         }
 
-        val size = Size(Settings.Template.targetWidth.toDouble(), Settings.Template.targetHeight.toDouble())
+        val size = Size(
+            Settings.Template.targetWidth.toDouble(),
+            Settings.Template.targetHeight.toDouble()
+        )
         Imgproc.resize(gMat, gMat, size, 0.0, 0.0, Imgproc.INTER_NEAREST)
 
         val bwMat = Mat()
@@ -312,6 +342,22 @@ class VideoProcessor(private val context: Context) {
 
         val (center, boundingRect, overlayMat) = TemplateContourHelper.findCenterAndDraw(bgr, bwMat)
 
+        // If boundingRect found, put text
+        if (boundingRect != null && classificationLabel.isNotEmpty()) {
+            val textX = boundingRect.left.toDouble()
+            val textY = (boundingRect.top - 10).coerceAtLeast(20).toDouble()
+
+            Imgproc.putText(
+                overlayMat,
+                classificationLabel,
+                Point(textX, textY),
+                Imgproc.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                Scalar(255.0, 203.0, 5.0), // Maize
+                2
+            )
+        }
+
         val debugOverlayBmp = Bitmap.createBitmap(overlayMat.cols(), overlayMat.rows(), Bitmap.Config.ARGB_8888)
         Utils.matToBitmap(overlayMat, debugOverlayBmp)
 
@@ -326,18 +372,12 @@ class VideoProcessor(private val context: Context) {
     }
 
     // --------------------------------------------------------------------------------
-    // 3A) TEMPLATE OVERLAY (Synchronous internal)
-    // --------------------------------------------------------------------------------
-    private fun processFrameInternalTEMPLATESynchronous(bitmap: Bitmap): Pair<Bitmap, Bitmap>? {
-        return processFrameInternalTEMPLATE(bitmap)
-    }
-
-    // --------------------------------------------------------------------------------
     // Helper: get YOLO model dims
     // --------------------------------------------------------------------------------
     fun getModelDimensions(): Triple<Int, Int, List<Int>> {
         val inTensor = tfliteInterpreter?.getInputTensor(0)
         val inShape = inTensor?.shape()
+        // Typically [1,416,416,3] => (batch=1, height=416, width=416, channels=3)
         val (height, width) = (
                 inShape?.getOrNull(1) ?: 416
                 ) to (
@@ -359,7 +399,9 @@ class VideoProcessor(private val context: Context) {
         val bottom = boundingRect.bottom.coerceAtMost(srcBitmap.height)
 
         if (left >= right || top >= bottom) {
+            // Invalid bounding box
             return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+                .apply { eraseColor(Color.BLACK) }
         }
         val width = right - left
         val height = bottom - top
@@ -372,6 +414,7 @@ class VideoProcessor(private val context: Context) {
     fun exportTraceForDataCollection(): Bitmap {
         val snapshot = smoothDataList.toList()
         if (snapshot.isEmpty()) {
+            // Return a tiny black bitmap if we have no data
             return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply {
                 eraseColor(Color.BLACK)
             }
@@ -393,8 +436,11 @@ class VideoProcessor(private val context: Context) {
         val height = (maxY - minY).coerceAtLeast(1.0)
         val padding = 30.0
 
-        val matWidth = (width + 2 * padding).toInt().coerceAtLeast(1)
-        val matHeight = (height + 2 * padding).toInt().coerceAtLeast(1)
+        // Compute final integer dimensions
+        val wDouble = width + 2.0 * padding
+        val hDouble = height + 2.0 * padding
+        val matWidth = max(1, wDouble.toInt())
+        val matHeight = max(1, hDouble.toInt())
 
         val mat = Mat(matHeight, matWidth, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 255.0))
 
@@ -405,6 +451,7 @@ class VideoProcessor(private val context: Context) {
         val origColor = Settings.Trace.splineLineColor
         val origThickness = Settings.Trace.lineThickness
 
+        // Temporarily override color/thickness to get a white line on black
         Settings.Trace.splineLineColor = Scalar(255.0, 255.0, 255.0)
         Settings.Trace.lineThickness = 10
 
@@ -465,6 +512,8 @@ object TemplateContourHelper {
         }
 
         Imgproc.drawContours(overlayBgr, listOf(largest), -1, Settings.BoundingBox.boxColor, Settings.BoundingBox.boxThickness)
+
+        // also draw trace
         TraceRenderer.drawTrace(center, overlayBgr)
 
         return Triple(center, boundingRect, overlayBgr)
@@ -623,6 +672,7 @@ object ContourDetection {
         hierarchy.release()
 
         if (contours.isEmpty()) {
+            // Convert to BGR to keep consistent channel depth
             Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2BGR)
             return Triple(null, null, mat)
         }
@@ -657,7 +707,7 @@ object ContourDetection {
         val m = Imgproc.moments(largestContour)
         val center = Point(m.m10 / m.m00, m.m01 / m.m00)
 
-        // Convert to BGR so we can overlay lines
+        // Convert to BGR so we can overlay lines or text
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2BGR)
 
         return Triple(center, boundingRect, mat)
@@ -684,10 +734,10 @@ object YOLOHelper {
             }
         }
         if (detections.isEmpty()) {
-            Log.d("YOLOTest", "No detections above threshold: ${Settings.Inference.confidenceThreshold}")
             return null
         }
 
+        // Convert to bounding boxes
         val detectionBoxes = detections.map { it to detectionToBox(it) }.toMutableList()
         detectionBoxes.sortByDescending { it.first.confidence }
 
@@ -701,11 +751,7 @@ object YOLOHelper {
             }
         }
 
-        val bestDetection = nmsDetections.maxByOrNull { it.confidence }
-        bestDetection?.let { d ->
-            Log.d("YOLOTest", "BEST DETECTION: conf=${"%.2f".format(d.confidence)}, xC=${d.xCenter}, yC=${d.yCenter}, w=${d.width}, h=${d.height}")
-        }
-        return bestDetection
+        return nmsDetections.maxByOrNull { it.confidence }
     }
 
     private fun detectionToBox(d: DetectionResult) = BoundingBox(
@@ -734,6 +780,9 @@ object YOLOHelper {
         return if (unionArea > 0f) intersectionArea / unionArea else 0f
     }
 
+    /**
+     * Rescale from letterbox-space back to original image coords.
+     */
     fun rescaleInferencedCoordinates(
         detection: DetectionResult,
         originalWidth: Int,
@@ -742,7 +791,6 @@ object YOLOHelper {
         modelInputWidth: Int,
         modelInputHeight: Int
     ): Pair<BoundingBox, Point> {
-
         val scale = min(
             modelInputWidth / originalWidth.toDouble(),
             modelInputHeight / originalHeight.toDouble()
@@ -776,22 +824,41 @@ object YOLOHelper {
         return boundingBox to center
     }
 
-    fun drawBoundingBoxes(mat: Mat, box: BoundingBox) {
+    /**
+     * Draw bounding box + classification label (passed in).
+     * - Bounding box thickness is now set to 50 (much larger).
+     * - Text color is Maize.
+     */
+    fun drawBoundingBoxes(mat: Mat, box: BoundingBox, classificationLabel: String) {
         val topLeft = Point(box.x1.toDouble(), box.y1.toDouble())
         val bottomRight = Point(box.x2.toDouble(), box.y2.toDouble())
 
-        val YOLO_BOX_THICKNESS = 2
+        // choose color based on whether the label contains a given emotion keyword
+        val textColor = when {
+            classificationLabel.contains("Sadness", ignoreCase = true) -> Scalar(8.0, 223.0, 230.0)       // Blue
+            classificationLabel.contains("Anxious", ignoreCase = true) -> Scalar(255.0, 255.0, 0.0)     // Yellow
+            classificationLabel.contains("Excitement", ignoreCase = true) -> Scalar(8.0, 230.0, 74.0)   // Green
+            classificationLabel.contains("Angry", ignoreCase = true) -> Scalar(255.0, 102.0, 102.0)         // Red
+            else -> Scalar(255.0, 203.0, 5.0)                                                          // Default Maize
+        }
+
+        // Use the same large thickness we have for contour bounding boxes:
+        val YOLO_BOX_THICKNESS = 10
         Imgproc.rectangle(
             mat,
             topLeft,
             bottomRight,
-            Settings.BoundingBox.boxColor,
+            textColor,
             YOLO_BOX_THICKNESS
         )
 
-        val label = "User_1 (${("%.2f".format(box.confidence * 100))}%)"
-        val fontScale = 0.6
-        val textThickness = 1
+        // final label includes confidence + user classification label if not empty
+        val confString = "Conf:${("%.1f".format(box.confidence * 100))}%"
+        val yourLabel = if (classificationLabel.isNotEmpty()) classificationLabel else "User_1"
+        val label = "$yourLabel | $confString"
+
+        val fontScale = 1.0
+        val textThickness = 2
         val baseline = IntArray(1)
 
         val textSize = Imgproc.getTextSize(
@@ -802,29 +869,35 @@ object YOLOHelper {
             baseline
         )
         val textX = box.x1.toInt()
-        val textY = (box.y1 - 5).toInt().coerceAtLeast(10)
+        // Adjust if text would be above the top of the image
+        val textY = (box.y1 - 5).toInt().coerceAtLeast(textSize.height.toInt() + 7)
 
-        // Label background
-        Imgproc.rectangle(
-            mat,
-            Point(textX.toDouble(), (textY + baseline[0]).toDouble()),
-            Point((textX + textSize.width).toDouble(), (textY - textSize.height).toDouble()),
-            Settings.BoundingBox.boxColor,
-            Imgproc.FILLED
-        )
+        // Label background (optional). If you wish to see the text more clearly,
+        // uncomment the rectangle fill.
+        // Imgproc.rectangle(
+        //     mat,
+        //     Point(textX.toDouble(), (textY + baseline[0]).toDouble()),
+        //     Point((textX + textSize.width).toDouble(), (textY - textSize.height).toDouble()),
+        //     Settings.BoundingBox.boxColor,
+        //     Imgproc.FILLED
+        // )
 
-        // Label text
+        // Maize-colored text for label
+        val maizeColor = Scalar(255.0, 203.0, 5.0) // BGR for #FBEC5D
         Imgproc.putText(
             mat,
             label,
             Point(textX.toDouble(), textY.toDouble()),
             Imgproc.FONT_HERSHEY_SIMPLEX,
             fontScale,
-            Scalar(255.0, 255.0, 255.0),
+            textColor,
             textThickness
         )
     }
 
+    /**
+     * Create a letterboxed bitmap for YOLO input.
+     */
     fun createLetterboxedBitmap(
         srcBitmap: Bitmap,
         targetWidth: Int,

@@ -155,17 +155,6 @@
             android:textSize="24sp" />
     </LinearLayout>
 
-    <!-- TextView to display the predicted letter -->
-    <TextView
-        android:id="@+id/predictedEmotionTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:textSize="24sp"
-        android:textColor="@color/yellow"
-        android:layout_gravity="center_horizontal|bottom"
-        android:layout_marginBottom="180dp" />
-
     <!-- Bottom Controls -->
     <LinearLayout
         android:id="@+id/button_container"
