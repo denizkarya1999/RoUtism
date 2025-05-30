@@ -12,8 +12,10 @@ import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.text.InputType
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
@@ -22,13 +24,16 @@ import android.view.Gravity
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
@@ -61,7 +66,7 @@ import java.util.Timer
 import java.util.TimerTask
 
 class MainActivity : AppCompatActivity() {
-
+    //Private global variables
     private lateinit var viewBinding: ActivityMainBinding
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var cameraManager: CameraManager
@@ -69,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     private var yoloInterpreter: Interpreter? = null
     private var processedFrameRecorder: ProcessedFrameRecorder? = null
     private var videoProcessor: VideoProcessor? = null
+    private var arTimer: CountDownTimer? = null
 
     // PyTorch model for classification
     private lateinit var emotionClassifier: PyTorchClassifier
@@ -98,6 +104,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<Array<String>>
 
     companion object {
+        var isArMode: Boolean = false
         private const val SETTINGS_REQUEST_CODE = 1
 
         private val ORIENTATIONS = SparseIntArray().apply {
@@ -200,15 +207,15 @@ class MainActivity : AppCompatActivity() {
         val modeToggle = findViewById<Button>(R.id.modeToggleButton)
         // In onCreate(), mode toggle listener and initial state:
         viewBinding.modeToggleButton.setOnClickListener {
-            val enteringAr = viewBinding.modeToggleButton.text == "AR Mode"
-            viewBinding.modeToggleButton.text = if (enteringAr) "CV Mode" else "AR Mode"
+            isArMode = viewBinding.modeToggleButton.text == "AR Mode"
+            viewBinding.modeToggleButton.text = if (isArMode) "CV Mode" else "AR Mode"
             viewBinding.modeToggleButton.backgroundTintList =
                 ColorStateList.valueOf(
                     ContextCompat.getColor(this,
-                        if (enteringAr) R.color.red else R.color.green
+                        if (isArMode) R.color.red else R.color.green
                     )
                 )
-            updateUiForMode(enteringAr)
+            updateUiForMode(isArMode)
         }
         // Apply initial UI state:
         updateUiForMode(viewBinding.modeToggleButton.text == "CV Mode")
@@ -250,43 +257,82 @@ class MainActivity : AppCompatActivity() {
     // Helper to enable/disable controls based on AR/CV mode:
     private fun updateUiForMode(isArMode: Boolean) {
         if (isArMode) {
-            // after you make them visible…
-            viewBinding.startProcessingButton.apply {
-                isVisible = true
-                rotation = 90f    // rotate 90° clockwise
+            // 1) Prompt for AR session duration
+            val marginPx = (16 * resources.displayMetrics.density).toInt()
+            val input = EditText(this).apply {
+                hint = "Minutes"
+                inputType = InputType.TYPE_CLASS_NUMBER
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setMargins(marginPx, marginPx, marginPx, 0)
+                }
             }
 
-            viewBinding.modeToggleButton.apply {
-                // this sets the text size to 18sp:
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
-                isVisible = true
-                rotation = 90f
-            }
+            AlertDialog.Builder(this)
+                .setTitle("AR Session Duration")
+                .setMessage("Enter how many minutes to run AR mode:")
+                .setView(input)
+                .setCancelable(false)
+                .setPositiveButton("Start") { _, _ ->
+                    val minutes  = input.text.toString().toLongOrNull() ?: 1L
+                    val duration = minutes.coerceAtLeast(1) * 60_000L
 
-            viewBinding.titleContainer.isVisible = false
-            viewBinding.switchCameraButton.isVisible = false
-            viewBinding.settingsButton.isVisible = false
-            viewBinding.aboutButton.isVisible = false
-            viewBinding.clearPredictionButton.isVisible = false
-            viewBinding.zoomInButton.isVisible = false
-            viewBinding.zoomOutButton.isVisible = false
+                    // 2) Switch UI into AR mode
+                    with(viewBinding) {
+                        startProcessingButton.isVisible    = false
+                        modeToggleButton.isVisible         = false
+                        titleContainer.isVisible           = false
+                        switchCameraButton.isVisible       = false
+                        settingsButton.isVisible           = false
+                        aboutButton.isVisible              = false
+                        clearPredictionButton.isVisible    = false
+                        zoomInButton.isVisible             = false
+                        zoomOutButton.isVisible            = false
+                    }
+
+                    // 3) Begin processing & recording
+                    startProcessingAndRecording()
+
+                    // 4) Schedule automatic exit from AR mode
+                    arTimer?.cancel()
+                    arTimer = object : CountDownTimer(duration, 1_000L) {
+                        override fun onTick(millisUntilFinished: Long) {
+                            // (optional) update a UI element with remaining time
+                        }
+                        override fun onFinish() {
+                            updateUiForMode(false)
+                        }
+                    }.start()
+                }
+                .setNegativeButton("Cancel") { _, _ ->
+                    // User backed out: revert to normal mode
+                    updateUiForMode(false)
+                }
+                .show()
+
         } else {
-            // reset rotation & visibility
-            viewBinding.startProcessingButton.apply {
-                isVisible = true
-                rotation = 0f
+            // Cancel any in-flight timer
+            arTimer?.cancel()
+
+            // Restore normal UI
+            with(viewBinding) {
+                modeToggleButton.text = "AR Mode"
+                modeToggleButton.backgroundTintList = getColorStateList(R.color.green)
+                startProcessingButton.isVisible    = true
+                modeToggleButton.isVisible         = true
+                titleContainer.isVisible           = true
+                switchCameraButton.isVisible       = true
+                settingsButton.isVisible           = true
+                aboutButton.isVisible              = true
+                clearPredictionButton.isVisible    = true
+                zoomInButton.isVisible             = true
+                zoomOutButton.isVisible            = true
             }
-            viewBinding.modeToggleButton.apply {
-                isVisible = true
-                rotation = 0f
-            }
-            viewBinding.titleContainer.isVisible = true
-            viewBinding.switchCameraButton.isVisible = true
-            viewBinding.settingsButton.isVisible = true
-            viewBinding.aboutButton.isVisible = true
-            viewBinding.clearPredictionButton.isVisible = true
-            viewBinding.zoomInButton.isVisible = true
-            viewBinding.zoomOutButton.isVisible = true
+
+            // Stop processing & recording
+            stopProcessingAndRecording()
         }
     }
 
@@ -326,13 +372,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopProcessingAndRecording() {
+        // If we weren’t recording, don’t do anything (no export, no toast)
+        if (!isRecording) return
+
+        // Now actually stop
         isRecording = false
         isProcessing = false
 
         exportTimer?.cancel()
         exportTimer = null
 
-        // Attempt one final export if available
+        // Final export of whatever’s left
         try {
             val traceBitmap = videoProcessor?.exportTraceForDataCollection()
             if (traceBitmap != null) {
@@ -344,12 +394,13 @@ class MainActivity : AppCompatActivity() {
 
         Toast.makeText(this, "$batchCount batches have been saved", Toast.LENGTH_LONG).show()
 
-        viewBinding.startProcessingButton.text = "Start Tracking"
+        // Reset UI text & visibility
+        viewBinding.startProcessingButton.text =
+            getString(R.string.start_capture)               // or "Start Tracking"
         viewBinding.startProcessingButton.backgroundTintList =
             ContextCompat.getColorStateList(this, R.color.blue)
         viewBinding.processedFrameView.visibility = View.GONE
         viewBinding.processedFrameView.setImageBitmap(null)
-        // Clear classification label from the bounding-box overlay
         videoProcessor?.classificationLabel = ""
     }
 

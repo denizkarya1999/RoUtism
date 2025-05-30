@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
 import android.util.Log
+import com.developer27.xemotion.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -829,63 +830,110 @@ object YOLOHelper {
     }
 
     /**
-     * Draw bounding box + classification label (passed in).
-     * - Now checks that (x2 > x1) && (y2 > y1) to avoid drawing an empty box.
+     * Draw bounding box + classification label.
+     * If MainActivity.isArMode == true, rotates all coords 90° CW.
      */
     fun drawBoundingBoxes(mat: Mat, box: BoundingBox, classificationLabel: String) {
-        // Safety check: don't draw if bounding box has non-positive width or height
-        if (box.x2 <= box.x1 || box.y2 <= box.y1) {
-            return
-        }
+        // Safety: skip degenerate
+        if (box.x2 <= box.x1 || box.y2 <= box.y1) return
 
-        val topLeft = Point(box.x1.toDouble(), box.y1.toDouble())
-        val bottomRight = Point(box.x2.toDouble(), box.y2.toDouble())
-
-        // choose color based on whether the label contains a given emotion keyword
+        // Always draw the rectangle normally
+        val tl = Point(box.x1.toDouble(), box.y1.toDouble())
+        val br = Point(box.x2.toDouble(), box.y2.toDouble())
         val textColor = when {
-            classificationLabel.contains("Sadness", ignoreCase = true)  -> Scalar(8.0, 223.0, 230.0)    // Blue
-            classificationLabel.contains("Anxious", ignoreCase = true)  -> Scalar(255.0, 255.0, 0.0)    // Yellow
-            classificationLabel.contains("Excitement", ignoreCase = true)-> Scalar(8.0, 230.0, 74.0)    // Green
-            classificationLabel.contains("Angry", ignoreCase = true)    -> Scalar(255.0, 102.0, 102.0)  // Red
-            else                                                        -> Scalar(255.0, 203.0, 5.0)    // Default Maize
+            classificationLabel.contains("Sadness",    ignoreCase = true) -> Scalar(8.0, 223.0, 230.0)
+            classificationLabel.contains("Anxious",    ignoreCase = true) -> Scalar(255.0, 255.0,   0.0)
+            classificationLabel.contains("Excitement", ignoreCase = true) -> Scalar(8.0, 230.0,  74.0)
+            classificationLabel.contains("Angry",       ignoreCase = true) -> Scalar(255.0, 102.0, 102.0)
+            else                                                              -> Scalar(255.0, 203.0,   5.0)
         }
+        Imgproc.rectangle(mat, tl, br, textColor, 10)
 
-        // Draw the box
-        val YOLO_BOX_THICKNESS = 10
-        Imgproc.rectangle(mat, topLeft, bottomRight, textColor, YOLO_BOX_THICKNESS)
-
-        // Build the label text
-        val yourLabel = if (classificationLabel.isNotEmpty()) classificationLabel else "Tracking"
-        val label = "$yourLabel"
-
+        // Prepare label
+        var label     = classificationLabel.ifEmpty { "Tracking" }
         val fontScale = 1.5
-        val textThickness = 2
-        val baseline = IntArray(1)
+        val thickness = 2
+        val baseline  = IntArray(1)
+        val textSize  = Imgproc.getTextSize(label, Imgproc.FONT_HERSHEY_SIMPLEX, fontScale, thickness, baseline)
 
-        // Measure text size
-        val textSize = Imgproc.getTextSize(
-            label,
-            Imgproc.FONT_HERSHEY_SIMPLEX,
-            fontScale,
-            textThickness,
-            baseline
-        )
-        // Calculate Y so there's an extra 8px margin above the box
+        // Text position (normal)
         val margin = 50
-        val textX = box.x1.toInt()
-        val textY = (box.y1 - baseline[0] - margin).toInt().coerceAtLeast((textSize.height + margin).toInt())
+        val textX  = tl.x.toInt()
+        val textY  = (tl.y - baseline[0] - margin)
+            .toInt()
+            .coerceAtLeast((textSize.height + margin).toInt())
 
-        // Draw the text
-        Imgproc.putText(
-            mat,
-            label,
-            Point(textX.toDouble(), textY.toDouble()),
-            Imgproc.FONT_HERSHEY_SIMPLEX,
-            fontScale,
-            textColor,
-            textThickness
-        )
+        if (MainActivity.isArMode) {
+            // --- ROTATED TEXT IN AR MODE ---
+            val extraMargin = 50                               // <-- how much extra space around your text
+            val padding     = 30
+
+            // Compute a minimum size based on your text
+            val minW = 600
+            val minH = 600
+
+            // Now add extraMargin so it’s never too tight
+            val txtW = max(minW + extraMargin, minH + extraMargin)  // keep it square
+            val txtH = txtW                                        // same to swap cleanly on rotation
+
+            // 1) Render label into a blank RGBA Mat
+            val textMat = Mat.zeros(txtH, txtW, CvType.CV_8UC4)
+            Imgproc.putText(
+                textMat,
+                label,
+                Point(padding.toDouble(), txtH - padding.toDouble()),
+                Imgproc.FONT_HERSHEY_SIMPLEX,
+                fontScale,
+                textColor,   // e.g. Scalar(255.0,255.0,255.0,255.0)
+                thickness
+            )
+
+            // 2) Rotate that Mat 90° CW
+            val center = Point(txtW / 2.0, txtH / 2.0)
+            val rotMat = Imgproc.getRotationMatrix2D(center, 90.0, 1.0)
+            val rotated = Mat()
+            Imgproc.warpAffine(
+                textMat,
+                rotated,
+                rotMat,
+                Size(txtH.toDouble(), txtW.toDouble())
+            )
+
+            // 3) Compute where to place it (centered above the box)
+            val midX   = ((box.x1 + box.x2) / 2.0).toInt()
+            val floatY = (box.y1.toInt() - extraMargin).coerceAtLeast(rotated.rows() / 2)
+            val destX  = (midX - rotated.cols() / 2).coerceAtLeast(0)
+            val destY  = (floatY - rotated.rows() / 2).coerceAtLeast(0)
+
+            // 4) Blit it onto the main mat if it fits
+            if (destX + rotated.cols() <= mat.width() &&
+                destY + rotated.rows() <= mat.height()
+            ) {
+                val roi = mat.submat(
+                    org.opencv.core.Rect(destX, destY, rotated.cols(), rotated.rows())
+                )
+                rotated.copyTo(roi)
+            }
+
+            // Draw your bounding box *last*, on top of everything:
+            val tl = Point(box.x1.toDouble(), box.y1.toDouble())
+            val br = Point(box.x2.toDouble(), box.y2.toDouble())
+            Imgproc.rectangle(mat, tl, br, textColor, 10)
+
+        } else {
+            // --- NORMAL TEXT AS BEFORE ---
+            Imgproc.putText(
+                mat,
+                label,
+                Point(textX.toDouble(), textY.toDouble()),
+                Imgproc.FONT_HERSHEY_SIMPLEX,
+                fontScale,
+                textColor,
+                thickness
+            )
+        }
     }
+
     /**
      * Create a letterboxed bitmap for YOLO input.
      */
@@ -896,9 +944,9 @@ object YOLOHelper {
         padColor: Scalar = Scalar(0.0, 0.0, 0.0)
     ): Pair<Bitmap, Pair<Int, Int>> {
         val srcMat = Mat().also { Utils.bitmapToMat(srcBitmap, it) }
-        val srcW = srcMat.cols().toDouble()
-        val srcH = srcMat.rows().toDouble()
-        val scale = min(targetWidth / srcW, targetHeight / srcH)
+        val srcW   = srcMat.cols().toDouble()
+        val srcH   = srcMat.rows().toDouble()
+        val scale  = min(targetWidth / srcW, targetHeight / srcH)
 
         val newW = (srcW * scale).toInt()
         val newH = (srcH * scale).toInt()
@@ -917,27 +965,18 @@ object YOLOHelper {
             return p1 to p2
         }
 
-        val (top, bottom) = computePadding(padH)
-        val (left, right) = computePadding(padW)
-
-        val letterboxed = Mat().also {
-            Core.copyMakeBorder(
-                resized,
-                it,
-                top,
-                bottom,
-                left,
-                right,
-                Core.BORDER_CONSTANT,
-                padColor
-            )
+        val (top, bottom)  = computePadding(padH)
+        val (left, right)  = computePadding(padW)
+        val borderedMat    = Mat().also {
+            Core.copyMakeBorder(resized, it, top, bottom, left, right, Core.BORDER_CONSTANT, padColor)
             resized.release()
         }
 
-        val outputBitmap = Bitmap.createBitmap(letterboxed.cols(), letterboxed.rows(), srcBitmap.config).apply {
-            Utils.matToBitmap(letterboxed, this)
-            letterboxed.release()
-        }
+        val outputBitmap = Bitmap.createBitmap(borderedMat.cols(), borderedMat.rows(), srcBitmap.config)
+            .apply {
+                Utils.matToBitmap(borderedMat, this)
+                borderedMat.release()
+            }
 
         return outputBitmap to (left to top)
     }
