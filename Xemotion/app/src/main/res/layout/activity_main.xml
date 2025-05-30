@@ -82,6 +82,19 @@
             android:orientation="horizontal"
             android:gravity="center">
 
+            <!-- AR/CV Mode Toggle Button -->
+            <Button
+                android:id="@+id/modeToggleButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AR Mode"
+                android:textSize="16sp"
+                android:layout_margin="8dp"
+                android:backgroundTint="@color/green"
+                android:textColor="@android:color/white"
+                android:elevation="2dp" />
+
+
             <!-- Settings Button (standard margin) -->
             <Button
                 android:id="@+id/settingsButton"

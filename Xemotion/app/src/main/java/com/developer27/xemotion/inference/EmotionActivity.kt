@@ -237,7 +237,8 @@ class EmotionActivity : AppCompatActivity() {
         // If you always want YOLO or contour detection, set the detection mode accordingly.
         // Or you can change Settings.DetectionMode.current before calling this.
         // For now, we just do a synchronous call:
-        return videoProcessor.processFrameSynchronous(bitmap)?.first
+        return null
+        //return videoProcessor.processFrameSynchronous(bitmap)?.first
     }
 
     private fun getFileName(uri: Uri): String =

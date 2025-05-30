@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraManager
@@ -16,16 +17,24 @@ import android.preference.PreferenceManager
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.view.WindowManager
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.util.TypedValueCompat.dpToPx
+import androidx.core.view.isVisible
 import com.developer27.xemotion.camera.CameraHelper
 import com.developer27.xemotion.databinding.ActivityMainBinding
 import com.developer27.xemotion.inference.PyTorchClassifier
@@ -188,6 +197,22 @@ class MainActivity : AppCompatActivity() {
         val module = PyTorchModuleLoader.loadModule(this, "resnet50_emotion.pt")
         Log.d(TAG, "PyTorch model loaded successfully: $module")
 
+        val modeToggle = findViewById<Button>(R.id.modeToggleButton)
+        // In onCreate(), mode toggle listener and initial state:
+        viewBinding.modeToggleButton.setOnClickListener {
+            val enteringAr = viewBinding.modeToggleButton.text == "AR Mode"
+            viewBinding.modeToggleButton.text = if (enteringAr) "CV Mode" else "AR Mode"
+            viewBinding.modeToggleButton.backgroundTintList =
+                ColorStateList.valueOf(
+                    ContextCompat.getColor(this,
+                        if (enteringAr) R.color.red else R.color.green
+                    )
+                )
+            updateUiForMode(enteringAr)
+        }
+        // Apply initial UI state:
+        updateUiForMode(viewBinding.modeToggleButton.text == "CV Mode")
+
         // Set button actions
         viewBinding.startProcessingButton.setOnClickListener {
             if (isRecording) {
@@ -220,6 +245,49 @@ class MainActivity : AppCompatActivity() {
 
         // Set up pinch-to-zoom or other camera zoom controls
         cameraHelper.setupZoomControls()
+    }
+
+    // Helper to enable/disable controls based on AR/CV mode:
+    private fun updateUiForMode(isArMode: Boolean) {
+        if (isArMode) {
+            // after you make them visible…
+            viewBinding.startProcessingButton.apply {
+                isVisible = true
+                rotation = 90f    // rotate 90° clockwise
+            }
+
+            viewBinding.modeToggleButton.apply {
+                // this sets the text size to 18sp:
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                isVisible = true
+                rotation = 90f
+            }
+
+            viewBinding.titleContainer.isVisible = false
+            viewBinding.switchCameraButton.isVisible = false
+            viewBinding.settingsButton.isVisible = false
+            viewBinding.aboutButton.isVisible = false
+            viewBinding.clearPredictionButton.isVisible = false
+            viewBinding.zoomInButton.isVisible = false
+            viewBinding.zoomOutButton.isVisible = false
+        } else {
+            // reset rotation & visibility
+            viewBinding.startProcessingButton.apply {
+                isVisible = true
+                rotation = 0f
+            }
+            viewBinding.modeToggleButton.apply {
+                isVisible = true
+                rotation = 0f
+            }
+            viewBinding.titleContainer.isVisible = true
+            viewBinding.switchCameraButton.isVisible = true
+            viewBinding.settingsButton.isVisible = true
+            viewBinding.aboutButton.isVisible = true
+            viewBinding.clearPredictionButton.isVisible = true
+            viewBinding.zoomInButton.isVisible = true
+            viewBinding.zoomOutButton.isVisible = true
+        }
     }
 
     private fun startProcessingAndRecording() {
