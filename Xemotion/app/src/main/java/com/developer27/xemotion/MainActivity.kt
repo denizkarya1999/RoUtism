@@ -19,26 +19,18 @@ import android.text.InputType
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
-import android.util.TypedValue
-import android.view.Gravity
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.util.TypedValueCompat.dpToPx
 import androidx.core.view.isVisible
 import com.developer27.xemotion.camera.CameraHelper
 import com.developer27.xemotion.databinding.ActivityMainBinding
@@ -49,7 +41,6 @@ import com.developer27.xemotion.videoprocessing.ProcessedFrameRecorder
 import com.developer27.xemotion.videoprocessing.Settings
 import com.developer27.xemotion.videoprocessing.VideoProcessor
 import com.developer27.xemotion.videoprocessing.YOLOHelper
-import com.google.android.filament.utils.Utils
 import org.opencv.core.Mat
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.GpuDelegate
@@ -66,7 +57,8 @@ import java.util.Timer
 import java.util.TimerTask
 
 class MainActivity : AppCompatActivity() {
-    //Private global variables
+
+    // Private global variables
     private lateinit var viewBinding: ActivityMainBinding
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var cameraManager: CameraManager
@@ -195,7 +187,6 @@ class MainActivity : AppCompatActivity() {
 
         // Instantiate TemplateMatcher to eagerly load references
         matcher = TemplateMatcher(assets)
-
         // Load templates from assets/dataset
         trainTemplates = matcher.loadTemplates("dataset/train")
         valTemplates   = matcher.loadTemplates("dataset/val")
@@ -204,10 +195,10 @@ class MainActivity : AppCompatActivity() {
         val module = PyTorchModuleLoader.loadModule(this, "resnet50_emotion.pt")
         Log.d(TAG, "PyTorch model loaded successfully: $module")
 
-        val modeToggle = findViewById<Button>(R.id.modeToggleButton)
-        // In onCreate(), mode toggle listener and initial state:
+        // Mode toggle button. If user sees "AR Mode," that means we are currently in CV mode,
+        // and they can tap to switch to AR mode.
         viewBinding.modeToggleButton.setOnClickListener {
-            isArMode = viewBinding.modeToggleButton.text == "AR Mode"
+            isArMode = (viewBinding.modeToggleButton.text == "AR Mode")
             viewBinding.modeToggleButton.text = if (isArMode) "CV Mode" else "AR Mode"
             viewBinding.modeToggleButton.backgroundTintList =
                 ColorStateList.valueOf(
@@ -217,8 +208,9 @@ class MainActivity : AppCompatActivity() {
                 )
             updateUiForMode(isArMode)
         }
-        // Apply initial UI state:
-        updateUiForMode(viewBinding.modeToggleButton.text == "CV Mode")
+
+        // Apply initial UI state (we start in CV mode by default)
+        updateUiForMode(false)
 
         // Set button actions
         viewBinding.startProcessingButton.setOnClickListener {
@@ -254,8 +246,10 @@ class MainActivity : AppCompatActivity() {
         cameraHelper.setupZoomControls()
     }
 
-    // Helper to enable/disable controls based on AR/CV mode:
-    private fun updateUiForMode(isArMode: Boolean) {
+    /**
+     * Enable/disable controls based on AR/CV mode.
+     */
+    private fun updateUiForMode(isArModeFunc: Boolean) {
         if (isArMode) {
             // 1) Prompt for AR session duration
             val marginPx = (16 * resources.displayMetrics.density).toInt()
@@ -276,7 +270,10 @@ class MainActivity : AppCompatActivity() {
                 .setView(input)
                 .setCancelable(false)
                 .setPositiveButton("Start") { _, _ ->
-                    val minutes  = input.text.toString().toLongOrNull() ?: 1L
+                    //First stop processing to clean the background processes
+                    stopProcessingAndRecording()
+
+                    val minutes = input.text.toString().toLongOrNull() ?: 1L
                     val duration = minutes.coerceAtLeast(1) * 60_000L
 
                     // 2) Switch UI into AR mode
@@ -292,7 +289,10 @@ class MainActivity : AppCompatActivity() {
                         zoomOutButton.isVisible            = false
                     }
 
-                    // 3) Begin processing & recording
+                    // *** NEW CALL: Force AR rolling shutter in camera helper
+                    cameraHelper.forceArRollingShutter()
+
+                    // 3) Begin processing & recording in AR mode
                     startProcessingAndRecording()
 
                     // 4) Schedule automatic exit from AR mode
@@ -302,12 +302,24 @@ class MainActivity : AppCompatActivity() {
                             // (optional) update a UI element with remaining time
                         }
                         override fun onFinish() {
+                            // AR session time up -> revert to normal mode
+                            isArMode = false
+                            viewBinding.modeToggleButton.text = "AR Mode"
+                            viewBinding.modeToggleButton.backgroundTintList =
+                                ColorStateList.valueOf(
+                                    ContextCompat.getColor(this@MainActivity, R.color.green)
+                                )
                             updateUiForMode(false)
                         }
                     }.start()
                 }
                 .setNegativeButton("Cancel") { _, _ ->
-                    // User backed out: revert to normal mode
+                    // If user cancels AR start, explicitly set isArMode = false:
+                    isArMode = false
+                    // Revert the UI to CV mode
+                    viewBinding.modeToggleButton.text = "AR Mode"
+                    viewBinding.modeToggleButton.backgroundTintList =
+                        ColorStateList.valueOf(ContextCompat.getColor(this, R.color.green))
                     updateUiForMode(false)
                 }
                 .show()
@@ -316,10 +328,11 @@ class MainActivity : AppCompatActivity() {
             // Cancel any in-flight timer
             arTimer?.cancel()
 
-            // Restore normal UI
+            // Restore normal UI for CV mode
             with(viewBinding) {
                 modeToggleButton.text = "AR Mode"
-                modeToggleButton.backgroundTintList = getColorStateList(R.color.green)
+                modeToggleButton.backgroundTintList =
+                    ContextCompat.getColorStateList(this@MainActivity, R.color.green)
                 startProcessingButton.isVisible    = true
                 modeToggleButton.isVisible         = true
                 titleContainer.isVisible           = true
@@ -348,13 +361,11 @@ class MainActivity : AppCompatActivity() {
         videoProcessor?.reset()
         batchCount = 0
 
-        // ------------------------------------------------
-        // CHANGED CODE: use 500 ms if CONTOUR, 700 ms if YOLO
-        // ------------------------------------------------
+        // Use 500 ms interval if CONTOUR or default; 700 ms if YOLO
         val intervalMs = when (Settings.DetectionMode.current) {
             Settings.DetectionMode.Mode.CONTOUR -> 500L
             Settings.DetectionMode.Mode.YOLO    -> 700L
-            else -> 500L // fallback for TEMPLATE or any other
+            else -> 500L // fallback
         }
 
         exportTimer = Timer()
@@ -372,17 +383,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopProcessingAndRecording() {
-        // If we weren’t recording, don’t do anything (no export, no toast)
+        // If we’re not recording, no need to stop
         if (!isRecording) return
 
-        // Now actually stop
         isRecording = false
         isProcessing = false
 
         exportTimer?.cancel()
         exportTimer = null
 
-        // Final export of whatever’s left
+        // Final export of leftover frames
         try {
             val traceBitmap = videoProcessor?.exportTraceForDataCollection()
             if (traceBitmap != null) {
@@ -395,8 +405,7 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "$batchCount batches have been saved", Toast.LENGTH_LONG).show()
 
         // Reset UI text & visibility
-        viewBinding.startProcessingButton.text =
-            getString(R.string.start_capture)               // or "Start Tracking"
+        viewBinding.startProcessingButton.text = getString(R.string.start_capture)
         viewBinding.startProcessingButton.backgroundTintList =
             ContextCompat.getColorStateList(this, R.color.blue)
         viewBinding.processedFrameView.visibility = View.GONE
@@ -425,16 +434,15 @@ class MainActivity : AppCompatActivity() {
         // 2) Classify using PyTorch
         val (bestLabel, probs) = emotionClassifier.classifyLine(traceBitmap)
 
-        // Display or log results if you want more detail
+        // Derive confidence
         val bestIndex = probs.indices.maxByOrNull { probs[it] } ?: 0
         val confidence = probs[bestIndex] * 100f
         val textResult = "$bestLabel (${String.format("%.1f", confidence)}%)"
 
-        // 3) Instead of showing in a TextView, store it in VideoProcessor
-        //    so the label is drawn inside the bounding box next time we detect something.
+        // 3) Put label inside the bounding box next time we detect something
         videoProcessor?.classificationLabel = textResult
 
-        // 4) Also log the prediction to a file (optional)
+        // 4) (Optional) Log it to a file
         appendPredictionToLog(textResult)
     }
 

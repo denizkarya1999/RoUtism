@@ -323,6 +323,47 @@ class CameraHelper(
         captureRequestBuilder?.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON)
     }
 
+    fun forceArRollingShutter() {
+        // For AR mode, fix shutter speed to 350 Hz (1 / 350s).
+        // Then immediately update the camera capture session.
+
+        val cameraId = getCameraId()
+        val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+        val capabilities = characteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
+        val canManualExposure = capabilities?.contains(
+            CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR
+        ) == true
+
+        // If we can’t do manual exposure or the camera is null, just return
+        if (!canManualExposure || captureRequestBuilder == null) return
+
+        val exposureTimeRange = characteristics.get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE)
+        val isoRange = characteristics.get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE)
+        if (exposureTimeRange == null || isoRange == null) return
+
+        // Convert 250 Hz
+        val forcedShutterNs = 1_000_000_000L / 250
+        val safeExposureNs = forcedShutterNs.coerceIn(exposureTimeRange.lower, exposureTimeRange.upper)
+        val safeISO = max(isoRange.lower, 100)
+
+        // Apply fully manual
+        captureRequestBuilder?.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_OFF)
+        captureRequestBuilder?.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_OFF)
+        captureRequestBuilder?.set(CaptureRequest.SENSOR_EXPOSURE_TIME, safeExposureNs)
+        captureRequestBuilder?.set(CaptureRequest.SENSOR_SENSITIVITY, safeISO)
+
+        // Now push the settings to the active capture session
+        try {
+            cameraCaptureSession?.setRepeatingRequest(
+                captureRequestBuilder!!.build(),
+                null,
+                backgroundHandler
+            )
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+    }
+
     /**
      * If user changes shutter speed in settings, we re-apply
      */

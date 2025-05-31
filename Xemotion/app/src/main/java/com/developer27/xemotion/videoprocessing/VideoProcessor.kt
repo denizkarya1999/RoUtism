@@ -53,6 +53,10 @@ private var tfliteInterpreter: Interpreter? = null
 private val rawDataList = LinkedList<Point>()
 private val smoothDataList = LinkedList<Point>()
 
+// Define fontScale and thickness at class-level or inline
+private const val fontScale = 2.0
+private const val thickness = 3
+
 // --------------------------------------------------
 // Settings
 // --------------------------------------------------
@@ -88,7 +92,7 @@ object Settings {
         var enableBoundingBox = true
         // Currently used for contour bounding boxes:
         var boxColor = Scalar(0.0, 39.0, 76.0)
-        var boxThickness = 50
+        var boxThickness = 10
     }
 
     object Brightness {
@@ -189,60 +193,173 @@ class VideoProcessor(private val context: Context) {
     // --------------------------------------------------------------------------------
     // 1) CONTOUR DETECTION
     // --------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------
+    // 1) CONTOUR DETECTION
+    // --------------------------------------------------------------------------------
     private fun processFrameInternalCONTOUR(bitmap: Bitmap): Pair<Bitmap, Bitmap>? {
+        // 1) Preprocess the incoming bitmap to get a grayscale/filtered Mat (pMat).
         val (pMat, _) = Preprocessing.preprocessFrame(bitmap)
+
+        // 2) Run contour detection: returns (center Point?, boundingRect Rect?, and the color frame Mat cMat).
         val (center, boundingRect, cMat) = ContourDetection.processContourDetection(pMat)
 
-        // If we found a boundingRect, draw label just above it
+        // 3) If we have a valid bounding rectangle and a non‐empty label, draw the label + bounding box on cMat.
         if (boundingRect != null && classificationLabel.isNotEmpty()) {
-            // Choose a little more vertical margin
-            val margin = 20
-
-            // Measure text height so we can avoid clipping
-            val textSize = Imgproc.getTextSize(
-                classificationLabel,
-                Imgproc.FONT_HERSHEY_SIMPLEX,
-                2.0,
-                2,
-                null
-            )
-            val textHeight = textSize.height.toInt()
-
-            val textX = boundingRect.left.toDouble()
-            // Top of box minus margin minus text height
-            val textY = (boundingRect.top - margin - textHeight.toDouble())
-                .coerceAtLeast(textHeight.toDouble())
-
-            // choose color based on whether the label contains a given emotion keyword
+            // 3a) Pick the textColor based on keywords
             val textColor = when {
-                classificationLabel.contains("Sadness", ignoreCase = true) -> Scalar(8.0, 223.0, 230.0)   // Blue
-                classificationLabel.contains("Anxious", ignoreCase = true) -> Scalar(255.0, 255.0, 0.0)   // Yellow
-                classificationLabel.contains("Excitement", ignoreCase = true) -> Scalar(8.0, 230.0, 74.0) // Green
-                classificationLabel.contains("Angry", ignoreCase = true) -> Scalar(255.0, 102.0, 102.0)   // Red
-                else -> Scalar(255.0, 203.0, 5.0)                                                          // Maize
+                classificationLabel.contains("Sadness",    ignoreCase = true) -> Scalar(8.0,   223.0, 230.0) // Blue
+                classificationLabel.contains("Anxious",    ignoreCase = true) -> Scalar(255.0, 255.0,   0.0) // Yellow
+                classificationLabel.contains("Excitement", ignoreCase = true) -> Scalar(8.0,   230.0,  74.0) // Green
+                classificationLabel.contains("Angry",      ignoreCase = true) -> Scalar(255.0, 102.0, 102.0) // Red
+                else                                                           -> Scalar(255.0, 203.0,   5.0) // Maize
             }
 
-            Imgproc.putText(
-                cMat,
-                classificationLabel,
-                Point(textX, textY),
-                Imgproc.FONT_HERSHEY_SIMPLEX,  // you can pick any font here
-                2.0,
-                textColor,
-                2
-            )
+            // 3b) Common margin to use if not in AR mode
+            val margin = 20
+
+            if (MainActivity.isArMode) {
+                // -------- AR MODE: rotate the label and blit it above boundingRect --------
+
+                // 1) Measure the text size (unrotated) exactly:
+                val baselineArr = IntArray(1)
+                val textSize: Size = Imgproc.getTextSize(
+                    classificationLabel,                   // label text
+                    Imgproc.FONT_HERSHEY_SIMPLEX,          // font face
+                    fontScale,                             // font scale (Double)
+                    thickness,                             // thickness (Int)
+                    baselineArr                            // array to receive baseline
+                )
+                val baselinePx   = baselineArr[0]               // how far below baseline
+
+                // 2) Compute overlay size by adding padding:
+                val padding = 10
+                // + padding on left/right:  textWidthPx + (padding × 2)
+                // + padding on top/bottom + baseline:  textHeightPx + (padding × 2) + baselinePx
+                val txtW = 600 + padding * 2
+                val txtH = 600 + padding * 2 + baselinePx
+
+                // 3) Create a tight 3‐channel BGR Mat (CvType.CV_8UC3) to render the text
+                val textMat = Mat.zeros(txtH, txtW, CvType.CV_8UC3)
+
+                // 4) Put the text INTO textMat at (padding, txtH - padding - baselinePx)
+                Imgproc.putText(
+                    textMat,
+                    classificationLabel,
+                    Point(padding.toDouble(), (txtH - padding - baselinePx).toDouble()),
+                    Imgproc.FONT_HERSHEY_SIMPLEX,
+                    fontScale,
+                    textColor,
+                    thickness
+                )
+
+                // 5) Rotate textMat 90° clockwise about its center:
+                val centerPt = Point(txtW / 2.0, txtH / 2.0)
+                val rotMat = Imgproc.getRotationMatrix2D(centerPt, 90.0, 1.0)
+                val rotated = Mat()
+                Imgproc.warpAffine(
+                    textMat,
+                    rotated,
+                    rotMat,
+                    Size(txtH.toDouble(), txtW.toDouble()),
+                    Imgproc.INTER_LINEAR,
+                    Core.BORDER_CONSTANT
+                )
+
+                // 6) Compute where to place “rotated” on cMat (centered horizontally, but directly below the box)
+                val midX = (boundingRect.left + boundingRect.right) / 2
+                val rawX = midX - rotated.cols() / 2
+
+                // By using boundingRect.bottom, the top of the rotated label
+                // will align exactly with the bottom edge of the box:
+                val rawY = boundingRect.bottom - 350
+
+                // 7) Clamp X into [0 .. (cMat.width() - rotated.cols())]
+                val destX = rawX
+                    .coerceAtLeast(0)
+                    .coerceAtMost(cMat.width() - rotated.cols())
+
+                // 8) Clamp Y into [0 .. (cMat.height() - rotated.rows())]
+                val destY = rawY
+                    .coerceAtLeast(0)
+                    .coerceAtMost(cMat.height() - rotated.rows())
+
+                // 9) Only overlay if rotated fits inside cMat
+                if (rotated.cols() <= cMat.width() && rotated.rows() <= cMat.height()) {
+                    val roiRect = org.opencv.core.Rect(destX, destY, rotated.cols(), rotated.rows())
+                    val roiMat = cMat.submat(roiRect)
+                    rotated.copyTo(roiMat)
+                    roiMat.release()
+                }
+
+                // 10) Draw the bounding box on cMat (on top of everything):
+                Imgproc.rectangle(
+                    cMat,
+                    Point(boundingRect.left.toDouble(),  boundingRect.top.toDouble()),
+                    Point(boundingRect.right.toDouble(), boundingRect.bottom.toDouble()),
+                    textColor,
+                    Settings.BoundingBox.boxThickness
+                )
+
+                // 11) Release temps
+                textMat.release()
+                rotated.release()
+            } else {
+                // -------- NORMAL MODE: put non‐rotated text directly --------
+                // 1) Measure text size (fontScale and thickness):
+                val baselineArrNorm = IntArray(1)
+                val textSizeNorm: Size = Imgproc.getTextSize(
+                    classificationLabel,
+                    Imgproc.FONT_HERSHEY_SIMPLEX,
+                    fontScale,
+                    thickness,
+                    baselineArrNorm
+                )
+                val textHeightNorm = textSizeNorm.height.toInt()
+
+                // 2) Compute text origin so it sits above boundingRect:
+                val textX = boundingRect.left.toDouble()
+                val textY = (boundingRect.top - margin - textHeightNorm.toDouble())
+                    .coerceAtLeast(textHeightNorm.toDouble())
+
+                // 3) Put the label onto cMat:
+                Imgproc.putText(
+                    cMat,
+                    classificationLabel,
+                    Point(textX, textY),
+                    Imgproc.FONT_HERSHEY_SIMPLEX,
+                    fontScale,
+                    textColor,
+                    thickness
+                )
+
+                // 4) Draw the bounding box:
+                Imgproc.rectangle(
+                    cMat,
+                    Point(boundingRect.left.toDouble(),  boundingRect.top.toDouble()),
+                    Point(boundingRect.right.toDouble(), boundingRect.bottom.toDouble()),
+                    textColor,
+                    Settings.BoundingBox.boxThickness
+                )
+            }
         }
 
-        // draw the center trace
+        // 4) Draw the center‐trace on cMat (if a center exists):
         TraceRenderer.drawTrace(center, cMat)
 
+        // 5) Convert cMat → Bitmap so we can display the debug overlay:
         val debugOverlayBmp = Bitmap.createBitmap(cMat.cols(), cMat.rows(), Bitmap.Config.ARGB_8888)
         Utils.matToBitmap(cMat, debugOverlayBmp)
 
-        val cropped = boundingRect?.let { extractBoundingBoxRegion(bitmap, it) } ?: debugOverlayBmp
+        // 6) Also return the “cropped” region inside boundingRect (or full overlay if no box):
+        val cropped: Bitmap = boundingRect
+            ?.let { extractBoundingBoxRegion(bitmap, it) }
+            ?: debugOverlayBmp
 
+        // 7) Release Mats to avoid memory leaks:
         pMat.release()
         cMat.release()
+
+        // 8) Return a Pair: (debugOverlay, croppedRegion)
         return debugOverlayBmp to cropped
     }
 
