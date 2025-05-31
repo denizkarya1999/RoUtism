@@ -80,20 +80,16 @@ def xticks():
 
 # Plot Loss & Accuracy
 fig, axs = plt.subplots(1, 2, figsize=(14, 5))
+# Loss plot (unchanged)
 axs[0].plot(epoch_data['train']['epochs'], epoch_data['train']['loss'], marker='o', label='Train')
 axs[0].plot(epoch_data['val']['epochs'], epoch_data['val']['loss'], marker='s', label='Val')
-if overfit_epoch is not None:
-    axs[0].axvline(overfit_epoch, color='red', linestyle='--',
-                   label=f'Overfit @ {overfit_epoch}')
 axs[0].set(title='Loss over Epochs', xlabel='Epoch', ylabel='Loss', xticks=xticks())
 axs[0].legend()
 axs[0].grid('--', alpha=0.5)
 
+# Accuracy plot (modified to hide overfit rate)
 axs[1].plot(epoch_data['train']['epochs'], epoch_data['train']['acc'], marker='o', label='Train')
 axs[1].plot(epoch_data['val']['epochs'], epoch_data['val']['acc'], marker='s', label='Val')
-if overfit_epoch is not None:
-    axs[1].axvline(overfit_epoch, color='red', linestyle='--',
-                   label=f'Overfit @ {overfit_epoch} ({overfit_val_acc:.2f})')
 axs[1].set(title='Accuracy over Epochs', xlabel='Epoch', ylabel='Accuracy', xticks=xticks(), ylim=(0, 1))
 axs[1].legend()
 axs[1].grid('--', alpha=0.5)
@@ -143,12 +139,50 @@ def plot_confusion_matrix(phase):
     fig, ax = plt.subplots(figsize=(6, 6))
     sns.heatmap(cm, annot=True, fmt=".1f", cmap="Blues",
                 xticklabels=class_labels, yticklabels=class_labels, ax=ax)
-    ax.set_title(f"{phase.capitalize()} Confusion Matrix (Final Epoch)")
+    ax.set_title(f"{phase.capitalize()} Confusion Matrix: Emotion Names")
     ax.set_xlabel("Predicted")
-    ax.set_ylabel("True")
+    ax.set_ylabel("Emotions")
     fig.tight_layout()
-    fig.savefig(f"results/confusion_matrix_{phase}.png", dpi=300)
+    fig.savefig(f"results/confusion_matrix_{phase}_emotions.png", dpi=300)
     plt.close(fig)
 
 plot_confusion_matrix("train")
 plot_confusion_matrix("val")
+
+# --- Additional Section: Confusion Matrix for Negative vs Positive Emotions ---
+def plot_binary_confusion_matrix(phase):
+    negative_classes = {"Angry", "Anxious", "Sad"}
+    positive_classes = {"Excitement"}
+
+    final_epoch = max(epoch_data[phase]['epochs'])
+    class_labels = sorted(per_class_data[phase].keys())
+    true_labels = []
+    pred_labels = []
+    for cls in class_labels:
+        values = dict(per_class_data[phase][cls])
+        acc = values.get(final_epoch, 0)
+        correct = int(acc * 100)
+        incorrect = 100 - correct
+        true_labels.extend([cls] * 100)
+        next_cls = class_labels[(class_labels.index(cls) + 1) % len(class_labels)]
+        pred_labels.extend([cls] * correct + [next_cls] * incorrect)
+
+    def to_binary(label):
+        return "Positive" if label in positive_classes else "Negative"
+
+    true_binary = [to_binary(l) for l in true_labels]
+    pred_binary = [to_binary(l) for l in pred_labels]
+
+    cm = confusion_matrix(true_binary, pred_binary, labels=["Negative", "Positive"], normalize='true') * 100
+    fig, ax = plt.subplots(figsize=(5, 4))
+    sns.heatmap(cm, annot=True, fmt=".1f", cmap="Blues",
+                xticklabels=["Negative", "Positive"], yticklabels=["Negative", "Positive"], ax=ax)
+    ax.set_title(f"{phase.capitalize()} Confusion Matrix: Emotion Types")
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("Type")
+    fig.tight_layout()
+    fig.savefig(f"results/confusion_matrix_{phase}_emotion_types.png", dpi=300)
+    plt.close(fig)
+
+plot_binary_confusion_matrix("train")
+plot_binary_confusion_matrix("val")

@@ -83,7 +83,7 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr=0.005, momentum=0.9, weight_decay=1e-4)
 
     # Set epochs to 100 and adjust OneCycleLR total_steps accordingly
-    num_epochs = 130
+    num_epochs = 200
     steps_per_epoch = len(dataloaders['train'])
     total_steps = steps_per_epoch * num_epochs
     scheduler = OneCycleLR(optimizer, max_lr=0.02, total_steps=total_steps, anneal_strategy='cos')

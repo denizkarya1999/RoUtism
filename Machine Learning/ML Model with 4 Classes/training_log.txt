@@ -1,661 +1,2341 @@
 epoch,phase,loss,accuracy
-1,train,0.8240,0.2790
-   Angry,train,acc,0.2963
-   Anxious,train,acc,0.3199
-   Excitement,train,acc,0.2683
-   Sadness,train,acc,0.2317
+1,train,0.8215,0.2733
+   Angry,train,acc,0.2342
+   Anxious,train,acc,0.2491
+   Excitement,train,acc,0.2913
+   Sadness,train,acc,0.3186
 
-1,val,0.7183,0.3821
-   Angry,val,acc,0.1640
-   Anxious,val,acc,0.3266
-   Excitement,val,acc,0.6313
-   Sadness,val,acc,0.4064
+1,val,0.7421,0.3788
+   Angry,val,acc,0.6996
+   Anxious,val,acc,0.6647
+   Excitement,val,acc,0.0073
+   Sadness,val,acc,0.1437
 
-2,train,0.6505,0.4207
-   Angry,train,acc,0.3031
-   Anxious,train,acc,0.4932
-   Excitement,train,acc,0.5820
+2,train,0.6664,0.4090
+   Angry,train,acc,0.3037
+   Anxious,train,acc,0.5236
+   Excitement,train,acc,0.5043
    Sadness,train,acc,0.3043
 
-2,val,0.5928,0.5265
-   Angry,val,acc,0.0363
-   Anxious,val,acc,0.7489
-   Excitement,val,acc,0.9347
-   Sadness,val,acc,0.3861
+2,val,0.4128,0.6136
+   Angry,val,acc,0.4296
+   Anxious,val,acc,0.6589
+   Excitement,val,acc,0.7750
+   Sadness,val,acc,0.5907
 
-3,train,0.4710,0.5413
-   Angry,train,acc,0.3689
-   Anxious,train,acc,0.6882
-   Excitement,train,acc,0.7161
-   Sadness,train,acc,0.3919
+3,train,0.5053,0.5177
+   Angry,train,acc,0.3360
+   Anxious,train,acc,0.6888
+   Excitement,train,acc,0.6646
+   Sadness,train,acc,0.3814
 
-3,val,0.2755,0.6665
-   Angry,val,acc,0.9158
-   Anxious,val,acc,0.8999
-   Excitement,val,acc,0.8462
+3,val,0.3304,0.6306
+   Angry,val,acc,0.6197
+   Anxious,val,acc,0.9303
+   Excitement,val,acc,0.7315
+   Sadness,val,acc,0.2409
+
+4,train,0.3977,0.5793
+   Angry,train,acc,0.3677
+   Anxious,train,acc,0.8050
+   Excitement,train,acc,0.7739
+   Sadness,train,acc,0.3708
+
+4,val,0.2738,0.6411
+   Angry,val,acc,0.7721
+   Anxious,val,acc,0.8520
+   Excitement,val,acc,0.8200
+   Sadness,val,acc,0.1205
+
+5,train,0.3616,0.5932
+   Angry,train,acc,0.4056
+   Anxious,train,acc,0.8211
+   Excitement,train,acc,0.7720
+   Sadness,train,acc,0.3739
+
+5,val,0.2329,0.6785
+   Angry,val,acc,0.9666
+   Anxious,val,acc,0.9274
+   Excitement,val,acc,0.8157
    Sadness,val,acc,0.0044
 
-4,train,0.4068,0.5705
-   Angry,train,acc,0.4037
-   Anxious,train,acc,0.7677
-   Excitement,train,acc,0.7441
-   Sadness,train,acc,0.3665
+6,train,0.3435,0.6043
+   Angry,train,acc,0.3988
+   Anxious,train,acc,0.8466
+   Excitement,train,acc,0.7839
+   Sadness,train,acc,0.3882
 
-4,val,0.4256,0.5613
-   Angry,val,acc,0.9550
-   Anxious,val,acc,0.5602
-   Excitement,val,acc,0.7213
-   Sadness,val,acc,0.0087
+6,val,0.1614,0.6970
+   Angry,val,acc,0.6125
+   Anxious,val,acc,0.9869
+   Excitement,val,acc,0.9608
+   Sadness,val,acc,0.2279
 
-5,train,0.3627,0.5927
-   Angry,train,acc,0.3839
-   Anxious,train,acc,0.8124
-   Excitement,train,acc,0.7832
+7,train,0.3254,0.6099
+   Angry,train,acc,0.3907
+   Anxious,train,acc,0.8547
+   Excitement,train,acc,0.7938
+   Sadness,train,acc,0.4006
+
+7,val,0.1567,0.7130
+   Angry,val,acc,0.1771
+   Anxious,val,acc,0.9768
+   Excitement,val,acc,0.9782
+   Sadness,val,acc,0.7199
+
+8,train,0.3202,0.6174
+   Angry,train,acc,0.4509
+   Anxious,train,acc,0.8410
+   Excitement,train,acc,0.7863
    Sadness,train,acc,0.3913
 
-5,val,0.2856,0.6665
-   Angry,val,acc,0.7199
-   Anxious,val,acc,0.9971
-   Excitement,val,acc,0.8868
-   Sadness,val,acc,0.0624
+8,val,0.1854,0.7221
+   Angry,val,acc,0.8433
+   Anxious,val,acc,0.9724
+   Excitement,val,acc,0.9797
+   Sadness,val,acc,0.0929
 
-6,train,0.3383,0.6012
-   Angry,train,acc,0.3950
-   Anxious,train,acc,0.8230
-   Excitement,train,acc,0.7870
-   Sadness,train,acc,0.4000
-
-6,val,0.1890,0.7028
-   Angry,val,acc,0.0435
-   Anxious,val,acc,0.9536
-   Excitement,val,acc,0.9478
-   Sadness,val,acc,0.8665
-
-7,train,0.3362,0.6090
-   Angry,train,acc,0.4130
-   Anxious,train,acc,0.8472
-   Excitement,train,acc,0.7857
-   Sadness,train,acc,0.3901
-
-7,val,0.2895,0.6604
-   Angry,val,acc,0.0000
-   Anxious,val,acc,0.7576
-   Excitement,val,acc,0.9448
-   Sadness,val,acc,0.9390
-
-8,train,0.3389,0.6070
-   Angry,train,acc,0.4068
-   Anxious,train,acc,0.8280
-   Excitement,train,acc,0.7901
-   Sadness,train,acc,0.4031
-
-8,val,0.2394,0.6978
-   Angry,val,acc,0.0000
-   Anxious,val,acc,1.0000
-   Excitement,val,acc,0.9724
-   Sadness,val,acc,0.8186
-
-9,train,0.3233,0.6104
-   Angry,train,acc,0.3689
-   Anxious,train,acc,0.8516
-   Excitement,train,acc,0.8099
+9,train,0.3095,0.6205
+   Angry,train,acc,0.4137
+   Anxious,train,acc,0.8553
+   Excitement,train,acc,0.8019
    Sadness,train,acc,0.4112
 
-9,val,0.2614,0.6720
-   Angry,val,acc,0.6996
-   Anxious,val,acc,0.9666
-   Excitement,val,acc,1.0000
-   Sadness,val,acc,0.0218
-
-10,train,0.3026,0.6328
-   Angry,train,acc,0.4410
-   Anxious,train,acc,0.8752
-   Excitement,train,acc,0.8317
-   Sadness,train,acc,0.3832
-
-10,val,0.2513,0.6778
-   Angry,val,acc,0.0087
-   Anxious,val,acc,1.0000
-   Excitement,val,acc,0.9884
-   Sadness,val,acc,0.7141
-
-11,train,0.3270,0.6160
-   Angry,train,acc,0.3845
-   Anxious,train,acc,0.8652
-   Excitement,train,acc,0.8081
-   Sadness,train,acc,0.4062
-
-11,val,0.2933,0.6009
-   Angry,val,acc,0.0798
-   Anxious,val,acc,0.5036
-   Excitement,val,acc,0.9405
-   Sadness,val,acc,0.8795
-
-12,train,0.3143,0.6253
-   Angry,train,acc,0.4211
-   Anxious,train,acc,0.8640
-   Excitement,train,acc,0.8161
-   Sadness,train,acc,0.4000
-
-12,val,0.2300,0.6865
-   Angry,val,acc,0.7765
-   Anxious,val,acc,1.0000
-   Excitement,val,acc,0.9695
-   Sadness,val,acc,0.0000
-
-13,train,0.2796,0.6376
-   Angry,train,acc,0.3963
-   Anxious,train,acc,0.8826
-   Excitement,train,acc,0.8335
-   Sadness,train,acc,0.4379
-
-13,val,0.1698,0.6930
-   Angry,val,acc,0.5559
-   Anxious,val,acc,0.9434
-   Excitement,val,acc,0.9913
-   Sadness,val,acc,0.2816
-
-14,train,0.2925,0.6248
-   Angry,train,acc,0.3540
-   Anxious,train,acc,0.8795
-   Excitement,train,acc,0.8503
-   Sadness,train,acc,0.4155
-
-14,val,0.1342,0.7326
-   Angry,val,acc,0.9536
-   Anxious,val,acc,0.9971
-   Excitement,val,acc,0.9797
-   Sadness,val,acc,0.0000
-
-15,train,0.2710,0.6441
-   Angry,train,acc,0.4516
-   Anxious,train,acc,0.8863
-   Excitement,train,acc,0.8466
-   Sadness,train,acc,0.3919
-
-15,val,0.1660,0.6767
-   Angry,val,acc,0.5530
-   Anxious,val,acc,0.9710
-   Excitement,val,acc,0.9869
-   Sadness,val,acc,0.1959
-
-16,train,0.2733,0.6363
-   Angry,train,acc,0.4404
-   Anxious,train,acc,0.8863
-   Excitement,train,acc,0.8379
-   Sadness,train,acc,0.3807
-
-16,val,0.1278,0.7366
-   Angry,val,acc,0.0639
-   Anxious,val,acc,0.9724
-   Excitement,val,acc,0.9971
-   Sadness,val,acc,0.9129
-
-17,train,0.2629,0.6443
-   Angry,train,acc,0.4056
-   Anxious,train,acc,0.9006
-   Excitement,train,acc,0.8571
-   Sadness,train,acc,0.4137
-
-17,val,0.2864,0.6713
-   Angry,val,acc,0.9637
-   Anxious,val,acc,0.7242
-   Excitement,val,acc,0.9971
-   Sadness,val,acc,0.0000
-
-18,train,0.2704,0.6498
-   Angry,train,acc,0.4124
-   Anxious,train,acc,0.8876
-   Excitement,train,acc,0.8584
-   Sadness,train,acc,0.4410
-
-18,val,0.3449,0.6052
-   Angry,val,acc,0.9361
-   Anxious,val,acc,0.5864
-   Excitement,val,acc,0.8984
-   Sadness,val,acc,0.0000
-
-19,train,0.2832,0.6399
-   Angry,train,acc,0.4280
-   Anxious,train,acc,0.8863
-   Excitement,train,acc,0.8422
-   Sadness,train,acc,0.4031
-
-19,val,0.1939,0.7025
-   Angry,val,acc,0.9695
-   Anxious,val,acc,0.8592
-   Excitement,val,acc,0.9811
-   Sadness,val,acc,0.0000
-
-20,train,0.2779,0.6362
-   Angry,train,acc,0.3720
-   Anxious,train,acc,0.8764
-   Excitement,train,acc,0.8689
-   Sadness,train,acc,0.4273
-
-20,val,0.2038,0.6829
-   Angry,val,acc,0.0929
-   Anxious,val,acc,0.9913
-   Excitement,val,acc,0.8171
-   Sadness,val,acc,0.8302
-
-21,train,0.2492,0.6547
-   Angry,train,acc,0.4652
-   Anxious,train,acc,0.9174
-   Excitement,train,acc,0.8447
-   Sadness,train,acc,0.3913
-
-21,val,0.1287,0.7355
-   Angry,val,acc,0.9811
-   Anxious,val,acc,0.9753
-   Excitement,val,acc,0.9797
-   Sadness,val,acc,0.0058
-
-22,train,0.2789,0.6416
-   Angry,train,acc,0.3503
-   Anxious,train,acc,0.8913
-   Excitement,train,acc,0.8571
-   Sadness,train,acc,0.4677
-
-22,val,0.1452,0.7275
-   Angry,val,acc,0.9390
+9,val,0.1695,0.7177
+   Angry,val,acc,0.8970
    Anxious,val,acc,0.9898
-   Excitement,val,acc,0.9811
+   Excitement,val,acc,0.9840
    Sadness,val,acc,0.0000
 
-23,train,0.2618,0.6539
-   Angry,train,acc,0.4478
-   Anxious,train,acc,0.8957
-   Excitement,train,acc,0.8640
-   Sadness,train,acc,0.4081
+10,train,0.3231,0.6172
+   Angry,train,acc,0.4484
+   Anxious,train,acc,0.8621
+   Excitement,train,acc,0.8099
+   Sadness,train,acc,0.3484
 
-23,val,0.1558,0.7271
-   Angry,val,acc,0.0029
-   Anxious,val,acc,0.9956
-   Excitement,val,acc,0.9956
-   Sadness,val,acc,0.9144
+10,val,0.1465,0.7239
+   Angry,val,acc,0.0087
+   Anxious,val,acc,0.9739
+   Excitement,val,acc,0.9637
+   Sadness,val,acc,0.9492
 
-24,train,0.2487,0.6474
-   Angry,train,acc,0.4099
-   Anxious,train,acc,0.9006
-   Excitement,train,acc,0.8696
+11,train,0.2959,0.6352
+   Angry,train,acc,0.4087
+   Anxious,train,acc,0.8814
+   Excitement,train,acc,0.8155
+   Sadness,train,acc,0.4354
+
+11,val,0.1552,0.7388
+   Angry,val,acc,0.4078
+   Anxious,val,acc,0.9594
+   Excitement,val,acc,0.9390
+   Sadness,val,acc,0.6488
+
+12,train,0.2798,0.6373
+   Angry,train,acc,0.3882
+   Anxious,train,acc,0.8857
+   Excitement,train,acc,0.8180
+   Sadness,train,acc,0.4571
+
+12,val,0.1831,0.7050
+   Angry,val,acc,0.8491
+   Anxious,val,acc,0.9768
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.0000
+
+13,train,0.2853,0.6329
+   Angry,train,acc,0.4031
+   Anxious,train,acc,0.8745
+   Excitement,train,acc,0.8534
+   Sadness,train,acc,0.4006
+
+13,val,0.1819,0.7231
+   Angry,val,acc,0.9289
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9637
+   Sadness,val,acc,0.0000
+
+14,train,0.2827,0.6449
+   Angry,train,acc,0.4845
+   Anxious,train,acc,0.8646
+   Excitement,train,acc,0.8211
    Sadness,train,acc,0.4093
 
-24,val,0.1112,0.7406
-   Angry,val,acc,0.9753
-   Anxious,val,acc,0.9956
-   Excitement,val,acc,0.9898
-   Sadness,val,acc,0.0015
+14,val,0.2556,0.6785
+   Angry,val,acc,0.5878
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9695
+   Sadness,val,acc,0.1567
 
-25,train,0.2307,0.6620
-   Angry,train,acc,0.4398
+15,train,0.2653,0.6416
+   Angry,train,acc,0.4130
+   Anxious,train,acc,0.8969
+   Excitement,train,acc,0.8354
+   Sadness,train,acc,0.4211
+
+15,val,0.1206,0.7540
+   Angry,val,acc,0.3541
+   Anxious,val,acc,0.9492
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.7213
+
+16,train,0.2779,0.6351
+   Angry,train,acc,0.4230
+   Anxious,train,acc,0.8876
+   Excitement,train,acc,0.8248
+   Sadness,train,acc,0.4050
+
+16,val,0.2533,0.6567
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9245
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.7054
+
+17,train,0.2770,0.6419
+   Angry,train,acc,0.4000
+   Anxious,train,acc,0.8882
+   Excitement,train,acc,0.8565
+   Sadness,train,acc,0.4230
+
+17,val,0.1438,0.7057
+   Angry,val,acc,0.1582
+   Anxious,val,acc,0.9666
+   Excitement,val,acc,0.9855
+   Sadness,val,acc,0.7126
+
+18,train,0.2651,0.6568
+   Angry,train,acc,0.4503
+   Anxious,train,acc,0.8888
+   Excitement,train,acc,0.8509
+   Sadness,train,acc,0.4373
+
+18,val,0.1420,0.7355
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9913
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.9565
+
+19,train,0.2913,0.6362
+   Angry,train,acc,0.4143
+   Anxious,train,acc,0.8739
+   Excitement,train,acc,0.8137
+   Sadness,train,acc,0.4429
+
+19,val,0.2356,0.6792
+   Angry,val,acc,0.0377
+   Anxious,val,acc,0.8026
+   Excitement,val,acc,0.9869
+   Sadness,val,acc,0.8897
+
+20,train,0.2701,0.6405
+   Angry,train,acc,0.4317
+   Anxious,train,acc,0.8932
+   Excitement,train,acc,0.8522
+   Sadness,train,acc,0.3851
+
+20,val,0.1684,0.7090
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.8824
+   Excitement,val,acc,0.9985
+   Sadness,val,acc,0.9550
+
+21,train,0.2452,0.6554
+   Angry,train,acc,0.4298
+   Anxious,train,acc,0.9075
+   Excitement,train,acc,0.8540
+   Sadness,train,acc,0.4304
+
+21,val,0.2248,0.6796
+   Angry,val,acc,0.9216
+   Anxious,val,acc,0.8186
+   Excitement,val,acc,0.9202
+   Sadness,val,acc,0.0581
+
+22,train,0.2506,0.6582
+   Angry,train,acc,0.4236
    Anxious,train,acc,0.9124
-   Excitement,train,acc,0.9000
-   Sadness,train,acc,0.3957
+   Excitement,train,acc,0.8385
+   Sadness,train,acc,0.4584
 
-25,val,0.1473,0.7319
-   Angry,val,acc,0.9797
-   Anxious,val,acc,0.9971
-   Excitement,val,acc,0.9507
+22,val,0.1231,0.7355
+   Angry,val,acc,0.9710
+   Anxious,val,acc,0.9753
+   Excitement,val,acc,0.9739
+   Sadness,val,acc,0.0218
+
+23,train,0.2459,0.6545
+   Angry,train,acc,0.4385
+   Anxious,train,acc,0.9006
+   Excitement,train,acc,0.8447
+   Sadness,train,acc,0.4342
+
+23,val,0.2236,0.6952
+   Angry,val,acc,0.9826
+   Anxious,val,acc,0.9869
+   Excitement,val,acc,0.7954
+   Sadness,val,acc,0.0160
+
+24,train,0.2332,0.6610
+   Angry,train,acc,0.4509
+   Anxious,train,acc,0.9155
+   Excitement,train,acc,0.8453
+   Sadness,train,acc,0.4323
+
+24,val,0.1201,0.7398
+   Angry,val,acc,0.9826
+   Anxious,val,acc,0.9913
+   Excitement,val,acc,0.9855
    Sadness,val,acc,0.0000
 
-26,train,0.2353,0.6665
-   Angry,train,acc,0.4627
-   Anxious,train,acc,0.9137
-   Excitement,train,acc,0.8876
-   Sadness,train,acc,0.4019
+25,train,0.2393,0.6598
+   Angry,train,acc,0.4385
+   Anxious,train,acc,0.9037
+   Excitement,train,acc,0.8578
+   Sadness,train,acc,0.4391
 
-26,val,0.1877,0.7195
+25,val,0.7388,0.5646
+   Angry,val,acc,0.3062
+   Anxious,val,acc,0.9521
+   Excitement,val,acc,1.0000
+   Sadness,val,acc,0.0000
+
+26,train,0.3168,0.6259
+   Angry,train,acc,0.4062
+   Anxious,train,acc,0.8776
+   Excitement,train,acc,0.8025
+   Sadness,train,acc,0.4174
+
+26,val,0.4632,0.6168
+   Angry,val,acc,0.9782
+   Anxious,val,acc,0.6720
+   Excitement,val,acc,0.7881
+   Sadness,val,acc,0.0290
+
+27,train,0.5178,0.5185
+   Angry,train,acc,0.3720
+   Anxious,train,acc,0.6627
+   Excitement,train,acc,0.7385
+   Sadness,train,acc,0.3006
+
+27,val,0.1979,0.6600
+   Angry,val,acc,0.3919
+   Anxious,val,acc,0.7866
+   Excitement,val,acc,0.9768
+   Sadness,val,acc,0.4848
+
+28,train,0.2852,0.6370
+   Angry,train,acc,0.4168
+   Anxious,train,acc,0.8739
+   Excitement,train,acc,0.8385
+   Sadness,train,acc,0.4186
+
+28,val,0.2208,0.6923
+   Angry,val,acc,0.9869
+   Anxious,val,acc,0.8940
+   Excitement,val,acc,0.8882
+   Sadness,val,acc,0.0000
+
+29,train,0.2465,0.6551
+   Angry,train,acc,0.4112
+   Anxious,train,acc,0.9025
+   Excitement,train,acc,0.8714
+   Sadness,train,acc,0.4354
+
+29,val,0.2190,0.6832
+   Angry,val,acc,0.6415
+   Anxious,val,acc,0.9913
+   Excitement,val,acc,0.8273
+   Sadness,val,acc,0.2729
+
+30,train,0.2433,0.6616
+   Angry,train,acc,0.4901
+   Anxious,train,acc,0.9056
+   Excitement,train,acc,0.8547
+   Sadness,train,acc,0.3963
+
+30,val,0.1090,0.7326
+   Angry,val,acc,0.0290
+   Anxious,val,acc,0.9724
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.9376
+
+31,train,0.2429,0.6540
+   Angry,train,acc,0.4000
+   Anxious,train,acc,0.9025
+   Excitement,train,acc,0.8571
+   Sadness,train,acc,0.4565
+
+31,val,0.2419,0.6970
    Angry,val,acc,0.0000
    Anxious,val,acc,0.9971
-   Excitement,val,acc,0.9710
-   Sadness,val,acc,0.9100
+   Excitement,val,acc,0.9898
+   Sadness,val,acc,0.8012
 
-27,train,0.2242,0.6644
-   Angry,train,acc,0.4261
-   Anxious,train,acc,0.9075
-   Excitement,train,acc,0.8882
-   Sadness,train,acc,0.4360
+32,train,0.2347,0.6630
+   Angry,train,acc,0.4006
+   Anxious,train,acc,0.9068
+   Excitement,train,acc,0.8807
+   Sadness,train,acc,0.4640
 
-27,val,0.2728,0.6760
-   Angry,val,acc,0.0232
-   Anxious,val,acc,0.9927
-   Excitement,val,acc,0.9260
-   Sadness,val,acc,0.7620
+32,val,0.1295,0.7355
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9884
+   Excitement,val,acc,0.9608
+   Sadness,val,acc,0.9927
 
-28,train,0.2188,0.6626
-   Angry,train,acc,0.4106
-   Anxious,train,acc,0.9149
-   Excitement,train,acc,0.8957
+33,train,0.2282,0.6663
+   Angry,train,acc,0.4795
+   Anxious,train,acc,0.9037
+   Excitement,train,acc,0.8689
+   Sadness,train,acc,0.4130
+
+33,val,0.1186,0.7406
+   Angry,val,acc,0.0058
+   Anxious,val,acc,0.9898
+   Excitement,val,acc,0.9884
+   Sadness,val,acc,0.9782
+
+34,train,0.2430,0.6519
+   Angry,train,acc,0.4068
+   Anxious,train,acc,0.8957
+   Excitement,train,acc,0.8621
+   Sadness,train,acc,0.4429
+
+34,val,0.1157,0.7427
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.9797
+
+35,train,0.2344,0.6578
+   Angry,train,acc,0.4578
+   Anxious,train,acc,0.9143
+   Excitement,train,acc,0.8640
+   Sadness,train,acc,0.3950
+
+35,val,0.1337,0.7246
+   Angry,val,acc,0.0044
+   Anxious,val,acc,0.9550
+   Excitement,val,acc,0.9927
+   Sadness,val,acc,0.9463
+
+36,train,0.2189,0.6679
+   Angry,train,acc,0.4565
+   Anxious,train,acc,0.9118
+   Excitement,train,acc,0.8708
+   Sadness,train,acc,0.4323
+
+36,val,0.1181,0.7442
+   Angry,val,acc,0.9884
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.0000
+
+37,train,0.2117,0.6725
+   Angry,train,acc,0.4820
+   Anxious,train,acc,0.9317
+   Excitement,train,acc,0.8851
+   Sadness,train,acc,0.3913
+
+37,val,0.1102,0.7438
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9942
+   Excitement,val,acc,0.9869
+   Sadness,val,acc,0.9942
+
+38,train,0.2097,0.6787
+   Angry,train,acc,0.4528
+   Anxious,train,acc,0.9472
+   Excitement,train,acc,0.8857
    Sadness,train,acc,0.4292
 
-28,val,0.1247,0.7300
-   Angry,val,acc,0.0508
-   Anxious,val,acc,0.9971
-   Excitement,val,acc,0.9840
-   Sadness,val,acc,0.8882
+38,val,0.1044,0.7373
+   Angry,val,acc,0.0160
+   Anxious,val,acc,0.9927
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.9492
 
-29,train,0.2232,0.6720
-   Angry,train,acc,0.4584
-   Anxious,train,acc,0.9143
-   Excitement,train,acc,0.9068
-   Sadness,train,acc,0.4087
+39,train,0.2080,0.6745
+   Angry,train,acc,0.3944
+   Anxious,train,acc,0.9273
+   Excitement,train,acc,0.8857
+   Sadness,train,acc,0.4907
 
-29,val,0.1687,0.6988
-   Angry,val,acc,0.6749
-   Anxious,val,acc,0.9100
-   Excitement,val,acc,0.9448
-   Sadness,val,acc,0.2656
+39,val,0.1229,0.7388
+   Angry,val,acc,0.9942
+   Anxious,val,acc,0.9811
+   Excitement,val,acc,0.9797
+   Sadness,val,acc,0.0000
 
-30,train,0.2352,0.6669
-   Angry,train,acc,0.4248
-   Anxious,train,acc,0.8975
-   Excitement,train,acc,0.8615
-   Sadness,train,acc,0.4839
+40,train,0.2087,0.6759
+   Angry,train,acc,0.4472
+   Anxious,train,acc,0.9317
+   Excitement,train,acc,0.8975
+   Sadness,train,acc,0.4273
 
-30,val,0.1844,0.7046
-   Angry,val,acc,0.0015
-   Anxious,val,acc,0.9985
-   Excitement,val,acc,0.9942
-   Sadness,val,acc,0.8244
-
-31,train,0.2208,0.6711
-   Angry,train,acc,0.4031
-   Anxious,train,acc,0.9286
-   Excitement,train,acc,0.8901
-   Sadness,train,acc,0.4627
-
-31,val,0.1153,0.7427
-   Angry,val,acc,0.0000
+40,val,0.1256,0.7293
+   Angry,val,acc,0.6473
    Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9623
+   Sadness,val,acc,0.3120
+
+41,train,0.1976,0.6863
+   Angry,train,acc,0.4447
+   Anxious,train,acc,0.9516
+   Excitement,train,acc,0.8814
+   Sadness,train,acc,0.4677
+
+41,val,0.1733,0.7148
+   Angry,val,acc,0.7808
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9608
+   Sadness,val,acc,0.1176
+
+42,train,0.1966,0.6882
+   Angry,train,acc,0.4050
+   Anxious,train,acc,0.9329
+   Excitement,train,acc,0.8925
+   Sadness,train,acc,0.5224
+
+42,val,0.1000,0.7631
+   Angry,val,acc,0.4586
+   Anxious,val,acc,0.9898
+   Excitement,val,acc,0.9898
+   Sadness,val,acc,0.6139
+
+43,train,0.2028,0.6826
+   Angry,train,acc,0.4963
+   Anxious,train,acc,0.9248
+   Excitement,train,acc,0.8963
+   Sadness,train,acc,0.4130
+
+43,val,0.1212,0.7594
+   Angry,val,acc,0.8563
+   Anxious,val,acc,0.9623
+   Excitement,val,acc,0.9898
+   Sadness,val,acc,0.2293
+
+44,train,0.2193,0.6731
+   Angry,train,acc,0.4199
+   Anxious,train,acc,0.9335
+   Excitement,train,acc,0.8907
+   Sadness,train,acc,0.4484
+
+44,val,0.1631,0.7304
+   Angry,val,acc,0.9565
+   Anxious,val,acc,0.9884
+   Excitement,val,acc,0.9768
+   Sadness,val,acc,0.0000
+
+45,train,0.2524,0.6573
+   Angry,train,acc,0.4745
+   Anxious,train,acc,0.8888
+   Excitement,train,acc,0.8826
+   Sadness,train,acc,0.3832
+
+45,val,0.1285,0.7326
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9927
+   Sadness,val,acc,0.9390
+
+46,train,0.2092,0.6784
+   Angry,train,acc,0.4118
+   Anxious,train,acc,0.9267
+   Excitement,train,acc,0.8925
+   Sadness,train,acc,0.4826
+
+46,val,0.1037,0.7602
+   Angry,val,acc,0.2148
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.8345
+
+47,train,0.1965,0.6859
+   Angry,train,acc,0.4416
+   Anxious,train,acc,0.9286
+   Excitement,train,acc,0.8981
+   Sadness,train,acc,0.4752
+
+47,val,0.1143,0.7409
+   Angry,val,acc,0.9942
+   Anxious,val,acc,0.9782
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.0000
+
+48,train,0.2081,0.6683
+   Angry,train,acc,0.4404
+   Anxious,train,acc,0.9155
+   Excitement,train,acc,0.8814
+   Sadness,train,acc,0.4360
+
+48,val,0.1253,0.7467
+   Angry,val,acc,0.1887
+   Anxious,val,acc,0.9550
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.8491
+
+49,train,0.2005,0.6793
+   Angry,train,acc,0.5130
+   Anxious,train,acc,0.9335
+   Excitement,train,acc,0.8963
+   Sadness,train,acc,0.3745
+
+49,val,0.1226,0.7391
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.9666
+
+50,train,0.1975,0.6815
+   Angry,train,acc,0.4304
+   Anxious,train,acc,0.9317
+   Excitement,train,acc,0.8981
+   Sadness,train,acc,0.4658
+
+50,val,0.1002,0.7547
+   Angry,val,acc,0.3599
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.6647
+
+51,train,0.1941,0.6818
+   Angry,train,acc,0.4478
+   Anxious,train,acc,0.9323
+   Excitement,train,acc,0.9118
+   Sadness,train,acc,0.4354
+
+51,val,0.5457,0.6110
+   Angry,val,acc,0.0000
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.8970
+   Sadness,val,acc,0.5472
+
+52,train,0.1897,0.6845
+   Angry,train,acc,0.4497
+   Anxious,train,acc,0.9404
+   Excitement,train,acc,0.9043
+   Sadness,train,acc,0.4435
+
+52,val,0.0977,0.7413
+   Angry,val,acc,0.7692
+   Anxious,val,acc,0.9913
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.2075
+
+53,train,0.1974,0.6857
+   Angry,train,acc,0.4621
+   Anxious,train,acc,0.9447
+   Excitement,train,acc,0.9025
+   Sadness,train,acc,0.4335
+
+53,val,0.1076,0.7442
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9826
+
+54,train,0.1933,0.6865
+   Angry,train,acc,0.4652
+   Anxious,train,acc,0.9199
+   Excitement,train,acc,0.8888
+   Sadness,train,acc,0.4720
+
+54,val,0.1601,0.7337
+   Angry,val,acc,0.4528
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9144
+   Sadness,val,acc,0.5689
+
+55,train,0.1892,0.6904
+   Angry,train,acc,0.4509
+   Anxious,train,acc,0.9354
+   Excitement,train,acc,0.9280
+   Sadness,train,acc,0.4472
+
+55,val,0.1174,0.7431
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9971
    Excitement,val,acc,0.9898
    Sadness,val,acc,0.9855
 
-32,train,0.2746,0.6467
-   Angry,train,acc,0.3863
-   Anxious,train,acc,0.9112
-   Excitement,train,acc,0.8646
-   Sadness,train,acc,0.4248
+56,train,0.1965,0.6871
+   Angry,train,acc,0.4435
+   Anxious,train,acc,0.9342
+   Excitement,train,acc,0.9081
+   Sadness,train,acc,0.4627
 
-32,val,0.1234,0.7329
-   Angry,val,acc,0.9492
+56,val,0.1320,0.7315
+   Angry,val,acc,0.0798
    Anxious,val,acc,0.9942
-   Excitement,val,acc,0.9869
-   Sadness,val,acc,0.0015
+   Excitement,val,acc,0.9492
+   Sadness,val,acc,0.9028
 
-33,train,0.5428,0.5356
-   Angry,train,acc,0.3658
-   Anxious,train,acc,0.7348
-   Excitement,train,acc,0.6988
-   Sadness,train,acc,0.3429
+57,train,0.1941,0.6915
+   Angry,train,acc,0.4969
+   Anxious,train,acc,0.9348
+   Excitement,train,acc,0.9075
+   Sadness,train,acc,0.4267
 
-33,val,0.3067,0.6440
-   Angry,val,acc,0.5704
+57,val,0.1118,0.7377
+   Angry,val,acc,0.0769
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.8839
+
+58,train,0.1824,0.6977
+   Angry,train,acc,0.4267
+   Anxious,train,acc,0.9435
+   Excitement,train,acc,0.9161
+   Sadness,train,acc,0.5043
+
+58,val,0.1503,0.7319
+   Angry,val,acc,0.9463
    Anxious,val,acc,0.9840
-   Excitement,val,acc,0.8897
-   Sadness,val,acc,0.1321
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
 
-34,train,0.3149,0.6193
-   Angry,train,acc,0.4453
-   Anxious,train,acc,0.8540
-   Excitement,train,acc,0.8093
-   Sadness,train,acc,0.3683
+59,train,0.1884,0.6911
+   Angry,train,acc,0.4671
+   Anxious,train,acc,0.9590
+   Excitement,train,acc,0.9012
+   Sadness,train,acc,0.4373
 
-34,val,0.3210,0.6270
-   Angry,val,acc,0.3120
+59,val,0.1099,0.7456
+   Angry,val,acc,0.9913
+   Anxious,val,acc,0.9942
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+60,train,0.1809,0.6890
+   Angry,train,acc,0.4329
+   Anxious,train,acc,0.9453
+   Excitement,train,acc,0.9106
+   Sadness,train,acc,0.4671
+
+60,val,0.1025,0.7453
+   Angry,val,acc,0.9927
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9927
+   Sadness,val,acc,0.0000
+
+61,train,0.1894,0.6884
+   Angry,train,acc,0.4671
+   Anxious,train,acc,0.9578
+   Excitement,train,acc,0.9168
+   Sadness,train,acc,0.4118
+
+61,val,0.1069,0.7456
+   Angry,val,acc,0.9942
    Anxious,val,acc,0.9971
-   Excitement,val,acc,0.5704
-   Sadness,val,acc,0.6284
-
-35,train,0.2563,0.6550
-   Angry,train,acc,0.4087
-   Anxious,train,acc,0.8925
-   Excitement,train,acc,0.8422
-   Sadness,train,acc,0.4764
-
-35,val,0.1665,0.7362
-   Angry,val,acc,0.9695
-   Anxious,val,acc,0.9840
    Excitement,val,acc,0.9913
    Sadness,val,acc,0.0000
 
-36,train,0.2344,0.6677
-   Angry,train,acc,0.4497
-   Anxious,train,acc,0.9124
-   Excitement,train,acc,0.8609
-   Sadness,train,acc,0.4478
+62,train,0.1752,0.7008
+   Angry,train,acc,0.5050
+   Anxious,train,acc,0.9627
+   Excitement,train,acc,0.9137
+   Sadness,train,acc,0.4217
 
-36,val,0.1541,0.7202
-   Angry,val,acc,0.0015
-   Anxious,val,acc,0.9971
-   Excitement,val,acc,0.8999
-   Sadness,val,acc,0.9826
-
-37,train,0.2273,0.6666
-   Angry,train,acc,0.4124
-   Anxious,train,acc,0.9137
-   Excitement,train,acc,0.9075
-   Sadness,train,acc,0.4329
-
-37,val,0.1150,0.7377
-   Angry,val,acc,0.9448
-   Anxious,val,acc,0.9782
-   Excitement,val,acc,0.9927
-   Sadness,val,acc,0.0348
-
-38,train,0.2259,0.6671
-   Angry,train,acc,0.4441
-   Anxious,train,acc,0.9068
-   Excitement,train,acc,0.8894
-   Sadness,train,acc,0.4280
-
-38,val,0.1090,0.7417
+62,val,0.1065,0.7435
    Angry,val,acc,0.9768
-   Anxious,val,acc,0.9927
-   Excitement,val,acc,0.9898
-   Sadness,val,acc,0.0073
-
-39,train,0.2154,0.6804
-   Angry,train,acc,0.4714
-   Anxious,train,acc,0.9230
-   Excitement,train,acc,0.9217
-   Sadness,train,acc,0.4056
-
-39,val,0.1300,0.7402
-   Angry,val,acc,0.9753
-   Anxious,val,acc,0.9884
-   Excitement,val,acc,0.9971
-   Sadness,val,acc,0.0000
-
-40,train,0.2155,0.6719
-   Angry,train,acc,0.4161
-   Anxious,train,acc,0.9248
-   Excitement,train,acc,0.8863
-   Sadness,train,acc,0.4602
-
-40,val,0.1488,0.7337
-   Angry,val,acc,0.9492
    Anxious,val,acc,0.9985
-   Excitement,val,acc,0.9869
-   Sadness,val,acc,0.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0015
 
-41,train,0.2327,0.6613
-   Angry,train,acc,0.4280
-   Anxious,train,acc,0.9149
-   Excitement,train,acc,0.8969
-   Sadness,train,acc,0.4056
+63,train,0.1819,0.6925
+   Angry,train,acc,0.4907
+   Anxious,train,acc,0.9435
+   Excitement,train,acc,0.9298
+   Sadness,train,acc,0.4062
 
-41,val,0.1324,0.7351
-   Angry,val,acc,0.0000
-   Anxious,val,acc,0.9840
-   Excitement,val,acc,0.9840
-   Sadness,val,acc,0.9724
-
-42,train,0.2119,0.6739
-   Angry,train,acc,0.4559
-   Anxious,train,acc,0.9360
-   Excitement,train,acc,0.8944
-   Sadness,train,acc,0.4093
-
-42,val,0.1222,0.7348
-   Angry,val,acc,0.9521
+63,val,0.1115,0.7449
+   Angry,val,acc,0.9913
    Anxious,val,acc,0.9942
-   Excitement,val,acc,0.9927
-   Sadness,val,acc,0.0000
-
-43,train,0.2136,0.6651
-   Angry,train,acc,0.4373
-   Anxious,train,acc,0.9348
-   Excitement,train,acc,0.8882
-   Sadness,train,acc,0.4000
-
-43,val,0.1244,0.7529
-   Angry,val,acc,0.2279
-   Anxious,val,acc,0.9811
-   Excitement,val,acc,1.0000
-   Sadness,val,acc,0.8026
-
-44,train,0.2183,0.6579
-   Angry,train,acc,0.3963
-   Anxious,train,acc,0.9236
-   Excitement,train,acc,0.9043
-   Sadness,train,acc,0.4075
-
-44,val,0.0964,0.7489
-   Angry,val,acc,0.0189
-   Anxious,val,acc,0.9971
-   Excitement,val,acc,1.0000
-   Sadness,val,acc,0.9797
-
-45,train,0.1988,0.6868
-   Angry,train,acc,0.4540
-   Anxious,train,acc,0.9429
-   Excitement,train,acc,0.9174
-   Sadness,train,acc,0.4329
-
-45,val,0.0997,0.7453
-   Angry,val,acc,0.9971
-   Anxious,val,acc,0.9898
    Excitement,val,acc,0.9942
    Sadness,val,acc,0.0000
 
-46,train,0.1971,0.6770
-   Angry,train,acc,0.4540
-   Anxious,train,acc,0.9410
-   Excitement,train,acc,0.9056
-   Sadness,train,acc,0.4075
+64,train,0.1776,0.6972
+   Angry,train,acc,0.4789
+   Anxious,train,acc,0.9484
+   Excitement,train,acc,0.9329
+   Sadness,train,acc,0.4286
 
-46,val,0.2577,0.6865
-   Angry,val,acc,0.7562
-   Anxious,val,acc,0.9971
+64,val,0.1061,0.7435
+   Angry,val,acc,0.9913
+   Anxious,val,acc,0.9898
    Excitement,val,acc,0.9927
    Sadness,val,acc,0.0000
 
-47,train,0.2283,0.6665
-   Angry,train,acc,0.4559
-   Anxious,train,acc,0.9205
-   Excitement,train,acc,0.8944
-   Sadness,train,acc,0.3950
+65,train,0.1819,0.6960
+   Angry,train,acc,0.4708
+   Anxious,train,acc,0.9323
+   Excitement,train,acc,0.9242
+   Sadness,train,acc,0.4565
 
-47,val,0.1227,0.7329
-   Angry,val,acc,0.9681
-   Anxious,val,acc,0.9695
-   Excitement,val,acc,0.9710
-   Sadness,val,acc,0.0232
+65,val,0.1201,0.7380
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9579
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.9985
 
-48,train,0.2048,0.6806
-   Angry,train,acc,0.4081
-   Anxious,train,acc,0.9242
-   Excitement,train,acc,0.9280
-   Sadness,train,acc,0.4621
+66,train,0.1799,0.6955
+   Angry,train,acc,0.4658
+   Anxious,train,acc,0.9453
+   Excitement,train,acc,0.9416
+   Sadness,train,acc,0.4292
 
-48,val,0.2749,0.6702
-   Angry,val,acc,0.6357
+66,val,0.1186,0.7417
+   Angry,val,acc,0.9710
    Anxious,val,acc,0.9985
-   Excitement,val,acc,0.9971
-   Sadness,val,acc,0.0493
-
-49,train,0.2063,0.6818
-   Angry,train,acc,0.4497
-   Anxious,train,acc,0.9174
-   Excitement,train,acc,0.9280
-   Sadness,train,acc,0.4323
-
-49,val,0.1188,0.7674
-   Angry,val,acc,0.1771
-   Anxious,val,acc,0.9869
-   Excitement,val,acc,0.9840
-   Sadness,val,acc,0.9216
-
-50,train,0.2033,0.6756
-   Angry,train,acc,0.4211
-   Anxious,train,acc,0.9298
-   Excitement,train,acc,0.9236
-   Sadness,train,acc,0.4280
-
-50,val,0.2613,0.6981
-   Angry,val,acc,0.7460
-   Anxious,val,acc,0.9985
-   Excitement,val,acc,0.9869
-   Sadness,val,acc,0.0610
-
-51,train,0.2000,0.6870
-   Angry,train,acc,0.4416
-   Anxious,train,acc,0.9373
-   Excitement,train,acc,0.9056
-   Sadness,train,acc,0.4634
-
-51,val,0.2740,0.6967
-   Angry,val,acc,0.8055
-   Anxious,val,acc,0.9840
    Excitement,val,acc,0.9971
    Sadness,val,acc,0.0000
 
-52,train,0.2015,0.6840
-   Angry,train,acc,0.4596
-   Anxious,train,acc,0.9286
-   Excitement,train,acc,0.9130
-   Sadness,train,acc,0.4348
+67,train,0.1758,0.6977
+   Angry,train,acc,0.4379
+   Anxious,train,acc,0.9429
+   Excitement,train,acc,0.9323
+   Sadness,train,acc,0.4776
 
-52,val,0.1107,0.7398
-   Angry,val,acc,0.7939
-   Anxious,val,acc,0.9869
-   Excitement,val,acc,0.9869
-   Sadness,val,acc,0.1916
+67,val,0.2318,0.6713
+   Angry,val,acc,0.7373
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.8868
+   Sadness,val,acc,0.0624
 
-53,train,0.1895,0.6913
-   Angry,train,acc,0.4733
-   Anxious,train,acc,0.9261
-   Excitement,train,acc,0.9329
-   Sadness,train,acc,0.4329
+68,train,0.1769,0.6935
+   Angry,train,acc,0.4901
+   Anxious,train,acc,0.9292
+   Excitement,train,acc,0.9224
+   Sadness,train,acc,0.4323
 
-53,val,0.1429,0.7268
-   Angry,val,acc,0.0000
-   Anxious,val,acc,0.9303
+68,val,0.1048,0.7478
+   Angry,val,acc,0.9361
+   Anxious,val,acc,0.9956
    Excitement,val,acc,0.9956
-   Sadness,val,acc,0.9811
+   Sadness,val,acc,0.0639
 
-54,train,0.1846,0.6876
-   Angry,train,acc,0.4385
-   Anxious,train,acc,0.9398
+69,train,0.1776,0.7003
+   Angry,train,acc,0.4534
+   Anxious,train,acc,0.9323
+   Excitement,train,acc,0.9410
+   Sadness,train,acc,0.4745
+
+69,val,1.3320,0.4398
+   Angry,val,acc,0.1422
+   Anxious,val,acc,0.6168
+   Excitement,val,acc,1.0000
+   Sadness,val,acc,0.0000
+
+70,train,0.2022,0.6856
+   Angry,train,acc,0.4627
+   Anxious,train,acc,0.9236
+   Excitement,train,acc,0.9106
+   Sadness,train,acc,0.4453
+
+70,val,0.1128,0.7246
+   Angry,val,acc,0.1437
+   Anxious,val,acc,0.9724
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.7852
+
+71,train,0.1933,0.6938
+   Angry,train,acc,0.5006
+   Anxious,train,acc,0.9472
+   Excitement,train,acc,0.9081
+   Sadness,train,acc,0.4193
+
+71,val,0.1219,0.7377
+   Angry,val,acc,0.9884
+   Anxious,val,acc,0.9666
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.0000
+
+72,train,0.1752,0.7022
+   Angry,train,acc,0.4857
+   Anxious,train,acc,0.9416
+   Excitement,train,acc,0.9404
+   Sadness,train,acc,0.4410
+
+72,val,0.1068,0.7395
+   Angry,val,acc,0.0653
+   Anxious,val,acc,0.9927
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9028
+
+73,train,0.1796,0.6975
+   Angry,train,acc,0.4547
+   Anxious,train,acc,0.9590
+   Excitement,train,acc,0.9248
+   Sadness,train,acc,0.4516
+
+73,val,0.1086,0.7812
+   Angry,val,acc,0.5269
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.6096
+
+74,train,0.1721,0.7059
+   Angry,train,acc,0.4528
+   Anxious,train,acc,0.9441
    Excitement,train,acc,0.9217
+   Sadness,train,acc,0.5050
+
+74,val,0.1209,0.7406
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9666
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,1.0000
+
+75,train,0.1784,0.6977
+   Angry,train,acc,0.4373
+   Anxious,train,acc,0.9342
+   Excitement,train,acc,0.9366
+   Sadness,train,acc,0.4826
+
+75,val,0.1198,0.7355
+   Angry,val,acc,0.0392
+   Anxious,val,acc,0.9536
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.9550
+
+76,train,0.1763,0.6995
+   Angry,train,acc,0.4826
+   Anxious,train,acc,0.9398
+   Excitement,train,acc,0.9360
+   Sadness,train,acc,0.4398
+
+76,val,0.3418,0.6303
+   Angry,val,acc,0.4136
+   Anxious,val,acc,0.8781
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.2322
+
+77,train,0.1707,0.6992
+   Angry,train,acc,0.4366
+   Anxious,train,acc,0.9373
+   Excitement,train,acc,0.9366
+   Sadness,train,acc,0.4863
+
+77,val,0.1055,0.7449
+   Angry,val,acc,0.9913
+   Anxious,val,acc,0.9942
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.0000
+
+78,train,0.1931,0.6898
+   Angry,train,acc,0.4093
+   Anxious,train,acc,0.9211
+   Excitement,train,acc,0.9248
+   Sadness,train,acc,0.5037
+
+78,val,0.3093,0.6535
+   Angry,val,acc,0.8737
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.7402
+   Sadness,val,acc,0.0000
+
+79,train,0.1842,0.6972
+   Angry,train,acc,0.4447
+   Anxious,train,acc,0.9416
+   Excitement,train,acc,0.9161
+   Sadness,train,acc,0.4863
+
+79,val,0.1009,0.7442
+   Angry,val,acc,0.9913
+   Anxious,val,acc,0.9913
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.0000
+
+80,train,0.1693,0.7099
+   Angry,train,acc,0.4547
+   Anxious,train,acc,0.9391
+   Excitement,train,acc,0.9342
+   Sadness,train,acc,0.5118
+
+80,val,0.1012,0.7489
+   Angry,val,acc,0.9637
+   Anxious,val,acc,0.9855
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0493
+
+81,train,0.1661,0.7079
+   Angry,train,acc,0.4534
+   Anxious,train,acc,0.9472
+   Excitement,train,acc,0.9286
+   Sadness,train,acc,0.5025
+
+81,val,0.1049,0.7471
+   Angry,val,acc,0.9971
+   Anxious,val,acc,0.9942
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+82,train,0.1681,0.6966
+   Angry,train,acc,0.4497
+   Anxious,train,acc,0.9360
+   Excitement,train,acc,0.9267
+   Sadness,train,acc,0.4739
+
+82,val,0.0999,0.7467
+   Angry,val,acc,0.0029
+   Anxious,val,acc,0.9927
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.9971
+
+83,train,0.1736,0.6994
+   Angry,train,acc,0.4118
+   Anxious,train,acc,0.9360
+   Excitement,train,acc,0.9435
+   Sadness,train,acc,0.5062
+
+83,val,0.1149,0.7736
+   Angry,val,acc,0.4209
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.6851
+
+84,train,0.1855,0.6880
+   Angry,train,acc,0.4491
+   Anxious,train,acc,0.9286
+   Excitement,train,acc,0.9360
+   Sadness,train,acc,0.4385
+
+84,val,0.1080,0.7431
+   Angry,val,acc,0.0348
+   Anxious,val,acc,0.9927
+   Excitement,val,acc,0.9898
+   Sadness,val,acc,0.9550
+
+85,train,0.1786,0.7008
+   Angry,train,acc,0.4708
+   Anxious,train,acc,0.9354
+   Excitement,train,acc,0.9323
+   Sadness,train,acc,0.4646
+
+85,val,0.1044,0.7442
+   Angry,val,acc,0.9913
+   Anxious,val,acc,0.9942
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.0000
+
+86,train,0.1659,0.7051
+   Angry,train,acc,0.5093
+   Anxious,train,acc,0.9460
+   Excitement,train,acc,0.9217
+   Sadness,train,acc,0.4435
+
+86,val,0.1060,0.7449
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9898
+   Excitement,val,acc,0.9898
+   Sadness,val,acc,1.0000
+
+87,train,0.1606,0.7095
+   Angry,train,acc,0.4615
+   Anxious,train,acc,0.9484
+   Excitement,train,acc,0.9503
+   Sadness,train,acc,0.4776
+
+87,val,0.1026,0.7605
+   Angry,val,acc,0.0827
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9884
+   Sadness,val,acc,0.9753
+
+88,train,0.1652,0.7067
+   Angry,train,acc,0.4193
+   Anxious,train,acc,0.9391
+   Excitement,train,acc,0.9385
+   Sadness,train,acc,0.5298
+
+88,val,0.1130,0.7435
+   Angry,val,acc,0.0189
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9927
+   Sadness,val,acc,0.9637
+
+89,train,0.1713,0.7012
+   Angry,train,acc,0.5323
+   Anxious,train,acc,0.9416
+   Excitement,train,acc,0.9429
+   Sadness,train,acc,0.3882
+
+89,val,0.0984,0.7645
+   Angry,val,acc,0.2467
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.8229
+
+90,train,0.1640,0.7034
+   Angry,train,acc,0.4882
+   Anxious,train,acc,0.9422
+   Excitement,train,acc,0.9385
+   Sadness,train,acc,0.4447
+
+90,val,0.3739,0.6350
+   Angry,val,acc,0.6589
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.7504
+   Sadness,val,acc,0.1306
+
+91,train,0.1626,0.7043
+   Angry,train,acc,0.4876
+   Anxious,train,acc,0.9429
+   Excitement,train,acc,0.9503
+   Sadness,train,acc,0.4366
+
+91,val,0.1390,0.7384
+   Angry,val,acc,0.0755
+   Anxious,val,acc,0.9666
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9144
+
+92,train,0.1673,0.7037
+   Angry,train,acc,0.4994
+   Anxious,train,acc,0.9422
+   Excitement,train,acc,0.9360
+   Sadness,train,acc,0.4373
+
+92,val,0.0973,0.7471
+   Angry,val,acc,0.9956
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.0029
+
+93,train,0.1626,0.7025
+   Angry,train,acc,0.4720
+   Anxious,train,acc,0.9416
+   Excitement,train,acc,0.9460
    Sadness,train,acc,0.4503
 
-54,val,0.1267,0.7351
+93,val,0.1035,0.7460
    Angry,val,acc,0.0000
-   Anxious,val,acc,0.9739
+   Anxious,val,acc,0.9913
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9956
+
+94,train,0.1619,0.6992
+   Angry,train,acc,0.4354
+   Anxious,train,acc,0.9528
+   Excitement,train,acc,0.9398
+   Sadness,train,acc,0.4689
+
+94,val,0.1166,0.7427
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9753
+
+95,train,0.1607,0.7036
+   Angry,train,acc,0.4453
+   Anxious,train,acc,0.9478
+   Excitement,train,acc,0.9348
+   Sadness,train,acc,0.4863
+
+95,val,0.0975,0.8001
+   Angry,val,acc,0.4848
+   Anxious,val,acc,0.9913
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.7271
+
+96,train,0.1574,0.7149
+   Angry,train,acc,0.4522
+   Anxious,train,acc,0.9435
+   Excitement,train,acc,0.9484
+   Sadness,train,acc,0.5155
+
+96,val,0.1326,0.7522
+   Angry,val,acc,0.8113
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.2075
+
+97,train,0.1676,0.7089
+   Angry,train,acc,0.4522
+   Anxious,train,acc,0.9460
+   Excitement,train,acc,0.9596
+   Sadness,train,acc,0.4776
+
+97,val,0.1166,0.7417
+   Angry,val,acc,0.9695
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.0044
+
+98,train,0.1516,0.7165
+   Angry,train,acc,0.4466
+   Anxious,train,acc,0.9634
+   Excitement,train,acc,0.9658
+   Sadness,train,acc,0.4901
+
+98,val,0.0995,0.7914
+   Angry,val,acc,0.4848
+   Anxious,val,acc,0.9898
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.6967
+
+99,train,0.1702,0.6941
+   Angry,train,acc,0.4025
+   Anxious,train,acc,0.9472
+   Excitement,train,acc,0.9534
+   Sadness,train,acc,0.4733
+
+99,val,0.1678,0.7173
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9478
+   Sadness,val,acc,0.9260
+
+100,train,0.1614,0.7043
+   Angry,train,acc,0.4472
+   Anxious,train,acc,0.9522
+   Excitement,train,acc,0.9509
+   Sadness,train,acc,0.4671
+
+100,val,0.0959,0.7478
+   Angry,val,acc,0.9927
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0044
+
+101,train,0.1683,0.7034
+   Angry,train,acc,0.4317
+   Anxious,train,acc,0.9547
+   Excitement,train,acc,0.9435
+   Sadness,train,acc,0.4839
+
+101,val,0.1240,0.7300
+   Angry,val,acc,0.3788
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9884
+   Sadness,val,acc,0.5530
+
+102,train,0.1614,0.7051
+   Angry,train,acc,0.4578
+   Anxious,train,acc,0.9491
+   Excitement,train,acc,0.9553
+   Sadness,train,acc,0.4584
+
+102,val,0.1176,0.7442
+   Angry,val,acc,0.7663
+   Anxious,val,acc,0.9884
+   Excitement,val,acc,0.9985
+   Sadness,val,acc,0.2235
+
+103,train,0.1555,0.7071
+   Angry,train,acc,0.5311
+   Anxious,train,acc,0.9590
+   Excitement,train,acc,0.9640
+   Sadness,train,acc,0.3745
+
+103,val,0.0984,0.7271
+   Angry,val,acc,0.2395
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9927
+   Sadness,val,acc,0.6807
+
+104,train,0.1578,0.7144
+   Angry,train,acc,0.4342
+   Anxious,train,acc,0.9540
+   Excitement,train,acc,0.9602
+   Sadness,train,acc,0.5093
+
+104,val,0.0980,0.7290
+   Angry,val,acc,0.7358
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9927
+   Sadness,val,acc,0.1901
+
+105,train,0.1580,0.7062
+   Angry,train,acc,0.4217
+   Anxious,train,acc,0.9516
+   Excitement,train,acc,0.9472
+   Sadness,train,acc,0.5043
+
+105,val,0.1057,0.7460
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9927
+   Sadness,val,acc,0.9927
+
+106,train,0.1563,0.7087
+   Angry,train,acc,0.4609
+   Anxious,train,acc,0.9429
+   Excitement,train,acc,0.9565
+   Sadness,train,acc,0.4745
+
+106,val,0.1304,0.7304
+   Angry,val,acc,0.9956
+   Anxious,val,acc,0.9521
+   Excitement,val,acc,0.9739
+   Sadness,val,acc,0.0000
+
+107,train,0.1613,0.7051
+   Angry,train,acc,0.4571
+   Anxious,train,acc,0.9503
+   Excitement,train,acc,0.9503
+   Sadness,train,acc,0.4627
+
+107,val,0.1144,0.7420
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9884
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9826
+
+108,train,0.1579,0.7082
+   Angry,train,acc,0.4752
+   Anxious,train,acc,0.9571
+   Excitement,train,acc,0.9584
+   Sadness,train,acc,0.4422
+
+108,val,0.0999,0.7525
+   Angry,val,acc,0.9681
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0493
+
+109,train,0.1600,0.7082
+   Angry,train,acc,0.4516
+   Anxious,train,acc,0.9646
+   Excitement,train,acc,0.9342
+   Sadness,train,acc,0.4826
+
+109,val,0.1045,0.7456
+   Angry,val,acc,0.9927
+   Anxious,val,acc,0.9942
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.0000
+
+110,train,0.1625,0.7104
+   Angry,train,acc,0.4540
+   Anxious,train,acc,0.9441
+   Excitement,train,acc,0.9621
+   Sadness,train,acc,0.4814
+
+110,val,0.1677,0.7144
+   Angry,val,acc,0.9797
+   Anxious,val,acc,0.8650
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0160
+
+111,train,0.1505,0.7085
+   Angry,train,acc,0.4925
+   Anxious,train,acc,0.9534
+   Excitement,train,acc,0.9478
+   Sadness,train,acc,0.4404
+
+111,val,0.1029,0.7652
+   Angry,val,acc,0.2685
+   Anxious,val,acc,0.9898
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.8070
+
+112,train,0.1611,0.7075
+   Angry,train,acc,0.4683
+   Anxious,train,acc,0.9416
+   Excitement,train,acc,0.9391
+   Sadness,train,acc,0.4807
+
+112,val,0.0952,0.7645
+   Angry,val,acc,0.7634
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.3033
+
+113,train,0.1521,0.6994
+   Angry,train,acc,0.4553
+   Anxious,train,acc,0.9503
+   Excitement,train,acc,0.9702
+   Sadness,train,acc,0.4217
+
+113,val,0.0983,0.7471
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9942
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9971
+
+114,train,0.1644,0.6950
+   Angry,train,acc,0.4863
+   Anxious,train,acc,0.9398
+   Excitement,train,acc,0.9559
+   Sadness,train,acc,0.3981
+
+114,val,0.1122,0.7402
+   Angry,val,acc,0.9869
+   Anxious,val,acc,0.9768
+   Excitement,val,acc,0.9898
+   Sadness,val,acc,0.0073
+
+115,train,0.1550,0.7177
+   Angry,train,acc,0.5342
+   Anxious,train,acc,0.9441
+   Excitement,train,acc,0.9714
+   Sadness,train,acc,0.4211
+
+115,val,0.1022,0.7471
+   Angry,val,acc,0.0015
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9927
+
+116,train,0.1548,0.7098
+   Angry,train,acc,0.4733
+   Anxious,train,acc,0.9460
+   Excitement,train,acc,0.9640
+   Sadness,train,acc,0.4559
+
+116,val,0.1124,0.7413
+   Angry,val,acc,0.1422
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.8316
+
+117,train,0.1614,0.7061
+   Angry,train,acc,0.4304
+   Anxious,train,acc,0.9366
+   Excitement,train,acc,0.9584
+   Sadness,train,acc,0.4988
+
+117,val,0.1163,0.7398
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9898
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9724
+
+118,train,0.1580,0.7110
+   Angry,train,acc,0.4317
+   Anxious,train,acc,0.9602
+   Excitement,train,acc,0.9360
+   Sadness,train,acc,0.5161
+
+118,val,0.1002,0.7446
+   Angry,val,acc,0.0116
+   Anxious,val,acc,0.9927
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9768
+
+119,train,0.1504,0.7165
+   Angry,train,acc,0.5012
+   Anxious,train,acc,0.9745
+   Excitement,train,acc,0.9503
+   Sadness,train,acc,0.4398
+
+119,val,0.1098,0.7456
+   Angry,val,acc,0.9884
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+120,train,0.1505,0.7042
+   Angry,train,acc,0.4484
+   Anxious,train,acc,0.9752
+   Excitement,train,acc,0.9391
+   Sadness,train,acc,0.4540
+
+120,val,0.0986,0.7471
+   Angry,val,acc,0.9942
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.0000
+
+121,train,0.1507,0.7065
+   Angry,train,acc,0.4596
+   Anxious,train,acc,0.9689
+   Excitement,train,acc,0.9391
+   Sadness,train,acc,0.4584
+
+121,val,0.0976,0.7475
+   Angry,val,acc,0.9942
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+122,train,0.1485,0.7071
+   Angry,train,acc,0.4938
+   Anxious,train,acc,0.9578
+   Excitement,train,acc,0.9522
+   Sadness,train,acc,0.4248
+
+122,val,0.1002,0.7471
+   Angry,val,acc,0.0160
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.9797
+
+123,train,0.1523,0.7093
+   Angry,train,acc,0.4745
+   Anxious,train,acc,0.9484
+   Excitement,train,acc,0.9590
+   Sadness,train,acc,0.4553
+
+123,val,0.0999,0.7464
+   Angry,val,acc,1.0000
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9898
+   Sadness,val,acc,0.0000
+
+124,train,0.1545,0.7051
+   Angry,train,acc,0.4441
+   Anxious,train,acc,0.9509
+   Excitement,train,acc,0.9509
+   Sadness,train,acc,0.4745
+
+124,val,0.0981,0.7631
+   Angry,val,acc,0.8244
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9927
+   Sadness,val,acc,0.2351
+
+125,train,0.1530,0.7151
+   Angry,train,acc,0.5081
+   Anxious,train,acc,0.9441
+   Excitement,train,acc,0.9441
+   Sadness,train,acc,0.4640
+
+125,val,0.0954,0.7395
+   Angry,val,acc,0.0769
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.8868
+
+126,train,0.1506,0.7161
+   Angry,train,acc,0.5118
+   Anxious,train,acc,0.9441
+   Excitement,train,acc,0.9534
+   Sadness,train,acc,0.4553
+
+126,val,0.1000,0.7456
+   Angry,val,acc,0.9971
+   Anxious,val,acc,0.9898
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.0000
+
+127,train,0.1476,0.7067
+   Angry,train,acc,0.4714
+   Anxious,train,acc,0.9441
+   Excitement,train,acc,0.9484
+   Sadness,train,acc,0.4627
+
+127,val,0.0997,0.7634
+   Angry,val,acc,0.9173
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.1437
+
+128,train,0.1486,0.7090
+   Angry,train,acc,0.4708
+   Anxious,train,acc,0.9503
+   Excitement,train,acc,0.9609
+   Sadness,train,acc,0.4540
+
+128,val,0.1148,0.7660
+   Angry,val,acc,0.5733
+   Anxious,val,acc,0.9898
    Excitement,val,acc,0.9797
-   Sadness,val,acc,0.9869
+   Sadness,val,acc,0.5210
 
-55,train,0.1933,0.6882
-   Angry,train,acc,0.3969
-   Anxious,train,acc,0.9280
-   Excitement,train,acc,0.9224
-   Sadness,train,acc,0.5056
+129,train,0.1515,0.7118
+   Angry,train,acc,0.5317
+   Anxious,train,acc,0.9528
+   Excitement,train,acc,0.9621
+   Sadness,train,acc,0.4006
 
-55,val,0.1099,0.7442
-   Angry,val,acc,0.0029
-   Anxious,val,acc,0.9869
+129,val,0.1056,0.7456
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9898
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.9985
+
+130,train,0.1516,0.7084
+   Angry,train,acc,0.4553
+   Anxious,train,acc,0.9565
+   Excitement,train,acc,0.9516
+   Sadness,train,acc,0.4702
+
+130,val,0.1033,0.7199
+   Angry,val,acc,0.6618
+   Anxious,val,acc,0.9927
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.2293
+
+131,train,0.1471,0.7149
+   Angry,train,acc,0.4733
+   Anxious,train,acc,0.9615
+   Excitement,train,acc,0.9503
+   Sadness,train,acc,0.4745
+
+131,val,0.1175,0.7406
+   Angry,val,acc,0.0000
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.9681
+
+132,train,0.1506,0.7062
+   Angry,train,acc,0.4727
+   Anxious,train,acc,0.9565
+   Excitement,train,acc,0.9404
+   Sadness,train,acc,0.4553
+
+132,val,0.1027,0.7144
+   Angry,val,acc,0.7097
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9927
+   Sadness,val,acc,0.1553
+
+133,train,0.1535,0.7023
+   Angry,train,acc,0.4348
+   Anxious,train,acc,0.9602
+   Excitement,train,acc,0.9366
+   Sadness,train,acc,0.4776
+
+133,val,0.0957,0.7460
+   Angry,val,acc,0.9942
+   Anxious,val,acc,0.9927
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.0015
+
+134,train,0.1504,0.7078
+   Angry,train,acc,0.4988
+   Anxious,train,acc,0.9553
+   Excitement,train,acc,0.9391
+   Sadness,train,acc,0.4379
+
+134,val,0.2914,0.6528
+   Angry,val,acc,0.8926
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.7025
+   Sadness,val,acc,0.0160
+
+135,train,0.1486,0.7079
+   Angry,train,acc,0.4677
+   Anxious,train,acc,0.9609
+   Excitement,train,acc,0.9491
+   Sadness,train,acc,0.4540
+
+135,val,0.1030,0.7467
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9942
+
+136,train,0.1460,0.7102
+   Angry,train,acc,0.4894
+   Anxious,train,acc,0.9621
+   Excitement,train,acc,0.9640
+   Sadness,train,acc,0.4255
+
+136,val,0.0947,0.7406
+   Angry,val,acc,0.4224
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.5443
+
+137,train,0.1458,0.7129
+   Angry,train,acc,0.4839
+   Anxious,train,acc,0.9553
+   Excitement,train,acc,0.9720
+   Sadness,train,acc,0.4404
+
+137,val,0.0944,0.7442
+   Angry,val,acc,0.9405
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0392
+
+138,train,0.1592,0.7043
+   Angry,train,acc,0.4075
+   Anxious,train,acc,0.9509
+   Excitement,train,acc,0.9509
+   Sadness,train,acc,0.5081
+
+138,val,0.1054,0.7424
+   Angry,val,acc,0.9913
+   Anxious,val,acc,0.9811
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+139,train,0.1449,0.7276
+   Angry,train,acc,0.4863
+   Anxious,train,acc,0.9658
+   Excitement,train,acc,0.9553
+   Sadness,train,acc,0.5031
+
+139,val,0.1504,0.7221
+   Angry,val,acc,0.9536
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9347
+   Sadness,val,acc,0.0000
+
+140,train,0.1515,0.7089
+   Angry,train,acc,0.4789
+   Anxious,train,acc,0.9596
+   Excitement,train,acc,0.9391
+   Sadness,train,acc,0.4578
+
+140,val,0.0987,0.7453
+   Angry,val,acc,0.9956
+   Anxious,val,acc,0.9942
+   Excitement,val,acc,0.9913
+   Sadness,val,acc,0.0000
+
+141,train,0.1424,0.7171
+   Angry,train,acc,0.4727
+   Anxious,train,acc,0.9590
+   Excitement,train,acc,0.9578
+   Sadness,train,acc,0.4789
+
+141,val,0.2616,0.6390
+   Angry,val,acc,0.0087
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.7402
+   Sadness,val,acc,0.8070
+
+142,train,0.1444,0.7078
+   Angry,train,acc,0.4540
+   Anxious,train,acc,0.9634
+   Excitement,train,acc,0.9460
+   Sadness,train,acc,0.4677
+
+142,val,0.0923,0.7420
+   Angry,val,acc,0.3353
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9985
+   Sadness,val,acc,0.6372
+
+143,train,0.1429,0.7054
+   Angry,train,acc,0.4683
+   Anxious,train,acc,0.9683
+   Excitement,train,acc,0.9398
+   Sadness,train,acc,0.4453
+
+143,val,0.0937,0.7478
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.9971
+
+144,train,0.1437,0.7149
+   Angry,train,acc,0.4876
+   Anxious,train,acc,0.9671
+   Excitement,train,acc,0.9491
+   Sadness,train,acc,0.4559
+
+144,val,0.0952,0.7482
+   Angry,val,acc,0.9971
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+145,train,0.1438,0.7149
+   Angry,train,acc,0.4733
+   Anxious,train,acc,0.9677
+   Excitement,train,acc,0.9410
+   Sadness,train,acc,0.4776
+
+145,val,0.0956,0.7475
+   Angry,val,acc,0.0000
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.9942
+
+146,train,0.1445,0.7059
+   Angry,train,acc,0.4584
+   Anxious,train,acc,0.9503
+   Excitement,train,acc,0.9404
+   Sadness,train,acc,0.4745
+
+146,val,0.0959,0.7605
+   Angry,val,acc,0.2990
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9927
+   Sadness,val,acc,0.7533
+
+147,train,0.1474,0.7138
+   Angry,train,acc,0.5236
+   Anxious,train,acc,0.9553
+   Excitement,train,acc,0.9615
+   Sadness,train,acc,0.4149
+
+147,val,0.0934,0.7467
+   Angry,val,acc,0.0160
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.9797
+
+148,train,0.1439,0.7169
+   Angry,train,acc,0.4795
+   Anxious,train,acc,0.9646
+   Excitement,train,acc,0.9553
+   Sadness,train,acc,0.4683
+
+148,val,0.0939,0.7525
+   Angry,val,acc,0.3933
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.6241
+
+149,train,0.1437,0.7185
+   Angry,train,acc,0.4720
+   Anxious,train,acc,0.9540
+   Excitement,train,acc,0.9516
+   Sadness,train,acc,0.4963
+
+149,val,0.0962,0.7493
+   Angry,val,acc,0.0058
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9971
+
+150,train,0.1386,0.7154
+   Angry,train,acc,0.4043
+   Anxious,train,acc,0.9547
+   Excitement,train,acc,0.9460
+   Sadness,train,acc,0.5565
+
+150,val,0.0947,0.7576
+   Angry,val,acc,0.9274
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.1103
+
+151,train,0.1395,0.7115
+   Angry,train,acc,0.4646
+   Anxious,train,acc,0.9497
+   Excitement,train,acc,0.9553
+   Sadness,train,acc,0.4764
+
+151,val,0.0983,0.7482
+   Angry,val,acc,0.0058
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9927
+
+152,train,0.1380,0.7157
+   Angry,train,acc,0.5242
+   Anxious,train,acc,0.9491
+   Excitement,train,acc,0.9534
+   Sadness,train,acc,0.4360
+
+152,val,0.0987,0.7482
+   Angry,val,acc,0.0015
+   Anxious,val,acc,0.9942
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,1.0000
+
+153,train,0.1440,0.7175
+   Angry,train,acc,0.4522
+   Anxious,train,acc,0.9627
+   Excitement,train,acc,0.9621
+   Sadness,train,acc,0.4932
+
+153,val,0.0953,0.7478
+   Angry,val,acc,0.2380
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.7591
+
+154,train,0.1395,0.7085
+   Angry,train,acc,0.4932
+   Anxious,train,acc,0.9609
+   Excitement,train,acc,0.9789
+   Sadness,train,acc,0.4012
+
+154,val,0.0972,0.7329
+   Angry,val,acc,0.0668
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.8723
+
+155,train,0.1386,0.7163
+   Angry,train,acc,0.4826
+   Anxious,train,acc,0.9596
+   Excitement,train,acc,0.9634
+   Sadness,train,acc,0.4596
+
+155,val,0.0984,0.7464
+   Angry,val,acc,0.9956
+   Anxious,val,acc,0.9927
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+156,train,0.1357,0.7222
+   Angry,train,acc,0.4106
+   Anxious,train,acc,0.9658
+   Excitement,train,acc,0.9640
+   Sadness,train,acc,0.5484
+
+156,val,0.0998,0.7467
+   Angry,val,acc,0.9913
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+157,train,0.1430,0.7113
+   Angry,train,acc,0.5025
+   Anxious,train,acc,0.9671
+   Excitement,train,acc,0.9578
+   Sadness,train,acc,0.4180
+
+157,val,0.0963,0.7475
+   Angry,val,acc,0.9956
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+158,train,0.1451,0.7090
+   Angry,train,acc,0.4640
+   Anxious,train,acc,0.9665
+   Excitement,train,acc,0.9478
+   Sadness,train,acc,0.4578
+
+158,val,0.0970,0.7482
+   Angry,val,acc,0.9971
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.0029
+
+159,train,0.1387,0.7095
+   Angry,train,acc,0.5025
+   Anxious,train,acc,0.9559
+   Excitement,train,acc,0.9453
+   Sadness,train,acc,0.4342
+
+159,val,0.0997,0.7478
+   Angry,val,acc,0.0000
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9985
+
+160,train,0.1442,0.7106
+   Angry,train,acc,0.4696
+   Anxious,train,acc,0.9571
+   Excitement,train,acc,0.9354
+   Sadness,train,acc,0.4801
+
+160,val,0.0947,0.7482
+   Angry,val,acc,0.9956
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0015
+
+161,train,0.1399,0.7149
+   Angry,train,acc,0.4609
+   Anxious,train,acc,0.9584
+   Excitement,train,acc,0.9534
+   Sadness,train,acc,0.4870
+
+161,val,0.0941,0.7449
+   Angry,val,acc,0.9202
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9942
+   Sadness,val,acc,0.0682
+
+162,train,0.1389,0.7199
+   Angry,train,acc,0.4708
+   Anxious,train,acc,0.9596
+   Excitement,train,acc,0.9696
+   Sadness,train,acc,0.4795
+
+162,val,0.0973,0.7475
+   Angry,val,acc,0.0044
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9927
+
+163,train,0.1414,0.7208
+   Angry,train,acc,0.5385
+   Anxious,train,acc,0.9578
+   Excitement,train,acc,0.9646
+   Sadness,train,acc,0.4224
+
+163,val,0.0942,0.7478
+   Angry,val,acc,0.9942
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0029
+
+164,train,0.1335,0.7174
+   Angry,train,acc,0.5093
+   Anxious,train,acc,0.9609
+   Excitement,train,acc,0.9522
+   Sadness,train,acc,0.4472
+
+164,val,0.0951,0.7485
+   Angry,val,acc,0.0015
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9985
+
+165,train,0.1362,0.7130
+   Angry,train,acc,0.5522
+   Anxious,train,acc,0.9609
+   Excitement,train,acc,0.9503
+   Sadness,train,acc,0.3888
+
+165,val,0.0938,0.7500
+   Angry,val,acc,0.9797
+   Anxious,val,acc,0.9985
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0247
+
+166,train,0.1366,0.7199
+   Angry,train,acc,0.3888
+   Anxious,train,acc,0.9596
+   Excitement,train,acc,0.9565
+   Sadness,train,acc,0.5745
+
+166,val,0.0952,0.7482
+   Angry,val,acc,0.9985
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+167,train,0.1373,0.7127
+   Angry,train,acc,0.4658
+   Anxious,train,acc,0.9491
+   Excitement,train,acc,0.9466
+   Sadness,train,acc,0.4894
+
+167,val,0.0961,0.7616
+   Angry,val,acc,0.8984
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.1538
+
+168,train,0.1365,0.7152
+   Angry,train,acc,0.4429
+   Anxious,train,acc,0.9516
+   Excitement,train,acc,0.9696
+   Sadness,train,acc,0.4969
+
+168,val,0.0967,0.7482
+   Angry,val,acc,0.9971
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0015
+
+169,train,0.1359,0.7189
+   Angry,train,acc,0.5124
+   Anxious,train,acc,0.9497
+   Excitement,train,acc,0.9776
+   Sadness,train,acc,0.4360
+
+169,val,0.0955,0.7475
+   Angry,val,acc,0.9985
+   Anxious,val,acc,0.9956
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.0000
+
+170,train,0.1376,0.7144
+   Angry,train,acc,0.4776
+   Anxious,train,acc,0.9565
+   Excitement,train,acc,0.9739
+   Sadness,train,acc,0.4497
+
+170,val,0.0946,0.7482
+   Angry,val,acc,0.9985
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+171,train,0.1351,0.7244
+   Angry,train,acc,0.5280
+   Anxious,train,acc,0.9484
+   Excitement,train,acc,0.9789
+   Sadness,train,acc,0.4422
+
+171,val,0.0954,0.7478
+   Angry,val,acc,0.9971
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+172,train,0.1334,0.7197
+   Angry,train,acc,0.4913
+   Anxious,train,acc,0.9534
+   Excitement,train,acc,0.9752
+   Sadness,train,acc,0.4590
+
+172,val,0.0937,0.7485
+   Angry,val,acc,0.9971
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+173,train,0.1331,0.7149
+   Angry,train,acc,0.4404
+   Anxious,train,acc,0.9534
+   Excitement,train,acc,0.9764
+   Sadness,train,acc,0.4894
+
+173,val,0.0951,0.7482
+   Angry,val,acc,0.9681
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0276
+
+174,train,0.1317,0.7278
+   Angry,train,acc,0.5894
+   Anxious,train,acc,0.9596
+   Excitement,train,acc,0.9671
+   Sadness,train,acc,0.3950
+
+174,val,0.0954,0.7478
+   Angry,val,acc,0.9971
+   Anxious,val,acc,0.9971
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+175,train,0.1353,0.7106
+   Angry,train,acc,0.5143
+   Anxious,train,acc,0.9509
+   Excitement,train,acc,0.9491
+   Sadness,train,acc,0.4280
+
+175,val,0.1027,0.7511
+   Angry,val,acc,0.0319
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9956
+   Sadness,val,acc,0.9768
+
+176,train,0.1379,0.7144
+   Angry,train,acc,0.5335
+   Anxious,train,acc,0.9522
+   Excitement,train,acc,0.9478
+   Sadness,train,acc,0.4242
+
+176,val,0.0941,0.7482
+   Angry,val,acc,0.9956
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+177,train,0.1351,0.7228
+   Angry,train,acc,0.5944
+   Anxious,train,acc,0.9553
+   Excitement,train,acc,0.9503
+   Sadness,train,acc,0.3913
+
+177,val,0.0942,0.7485
+   Angry,val,acc,0.0000
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9971
+
+178,train,0.1348,0.7148
+   Angry,train,acc,0.4733
+   Anxious,train,acc,0.9565
+   Excitement,train,acc,0.9609
+   Sadness,train,acc,0.4683
+
+178,val,0.0933,0.7558
+   Angry,val,acc,0.0348
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9913
+
+179,train,0.1314,0.7116
+   Angry,train,acc,0.4050
+   Anxious,train,acc,0.9634
+   Excitement,train,acc,0.9578
+   Sadness,train,acc,0.5205
+
+179,val,0.0938,0.7493
+   Angry,val,acc,0.0015
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9985
+
+180,train,0.1332,0.7154
+   Angry,train,acc,0.5137
+   Anxious,train,acc,0.9696
+   Excitement,train,acc,0.9553
+   Sadness,train,acc,0.4230
+
+180,val,0.0932,0.7482
+   Angry,val,acc,0.9956
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+181,train,0.1368,0.7188
+   Angry,train,acc,0.4186
+   Anxious,train,acc,0.9621
+   Excitement,train,acc,0.9714
+   Sadness,train,acc,0.5230
+
+181,val,0.0939,0.7478
+   Angry,val,acc,0.9942
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+182,train,0.1349,0.7207
+   Angry,train,acc,0.5124
+   Anxious,train,acc,0.9571
+   Excitement,train,acc,0.9671
+   Sadness,train,acc,0.4460
+
+182,val,0.0941,0.7485
+   Angry,val,acc,0.8839
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.1132
+
+183,train,0.1325,0.7185
+   Angry,train,acc,0.5081
+   Anxious,train,acc,0.9503
+   Excitement,train,acc,0.9634
+   Sadness,train,acc,0.4522
+
+183,val,0.0937,0.7475
+   Angry,val,acc,0.0015
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9913
+
+184,train,0.1353,0.7140
+   Angry,train,acc,0.3224
+   Anxious,train,acc,0.9602
+   Excitement,train,acc,0.9516
+   Sadness,train,acc,0.6217
+
+184,val,0.0937,0.7511
+   Angry,val,acc,0.0145
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9927
+
+185,train,0.1306,0.7193
+   Angry,train,acc,0.4938
+   Anxious,train,acc,0.9615
+   Excitement,train,acc,0.9615
+   Sadness,train,acc,0.4602
+
+185,val,0.0943,0.7522
+   Angry,val,acc,0.6705
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.3411
+
+186,train,0.1346,0.7155
+   Angry,train,acc,0.5441
+   Anxious,train,acc,0.9640
+   Excitement,train,acc,0.9602
+   Sadness,train,acc,0.3938
+
+186,val,0.0943,0.7565
+   Angry,val,acc,0.3803
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.6488
+
+187,train,0.1366,0.7140
+   Angry,train,acc,0.5528
+   Anxious,train,acc,0.9652
+   Excitement,train,acc,0.9447
+   Sadness,train,acc,0.3932
+
+187,val,0.0941,0.7442
+   Angry,val,acc,0.3977
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.5820
+
+188,train,0.1316,0.7163
+   Angry,train,acc,0.5273
+   Anxious,train,acc,0.9658
+   Excitement,train,acc,0.9640
+   Sadness,train,acc,0.4081
+
+188,val,0.0940,0.7482
+   Angry,val,acc,0.0058
+   Anxious,val,acc,1.0000
    Excitement,val,acc,0.9971
    Sadness,val,acc,0.9898
+
+189,train,0.1318,0.7148
+   Angry,train,acc,0.6137
+   Anxious,train,acc,0.9640
+   Excitement,train,acc,0.9665
+   Sadness,train,acc,0.3149
+
+189,val,0.0940,0.7485
+   Angry,val,acc,0.9927
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0044
+
+190,train,0.1339,0.7157
+   Angry,train,acc,0.4851
+   Anxious,train,acc,0.9739
+   Excitement,train,acc,0.9677
+   Sadness,train,acc,0.4360
+
+190,val,0.0940,0.7576
+   Angry,val,acc,0.1974
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.8360
+
+191,train,0.1317,0.7213
+   Angry,train,acc,0.3056
+   Anxious,train,acc,0.9652
+   Excitement,train,acc,0.9621
+   Sadness,train,acc,0.6522
+
+191,val,0.0941,0.7478
+   Angry,val,acc,0.9942
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0000
+
+192,train,0.1308,0.7261
+   Angry,train,acc,0.6540
+   Anxious,train,acc,0.9689
+   Excitement,train,acc,0.9596
+   Sadness,train,acc,0.3217
+
+192,val,0.0939,0.7485
+   Angry,val,acc,0.0087
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9884
+
+193,train,0.1335,0.7213
+   Angry,train,acc,0.3553
+   Anxious,train,acc,0.9602
+   Excitement,train,acc,0.9509
+   Sadness,train,acc,0.6186
+
+193,val,0.0940,0.7496
+   Angry,val,acc,0.0116
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.9898
+
+194,train,0.1309,0.7194
+   Angry,train,acc,0.2025
+   Anxious,train,acc,0.9571
+   Excitement,train,acc,0.9689
+   Sadness,train,acc,0.7491
+
+194,val,0.0939,0.7442
+   Angry,val,acc,0.9637
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.0160
+
+195,train,0.1334,0.7200
+   Angry,train,acc,0.7273
+   Anxious,train,acc,0.9658
+   Excitement,train,acc,0.9571
+   Sadness,train,acc,0.2298
+
+195,val,0.0938,0.7471
+   Angry,val,acc,0.8200
+   Anxious,val,acc,1.0000
+   Excitement,val,acc,0.9971
+   Sadness,val,acc,0.1713
 
