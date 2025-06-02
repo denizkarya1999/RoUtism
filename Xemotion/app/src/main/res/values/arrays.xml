@@ -43,4 +43,13 @@
         <item>5000</item>
         <item>6000</item>
     </string-array>
+
+    <string-array name="detection_mode_options">
+        <item>CONTOUR</item>
+        <item>YOLO</item>
+    </string-array>
+    <string-array name="detection_mode_values">
+        <item>CONTOUR</item>
+        <item>YOLO</item>
+    </string-array>
 </resources>

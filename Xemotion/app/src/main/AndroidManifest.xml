@@ -17,13 +17,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
+    <!-- Allow OpenGL ES -->
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
 
-    <!-- To use ARCore -->
-    <uses-feature
-        android:name="android.hardware.camera.ar"
-        android:required="false" />
-
+    <!-- Application Intents -->
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -36,6 +33,9 @@
         tools:targetApi="31"
         tools:replace="android:allowBackup, android:icon, android:theme">
 
+        <!-- Registered Application Intents -->
+
+        <!-- MainActivity.kt -->
         <activity
             android:name=".MainActivity"
             android:theme="@style/Theme.App.Starting"
@@ -46,11 +46,11 @@
             </intent-filter>
         </activity>
 
+        <!-- AboutXameraActivity.kt -->
         <activity android:name=".AboutXameraActivity" />
+
+        <!-- SettingsActivity.kt -->
         <activity android:name=".SettingsActivity" />
-        <activity
-            android:name="com.developer27.xemotion.inference.EmotionActivity"
-            android:exported="true" />
         <activity
             android:name="com.xamera.ar.core.components.java.sharedcamera.SharedCameraActivity"
             android:exported="true"
@@ -60,11 +60,5 @@
             android:screenOrientation="fullSensor"
             android:resizeableActivity="false">
         </activity>
-
-        <!-- ARCore meta-data with override in case of conflicts -->
-        <meta-data
-            android:name="com.google.ar.core"
-            android:value="required"
-            tools:replace="android:value" />
     </application>
 </manifest>

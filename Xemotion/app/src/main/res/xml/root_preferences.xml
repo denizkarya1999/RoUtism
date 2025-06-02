@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- Settings Section with a custom title layout (if needed) -->
     <PreferenceCategory
-        android:title="Settings"
+        android:title="Camera Settings"
         android:layout="@layout/preference_category_layout">
 
-        <!-- Shutter Speed Settings with custom layout -->
+        <!-- Rolling Shutter Speed Preference -->
         <ListPreference
             android:key="shutter_speed"
             android:layout="@layout/preference_list_layout"
@@ -16,15 +14,75 @@
             android:entries="@array/shutter_speed_options"
             android:entryValues="@array/shutter_speed_values"
             android:defaultValue="60" />
+    </PreferenceCategory>
 
-        <!-- In your root_preferences.xml or similar file -->
-        <Preference
-            android:key="key_launch_emotion_activity"
+    <PreferenceCategory
+        android:title="Detection Settings"
+        android:layout="@layout/preference_category_layout">
+
+        <!-- Detection Mode Preference -->
+        <ListPreference
+            android:key="detection_mode"
             android:layout="@layout/preference_list_layout"
-            android:title="Test Image Recognition"
-            android:summary="Tap to select multiple pictures from your device and run TFLite-based image-by-image classification." />
+            android:title="Detection Mode"
+            android:summary="Choose between Contour and YOLO detection"
+            android:entries="@array/detection_mode_options"
+            android:entryValues="@array/detection_mode_values"
+            android:defaultValue="CONTOUR" />
 
+        <!-- Bounding Box Enable Preference -->
+        <SwitchPreference
+            android:key="enable_bounding_box"
+            android:layout="@layout/preference_list_layout"
+            android:title="Enable Emotion Labeling"
+            android:summaryOn="Yes"
+            android:summaryOff="No"
+            android:defaultValue="true" />
+    </PreferenceCategory>
 
+    <PreferenceCategory
+        android:title="Tracing Settings"
+        android:layout="@layout/preference_category_layout">
+
+        <!-- Enable RAW Trace -->
+        <SwitchPreference
+            android:key="enable_raw_trace"
+            android:layout="@layout/preference_list_layout"
+            android:title="Enable RAW Trace"
+            android:summaryOn="Yes"
+            android:summaryOff="No"
+            android:defaultValue="false" />
+
+        <!-- Enable SPLINE Trace -->
+        <SwitchPreference
+            android:key="enable_spline_trace"
+            android:layout="@layout/preference_list_layout"
+            android:title="Enable SPLINE Trace"
+            android:summaryOn="Yes"
+            android:summaryOff="No"
+            android:defaultValue="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Export Data"
+        android:layout="@layout/preference_category_layout">
+
+        <SwitchPreference
+            android:key="frame_img"
+            android:layout="@layout/preference_list_layout"
+            android:title="Save 28x28 IMG"
+            android:summaryOn="Yes"
+            android:summaryOff="No"
+            android:defaultValue="false" />
+
+        <!-- New: Prediction Logging -->
+        <SwitchPreference
+            android:key="enable_prediction_logging"
+            android:layout="@layout/preference_list_layout"
+            android:title="Enable Prediction Logging"
+            android:summaryOn="Log each prediction to file"
+            android:summaryOff="Do not log predictions"
+            android:defaultValue="false" />
     </PreferenceCategory>
 
 </PreferenceScreen>

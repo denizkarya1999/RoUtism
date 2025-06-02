@@ -17,7 +17,6 @@ import android.os.Environment
 import android.preference.PreferenceManager
 import android.text.InputType
 import android.util.Log
-import android.util.Size
 import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
@@ -36,12 +35,8 @@ import com.developer27.xemotion.camera.CameraHelper
 import com.developer27.xemotion.databinding.ActivityMainBinding
 import com.developer27.xemotion.inference.PyTorchClassifier
 import com.developer27.xemotion.inference.PyTorchModuleLoader
-import com.developer27.xemotion.secondaryprocessing.TemplateMatcher
-import com.developer27.xemotion.videoprocessing.ProcessedFrameRecorder
 import com.developer27.xemotion.videoprocessing.Settings
 import com.developer27.xemotion.videoprocessing.VideoProcessor
-import com.developer27.xemotion.videoprocessing.YOLOHelper
-import org.opencv.core.Mat
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.GpuDelegate
 import org.tensorflow.lite.nnapi.NnApiDelegate
@@ -64,7 +59,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cameraManager: CameraManager
     private lateinit var cameraHelper: CameraHelper
     private var yoloInterpreter: Interpreter? = null
-    private var processedFrameRecorder: ProcessedFrameRecorder? = null
     private var videoProcessor: VideoProcessor? = null
     private var arTimer: CountDownTimer? = null
 
@@ -79,11 +73,6 @@ class MainActivity : AppCompatActivity() {
     // Timer for periodic export
     private var exportTimer: Timer? = null
     private var batchCount = 0
-
-    // Template Matcher and reference templates (train/val)
-    private lateinit var matcher: TemplateMatcher
-    private lateinit var trainTemplates: Map<String, List<Mat>>
-    private lateinit var valTemplates:   Map<String, List<Mat>>
 
     // For clearing predictions when returning from an external intent
     private var shouldClearPrediction = false
@@ -185,12 +174,6 @@ class MainActivity : AppCompatActivity() {
             requestPermissionLauncher.launch(REQUIRED_PERMISSIONS)
         }
 
-        // Instantiate TemplateMatcher to eagerly load references
-        matcher = TemplateMatcher(assets)
-        // Load templates from assets/dataset
-        trainTemplates = matcher.loadTemplates("dataset/train")
-        valTemplates   = matcher.loadTemplates("dataset/val")
-
         // Load PyTorch model directly to confirm
         val module = PyTorchModuleLoader.loadModule(this, "resnet50_emotion.pt")
         Log.d(TAG, "PyTorch model loaded successfully: $module")
@@ -289,7 +272,7 @@ class MainActivity : AppCompatActivity() {
                         zoomOutButton.isVisible            = false
                     }
 
-                    // *** NEW CALL: Force AR rolling shutter in camera helper
+                    // Force AR rolling shutter in camera helper
                     cameraHelper.forceArRollingShutter()
 
                     // 3) Begin processing & recording in AR mode
@@ -402,7 +385,9 @@ class MainActivity : AppCompatActivity() {
             Log.e(TAG, "Error exporting trace", e)
         }
 
-        Toast.makeText(this, "$batchCount batches have been saved", Toast.LENGTH_LONG).show()
+        if (Settings.ExportData.frameIMG) {
+            Toast.makeText(this, "$batchCount batches have been saved", Toast.LENGTH_LONG).show()
+        }
 
         // Reset UI text & visibility
         viewBinding.startProcessingButton.text = getString(R.string.start_capture)
@@ -414,21 +399,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Save the trace bitmap to disk and run PyTorch-based classification on it.
+     * Save the trace bitmap to disk (as line<N>.jpg) and run PyTorch-based classification on it.
      */
     private fun saveBatchAndRunInference(traceBitmap: Bitmap) {
-        // 1) Save file
-        val screenshotPath = getProcessedImageOutputPath()
-        val screenshotFile = File(screenshotPath)
-        try {
-            FileOutputStream(screenshotFile).use { outputStream ->
-                traceBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
-                outputStream.flush()
+        // 1) Save file, only if user enabled saving
+        if (Settings.ExportData.frameIMG) {
+            val screenshotPath = getProcessedImageOutputPath()
+            val screenshotFile = File(screenshotPath)
+            try {
+                FileOutputStream(screenshotFile).use { outputStream ->
+                    traceBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+                    outputStream.flush()
+                }
+                batchCount++
+                Log.d(TAG, "Batch #$batchCount exported: $screenshotPath")
+            } catch (e: IOException) {
+                Log.e(TAG, "Error saving batch: ${e.message}")
             }
-            batchCount++
-            Log.d(TAG, "Batch #$batchCount exported: $screenshotPath")
-        } catch (e: IOException) {
-            Log.e(TAG, "Error saving batch: ${e.message}")
         }
 
         // 2) Classify using PyTorch
@@ -447,9 +434,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Write the predictions to a text log file in Documents.
+     * Write the predictions to a text log file in Documents,
+     * but only if the user enabled prediction-logging via Settings.
      */
     private fun appendPredictionToLog(prediction: String) {
+        if (!Settings.ExportData.enablePredictionLogging) {
+            // User has turned prediction logging off → do nothing.
+            Log.d(TAG, "Prediction logging disabled; skipping append.")
+            return
+        }
+
         val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
         val line = "$timestamp => $prediction"
 
@@ -488,16 +482,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Generate a file path for saving the processed image.
+     * Generate a file path for saving the processed image as "line<N>.jpg",
+     * where N is batchCount+1.
      */
     private fun getProcessedImageOutputPath(): String {
         @Suppress("DEPRECATION")
         val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-        val roEmotionDir = File(picturesDir, "RoEmotion_ML_Training_Data")
+        val roEmotionDir = File(picturesDir, "Exported Lines from Xemotion")
         if (!roEmotionDir.exists()) {
             roEmotionDir.mkdirs()
         }
-        return File(roEmotionDir, "Inference_${System.currentTimeMillis()}.jpg").absolutePath
+        // Use batchCount+1 to name files sequentially: line1.jpg, line2.jpg, ...
+        val fileName = "Line (${batchCount + 1}).jpg"
+        return File(roEmotionDir, fileName).absolutePath
     }
 
     /**

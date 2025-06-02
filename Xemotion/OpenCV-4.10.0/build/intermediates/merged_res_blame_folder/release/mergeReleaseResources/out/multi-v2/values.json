@@ -1,0 +1,52 @@
+{
+    "logs": [
+        {
+            "outputFile": "org.opencv.OpenCV-4.10.0-mergeReleaseResources-1:/values/values.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\deniz\\AndroidStudioProjects\\RoEmotion\\Xemotion\\OpenCV-4.10.0\\java\\res\\values\\attrs.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "57",
+                        "endLines": "9",
+                        "endColumns": "24",
+                        "endOffsets": "377"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "9",
+                        "endColumns": "24",
+                        "endOffsets": "361"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "org.opencv.OpenCV-4.10.0-release-3:/values/values.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\deniz\\AndroidStudioProjects\\RoEmotion\\Xemotion\\OpenCV-4.10.0\\java\\res\\values\\attrs.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "57",
+                        "endLines": "9",
+                        "endColumns": "24",
+                        "endOffsets": "377"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "9",
+                        "endColumns": "24",
+                        "endOffsets": "361"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -84,15 +84,15 @@
             android:id="@+id/textViewVersion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Version: 1.0 (ML Experiment Preview)"
+            android:text="Version: 1.0"
             android:textColor="@color/darkBlue"
             android:layout_marginTop="8dp" />
 
         <TextView
-            android:id="@+id/phaseNumber"
+            android:id="@+id/numberOfUsers"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Phase: P1"
+            android:text="Number of Supported Users: 1"
             android:textColor="@color/darkBlue"
             android:layout_marginTop="8dp" />
 
@@ -100,7 +100,7 @@
             android:id="@+id/textViewReleaseDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Release Date: April 25th 2025"
+            android:text="Release Date: June 1st 2025"
             android:textColor="@color/darkBlue"
             android:layout_marginTop="8dp" />
 
