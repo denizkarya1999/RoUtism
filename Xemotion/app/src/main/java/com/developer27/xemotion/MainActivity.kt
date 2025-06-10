@@ -23,7 +23,9 @@ import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.*
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -207,7 +209,7 @@ class MainActivity : AppCompatActivity() {
             switchCamera()
         }
         viewBinding.aboutButton.setOnClickListener {
-            startActivity(Intent(this, AboutXameraActivity::class.java))
+            startActivity(Intent(this, AboutXemotionActivity::class.java))
         }
         viewBinding.settingsButton.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))

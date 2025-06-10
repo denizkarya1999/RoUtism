@@ -1,0 +1,52 @@
+Experiment Notes
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Data Collection
+  1- Move the lines into "data" folder from smart phone.
+  2- Create "Angry", "Anxious", "Sad" and "Excitement" classes.
+  3- Look at the sliced video images at Dropbox file which supposed to look like this;
+      Video_Slice (1) to Video_Slice (170) - "Razor From Need For Speed Most Wanted Game Confronts You" - Angry
+      Video_Slice (170) to Video_Slice (318) - "You are being chased by police in Need For Speed Most Wanted Game" - Anxious
+      Video_Slice (318) to Video_Slice (446) - "Bumblebee`s Best Friend is Killed By Decepticons in Transformers" - Sad
+      Video_Slice (446) to Video_Slice (600) - "Rodimus Prime Beats Galvatron in Transformers G1" - Excitement
+  4- Make sure the number of lines are equally distributed in data folder. Delete unnecessary lines that exceeds 600 lines or causing imbalance.
+  5- Distribute classes into "train" and "val" as 70% of them should be "train" and 30% of them should be "val" in "data" folder.
+  6- Run "python3 FindDifferencesInImages.pt" script to get class differentiation for each dataset which creates a template for each class first and then processes each image.
+  7- Once "FindDifferencesInImages" creates the dataset upload "data2" to The Great Lakes Computers.
+
+ Training Data on Local PC
+  1- In "ResNetModelTraining.py" set target dataset to "data2".
+  2- Also set number of epochs to "200" epochs.
+  3- Open terminal and write "python3 ResNetModelTraining.py" to initiate the training process.
+  4- To track the process, look at the log at "training_log.txt".
+  5- If you wish to stop the machine learning process, press "CTRL + C" but make sure both training and validation are complete in the previous epoch.
+  6- Run "python3 training_results.py" to generate graphs for the results from "training_log.txt".
+  7- The graphs will be located at "results" folder, send results to Dr. Zhang via Google Chat.
+
+ Android Integration
+  1- Go to "saved_models" folder.
+  2- Run "python3 ptConvertor.py" to convert PyTorch model to TorchLite.
+  3- Copy "resnet50_emotion.pt" and paste to "{Android Project Folder}/app/src/main/assets".
+  4- Debug the Android program to test whether the model is working or not.
+
+ Android Inference Test
+  1- Move "RoEmotion_Predictions_Log.txt" from phone to "android_inference_results" folder.
+  2- Run "python3 log_to_pie_chart.py" to create a pie chart for inference result.
+  3- The result is saved in "results" folder as a png image.
+
+ Isolated Python Inference Test
+  1- Run "python3 ResNet50Inference.py" on terminal.
+  2- Select "resnet50_emotion.pth" as your checkpoint.
+  3- Select the target folder for images.
+  4- Click "Run Inference" to infer over images.
+ 
+ Testing with Different Datasets
+  1- In "ResNetModelTraining.py" set target dataset to "{Any Dataset Folder You Like}".
+  2- Open terminal and write "python3 ResNetModelTraining.py" to initiate the training process.
+
+ Additional Tools
+  augmentImages.py - Creates 5 more augmented image for each image.
+  deleteAugmentedImages.py - Deletes augmented images.
+  deleteEmptyBox.py - Deletes images without any drawn line.
+  deleteImages.py - Deletes images.
+    
+     

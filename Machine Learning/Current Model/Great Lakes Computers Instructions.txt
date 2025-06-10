@@ -1,0 +1,21 @@
+How to use Great Lakes Computers?
+1- Connect to University of Michigan`s VPN.
+2- Open "Visual Studio Code".
+3- Go to "Remote Explorer".
+4- Click on "greatlakes.arc-ts.umich.edu".
+5- Click on "dacikbas" which is your user name.
+6- Enter your password.
+7- Go to "details" when Great Lakes is loading your environment.
+8- Type "1" to use DuoMobile to sign and approve using your phone.
+9- Go to "/home/dacikbas/RoEmotion/Machine Learning/Current Model" and click on "Open in Integrated Terminal".
+10- When this file is open upload the "data" in local PC to here by replacing "data2" folder there.
+11- Click on "ResnetModelTraining.py" to check the ML model training source code.
+12- Type "module load python/3.10.4" to load the Python compiler.
+13- Type "srun --partition=gpu --gres=gpu:1 --pty bash" to request access to GPU partition.
+14- Type "python3 ResnetModelTraining.py" to initiate the training process.
+15- Again, go to "/home/dacikbas/RoEmotion/Machine Learning/Current Model" and click on "Open in Integrated Terminal" to run "training_results.py".
+16- Type "module load python/3.10.4" to load the Python compiler.
+17- Type "python3 ResnetModelTraining.py" to initiate the visual statistics generation process.
+18- Check images in "/home/dacikbas/RoEmotion/Machine Learning/Current Model/results" and observe to changes.
+19- Repeat running "python3 ResnetModelTraining.py" while the training is on going.
+20- Once the training is finished move "resnet50_emotion.pth" from "/home/dacikbas/RoEmotion/Machine Learning/Current Model/saved_models" to local PC and convert the model.
