@@ -224,8 +224,8 @@ class MainActivity : AppCompatActivity() {
         // Load YOLO model (for object detection) on a background thread
         loadTFLiteModelOnStartupThreaded("YOLOv3_float32.tflite")
 
-        // Create PyTorchClassifier (for emotion classification)
-        emotionClassifier = PyTorchClassifier(this, "resnet50_emotion.pt")
+        // in MainActivity.kt, wherever you initialize:
+        emotionClassifier = PyTorchClassifier.fromAsset(this, "resnet50_emotion.pt")
 
         // Set up pinch-to-zoom or other camera zoom controls
         cameraHelper.setupZoomControls()

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 # Constants
 LOG_FILE = 'RoEmotion_Predictions_Log.txt'
-CLASSES = ["Angry", "Excitement", "Anxious", "Sadness"]
+CLASSES = ["Excitement", "Anxious", "Sadness"]
 RESULTS_DIR = 'results'
 
 def main():

@@ -12,9 +12,10 @@ Experiment Notes
   5- Distribute classes into "train" and "val" as 70% of them should be "train" and 30% of them should be "val" in "data" folder.
   6- Run "python3 FindDifferencesInImages.pt" script to get class differentiation for each dataset which creates a template for each class first and then processes each image.
   7- Once "FindDifferencesInImages" creates the dataset upload "data2" to The Great Lakes Computers.
+  8- Remove "Anger" class from "train" and "val" and rename "data2" folder as "three_class_dataset".
 
  Training Data on Local PC
-  1- In "ResNetModelTraining.py" set target dataset to "data2".
+  1- In "ResNetModelTraining.py" set target dataset to "three_class_dataset".
   2- Also set number of epochs to "200" epochs.
   3- Open terminal and write "python3 ResNetModelTraining.py" to initiate the training process.
   4- To track the process, look at the log at "training_log.txt".
