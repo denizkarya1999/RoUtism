@@ -49,7 +49,7 @@ def main():
     }
 
     # 2. Datasets & Loaders
-    data_dir = 'three_class_dataset'
+    data_dir = 'facial_data'
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), transform=data_transforms[x]) for x in ['train','val']}
     dataloaders = {
         'train': DataLoader(image_datasets['train'], batch_size=32, shuffle=True,
