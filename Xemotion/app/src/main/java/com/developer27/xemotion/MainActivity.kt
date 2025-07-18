@@ -2,6 +2,7 @@ package com.developer27.xemotion
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
@@ -15,6 +16,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.provider.MediaStore
 import android.text.InputType
 import android.util.Log
 import android.util.SparseIntArray
@@ -241,123 +243,123 @@ class MainActivity : AppCompatActivity() {
             val input = EditText(this).apply {
                 hint = "Minutes"
                 inputType = InputType.TYPE_CLASS_NUMBER
-                layoutParams = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    setMargins(marginPx, marginPx, marginPx, 0)
-                }
-            }
-
-            AlertDialog.Builder(this)
-                .setTitle("AR Session Duration")
-                .setMessage("Enter how many minutes to run AR mode:")
-                .setView(input)
-                .setCancelable(false)
-                .setPositiveButton("Start") { _, _ ->
-                    //First stop processing to clean the background processes
-                    stopProcessingAndRecording()
-
-                    val minutes = input.text.toString().toLongOrNull() ?: 1L
-                    val duration = minutes.coerceAtLeast(1) * 60_000L
-
-                    // 2) Switch UI into AR mode
-                    with(viewBinding) {
-                        startProcessingButton.isVisible    = false
-                        modeToggleButton.isVisible         = false
-                        titleContainer.isVisible           = false
-                        switchCameraButton.isVisible       = false
-                        settingsButton.isVisible           = false
-                        aboutButton.isVisible              = false
-                        clearPredictionButton.isVisible    = false
-                        zoomInButton.isVisible             = false
-                        zoomOutButton.isVisible            = false
+                    layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        setMargins(marginPx, marginPx, marginPx, 0)
                     }
-
-                    // Force AR rolling shutter in camera helper
-                    cameraHelper.forceArRollingShutter()
-
-                    // 3) Begin processing & recording in AR mode
-                    startProcessingAndRecording()
-
-                    // 4) Schedule automatic exit from AR mode
-                    arTimer?.cancel()
-                    arTimer = object : CountDownTimer(duration, 1_000L) {
-                        override fun onTick(millisUntilFinished: Long) {
-                            // (optional) update a UI element with remaining time
-                        }
-                        override fun onFinish() {
-                            // AR session time up -> revert to normal mode
-                            isArMode = false
-                            viewBinding.modeToggleButton.text = "AR Mode"
-                            viewBinding.modeToggleButton.backgroundTintList =
-                                ColorStateList.valueOf(
-                                    ContextCompat.getColor(this@MainActivity, R.color.green)
-                                )
-                            updateUiForMode(false)
-                        }
-                    }.start()
                 }
-                .setNegativeButton("Cancel") { _, _ ->
-                    // If user cancels AR start, explicitly set isArMode = false:
-                    isArMode = false
-                    // Revert the UI to CV mode
-                    viewBinding.modeToggleButton.text = "AR Mode"
-                    viewBinding.modeToggleButton.backgroundTintList =
-                        ColorStateList.valueOf(ContextCompat.getColor(this, R.color.green))
-                    updateUiForMode(false)
+
+                AlertDialog.Builder(this)
+                    .setTitle("AR Session Duration")
+                    .setMessage("Enter how many minutes to run AR mode:")
+                    .setView(input)
+                    .setCancelable(false)
+                    .setPositiveButton("Start") { _, _ ->
+                        //First stop processing to clean the background processes
+                        stopProcessingAndRecording()
+
+                        val minutes = input.text.toString().toLongOrNull() ?: 1L
+                        val duration = minutes.coerceAtLeast(1) * 60_000L
+
+                        // 2) Switch UI into AR mode
+                        with(viewBinding) {
+                            startProcessingButton.isVisible    = false
+                            modeToggleButton.isVisible         = false
+                            titleContainer.isVisible           = false
+                            switchCameraButton.isVisible       = false
+                            settingsButton.isVisible           = false
+                            aboutButton.isVisible              = false
+                            clearPredictionButton.isVisible    = false
+                            zoomInButton.isVisible             = false
+                            zoomOutButton.isVisible            = false
+                        }
+
+                        // Force AR rolling shutter in camera helper
+                        cameraHelper.forceArRollingShutter()
+
+                        // 3) Begin processing & recording in AR mode
+                        startProcessingAndRecording()
+
+                        // 4) Schedule automatic exit from AR mode
+                        arTimer?.cancel()
+                        arTimer = object : CountDownTimer(duration, 1_000L) {
+                            override fun onTick(millisUntilFinished: Long) {
+                                // (optional) update a UI element with remaining time
+                            }
+                            override fun onFinish() {
+                                // AR session time up -> revert to normal mode
+                                isArMode = false
+                                viewBinding.modeToggleButton.text = "AR Mode"
+                                viewBinding.modeToggleButton.backgroundTintList =
+                                    ColorStateList.valueOf(
+                                        ContextCompat.getColor(this@MainActivity, R.color.green)
+                                    )
+                                updateUiForMode(false)
+                            }
+                        }.start()
+                    }
+                    .setNegativeButton("Cancel") { _, _ ->
+                        // If user cancels AR start, explicitly set isArMode = false:
+                        isArMode = false
+                        // Revert the UI to CV mode
+                        viewBinding.modeToggleButton.text = "AR Mode"
+                        viewBinding.modeToggleButton.backgroundTintList =
+                            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.green))
+                        updateUiForMode(false)
+                    }
+                    .show()
+
+            } else {
+                // Cancel any in-flight timer
+                arTimer?.cancel()
+
+                // Restore normal UI for CV mode
+                with(viewBinding) {
+                    modeToggleButton.text = "AR Mode"
+                    modeToggleButton.backgroundTintList =
+                        ContextCompat.getColorStateList(this@MainActivity, R.color.green)
+                    startProcessingButton.isVisible    = true
+                    modeToggleButton.isVisible         = true
+                    titleContainer.isVisible           = true
+                    switchCameraButton.isVisible       = true
+                    settingsButton.isVisible           = true
+                    aboutButton.isVisible              = true
+                    clearPredictionButton.isVisible    = true
+                    zoomInButton.isVisible             = true
+                    zoomOutButton.isVisible            = true
                 }
-                .show()
 
-        } else {
-            // Cancel any in-flight timer
-            arTimer?.cancel()
+                // Stop processing & recording
+                stopProcessingAndRecording()
+            }
+        }
 
-            // Restore normal UI for CV mode
-            with(viewBinding) {
-                modeToggleButton.text = "AR Mode"
-                modeToggleButton.backgroundTintList =
-                    ContextCompat.getColorStateList(this@MainActivity, R.color.green)
-                startProcessingButton.isVisible    = true
-                modeToggleButton.isVisible         = true
-                titleContainer.isVisible           = true
-                switchCameraButton.isVisible       = true
-                settingsButton.isVisible           = true
-                aboutButton.isVisible              = true
-                clearPredictionButton.isVisible    = true
-                zoomInButton.isVisible             = true
-                zoomOutButton.isVisible            = true
+                private fun startProcessingAndRecording() {
+            isRecording = true
+            isProcessing = true
+
+            viewBinding.startProcessingButton.text = "Stop Tracking"
+            viewBinding.startProcessingButton.backgroundTintList =
+                ContextCompat.getColorStateList(this, R.color.red)
+            viewBinding.processedFrameView.visibility = View.VISIBLE
+
+            videoProcessor?.reset()
+            batchCount = 0
+
+            // Use 500 ms interval if CONTOUR or default; 700 ms if YOLO
+            val intervalMs = when (Settings.DetectionMode.current) {
+                Settings.DetectionMode.Mode.CONTOUR -> 700L
+                Settings.DetectionMode.Mode.YOLO    -> 700L
+                else -> 500L // fallback
             }
 
-            // Stop processing & recording
-            stopProcessingAndRecording()
-        }
-    }
-
-    private fun startProcessingAndRecording() {
-        isRecording = true
-        isProcessing = true
-
-        viewBinding.startProcessingButton.text = "Stop Tracking"
-        viewBinding.startProcessingButton.backgroundTintList =
-            ContextCompat.getColorStateList(this, R.color.red)
-        viewBinding.processedFrameView.visibility = View.VISIBLE
-
-        videoProcessor?.reset()
-        batchCount = 0
-
-        // Use 500 ms interval if CONTOUR or default; 700 ms if YOLO
-        val intervalMs = when (Settings.DetectionMode.current) {
-            Settings.DetectionMode.Mode.CONTOUR -> 500L
-            Settings.DetectionMode.Mode.YOLO    -> 700L
-            else -> 500L // fallback
-        }
-
-        exportTimer = Timer()
-        exportTimer?.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                runOnUiThread {
-                    val traceBitmap = videoProcessor?.exportTraceForDataCollection()
+            exportTimer = Timer()
+            exportTimer?.scheduleAtFixedRate(object : TimerTask() {
+                override fun run() {
+                    runOnUiThread {
+                        val traceBitmap = videoProcessor?.exportRawTraceForDataCollection()
                     if (traceBitmap != null) {
                         saveBatchAndRunInference(traceBitmap)
                     }
@@ -379,7 +381,7 @@ class MainActivity : AppCompatActivity() {
 
         // Final export of leftover frames
         try {
-            val traceBitmap = videoProcessor?.exportTraceForDataCollection()
+            val traceBitmap = videoProcessor?.exportRawTraceForDataCollection()
             if (traceBitmap != null) {
                 saveBatchAndRunInference(traceBitmap)
             }
@@ -403,36 +405,95 @@ class MainActivity : AppCompatActivity() {
     /**
      * Save the trace bitmap to disk (as line<N>.jpg) and run PyTorch-based classification on it.
      */
+    /**
+     * Save the incoming traceBitmap + all four variants,
+     * then run your inference logic.
+     */
     private fun saveBatchAndRunInference(traceBitmap: Bitmap) {
-        // 1) Save file, only if user enabled saving
-        if (Settings.ExportData.frameIMG) {
-            val screenshotPath = getProcessedImageOutputPath()
-            val screenshotFile = File(screenshotPath)
+        if (!Settings.ExportData.frameIMG) return
+
+        // Compute the base “Exported Lines from Xemotion” directory
+        @Suppress("DEPRECATION")
+        val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        val baseDir = File(picturesDir, "Exported Lines from Xemotion").apply {
+            if (!exists()) mkdirs()
+        }
+
+        // Helper to save one bitmap into a named subfolder
+        fun saveBitmapToSubfolder(bmp: Bitmap, subfolder: String) {
+            val dir = File(baseDir, subfolder).apply { if (!exists()) mkdirs() }
+            val filename = "Line (${batchCount + 1}).jpg"
+            val outFile = File(dir, filename)
             try {
-                FileOutputStream(screenshotFile).use { outputStream ->
-                    traceBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
-                    outputStream.flush()
+                FileOutputStream(outFile).use { out ->
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                    out.flush()
                 }
-                batchCount++
-                Log.d(TAG, "Batch #$batchCount exported: $screenshotPath")
+                Log.d(TAG, "Batch #$batchCount '$subfolder' trace saved to: ${outFile.absolutePath}")
             } catch (e: IOException) {
-                Log.e(TAG, "Error saving batch: ${e.message}")
+                Log.w(TAG, "Failed to save '$subfolder' trace, falling back to MediaStore", e)
+                saveViaMediaStore(bmp)
             }
         }
 
-        // 2) Classify using PyTorch
+        // 1) Gather all four variants
+        val rawBmp      = videoProcessor?.exportRawTraceForDataCollection()
+        val rawCvBmp    = videoProcessor?.exportRawTraceWithCvProcessing()
+        val splineBmp   = videoProcessor?.exportSplineTraceForDataCollection()
+        val splineCvBmp = videoProcessor?.exportSplineTraceWithCvProcessing()
+
+        // 2) Save each in its own folder
+        rawBmp     ?.let { saveBitmapToSubfolder(it, "raw") }
+        rawCvBmp   ?.let { saveBitmapToSubfolder(it, "rawCv") }
+        splineBmp  ?.let { saveBitmapToSubfolder(it, "spline") }
+        splineCvBmp?.let { saveBitmapToSubfolder(it, "splineCv") }
+
+        // 3) Update batchCount once per full set
+        batchCount++
+
+        // 4) Run inference on the original trace
         val (bestLabel, probs) = emotionClassifier.classifyLine(traceBitmap)
-
-        // Derive confidence
-        val bestIndex = probs.indices.maxByOrNull { probs[it] } ?: 0
-        val confidence = probs[bestIndex] * 100f
-        val textResult = "$bestLabel (${String.format("%.1f", confidence)}%)"
-
-        // 3) Put label inside the bounding box next time we detect something
+        emotionClassifier.classifyAndLog(traceBitmap)
+        val confidencePct = (probs.maxOrNull() ?: 0f) * 100
+        val textResult = String.format(Locale.US, "%s (%.1f%%)", bestLabel, confidencePct)
         videoProcessor?.classificationLabel = textResult
-
-        // 4) (Optional) Log it to a file
         appendPredictionToLog(textResult)
+    }
+
+    private fun saveViaMediaStore(traceBitmap: Bitmap) {
+        // Prepare a unique filename
+        val filename = "Line_${batchCount + 1}.jpg"
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.RELATIVE_PATH,
+                Environment.DIRECTORY_PICTURES + "/Exported Lines from Xemotion")
+            put(MediaStore.Images.Media.IS_PENDING, 1)
+        }
+
+        // Use the Activity's contentResolver
+        val resolver = contentResolver
+        val uri = resolver.insert(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            values
+        ) ?: run {
+            Log.e(TAG, "MediaStore insert failed")
+            return
+        }
+
+        try {
+            resolver.openOutputStream(uri)?.use { out ->
+                traceBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+            }
+            values.clear()
+            values.put(MediaStore.Images.Media.IS_PENDING, 0)
+            resolver.update(uri, values, null, null)
+
+            batchCount++
+            Log.d(TAG, "Batch #$batchCount saved via MediaStore: $uri")
+        } catch (e: IOException) {
+            Log.e(TAG, "Fallback save via MediaStore failed", e)
+        }
     }
 
     /**

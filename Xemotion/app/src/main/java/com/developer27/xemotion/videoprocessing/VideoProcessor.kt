@@ -15,7 +15,13 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction
 import org.opencv.android.Utils
-import org.opencv.core.*
+import org.opencv.core.Core
+import org.opencv.core.CvType
+import org.opencv.core.Mat
+import org.opencv.core.MatOfPoint
+import org.opencv.core.Point
+import org.opencv.core.Scalar
+import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 import org.opencv.video.KalmanFilter
 import org.tensorflow.lite.DataType
@@ -66,8 +72,8 @@ object Settings {
             CONTOUR,
             YOLO
         }
-        var current: Mode = Mode.YOLO
-        var enableYOLOinference = true
+        var current: Mode = Mode.CONTOUR
+        var enableYOLOinference = false
     }
 
     object Inference {
@@ -76,8 +82,8 @@ object Settings {
     }
 
     object Trace {
-        var enableRAWtrace = false
-        var enableSPLINEtrace = true
+        var enableRAWtrace = true
+        var enableSPLINEtrace = false
         var splineStep = 0.01
 
         // Colors and thickness
@@ -100,7 +106,7 @@ object Settings {
     }
 
     object ExportData {
-        var frameIMG = false
+        var frameIMG = true
         var enablePredictionLogging = false
     }
 
@@ -184,11 +190,12 @@ class VideoProcessor(private val context: Context) {
         if (boundingRect != null && classificationLabel.isNotEmpty()) {
             // 3a) Pick the textColor based on keywords
             val textColor = when {
-                classificationLabel.contains("Sadness",    ignoreCase = true) -> Scalar(8.0,   223.0, 230.0) // Blue
-                classificationLabel.contains("Anxious",    ignoreCase = true) -> Scalar(255.0, 255.0,   0.0) // Yellow
-                classificationLabel.contains("Excitement", ignoreCase = true) -> Scalar(8.0,   230.0,  74.0) // Green
-                classificationLabel.contains("Angry",      ignoreCase = true) -> Scalar(255.0, 102.0, 102.0) // Red
-                else                                                           -> Scalar(255.0, 203.0,   5.0) // Maize
+                classificationLabel.contains("Angry",    ignoreCase = true) -> Scalar(  255.0,   0.0, 0.0) // bright red
+                classificationLabel.contains("Anxious",  ignoreCase = true) -> Scalar(  255.0, 255.0, 0.0) // yellow
+                classificationLabel.contains("Disgusted",ignoreCase = true) -> Scalar(  0.0, 128.0,   0.0) // green
+                classificationLabel.contains("Excited",  ignoreCase = true) -> Scalar(  255.0, 165.0, 0.0) // orange
+                classificationLabel.contains("Sad",      ignoreCase = true) -> Scalar(255.0,   0.0,   0.0) // blue
+                else                                                         -> Scalar(255.0, 203.0,   5.0) // fallback gold
             }
 
             // 3b) Common margin to use if not in AR mode
@@ -429,9 +436,153 @@ class VideoProcessor(private val context: Context) {
     }
 
     // --------------------------------------------------------------------------------
-    // Export trace for data
+    // Export raw trace for data collection and inference
     // --------------------------------------------------------------------------------
-    fun exportTraceForDataCollection(): Bitmap {
+    fun exportRawTraceForDataCollection(): Bitmap {
+        val snapshot = rawDataList.toList()
+        if (snapshot.isEmpty()) {
+            // Return a tiny black bitmap if we have no data
+            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply {
+                eraseColor(Color.BLACK)
+            }
+        }
+
+        // Find bounds
+        var minX = Double.MAX_VALUE
+        var minY = Double.MAX_VALUE
+        var maxX = Double.MIN_VALUE
+        var maxY = Double.MIN_VALUE
+
+        for (pt in snapshot) {
+            minX = min(minX, pt.x)
+            minY = min(minY, pt.y)
+            maxX = max(maxX, pt.x)
+            maxY = max(maxY, pt.y)
+        }
+
+        val width = (maxX - minX).coerceAtLeast(1.0)
+        val height = (maxY - minY).coerceAtLeast(1.0)
+        val padding = 30.0
+
+        // Compute final integer dimensions
+        val wDouble = width + 2.0 * padding
+        val hDouble = height + 2.0 * padding
+        val matWidth = max(1, wDouble.toInt())
+        val matHeight = max(1, hDouble.toInt())
+
+        // Create a solid black 4-channel Mat
+        val mat = Mat(matHeight, matWidth, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 255.0))
+
+        // Shift points into bitmap coordinates
+        val adjustedPoints = snapshot.map {
+            Point((it.x - minX) + padding, (it.y - minY) + padding)
+        }
+
+        // Save original settings
+        val origColor = Settings.Trace.originalLineColor
+        val origThickness = Settings.Trace.lineThickness
+
+        // Override for white raw trace
+        Settings.Trace.originalLineColor = Scalar(255.0, 255.0, 255.0)
+        Settings.Trace.lineThickness = 10
+
+        // Draw raw trace
+        TraceRenderer.drawRawTrace(adjustedPoints, mat)
+
+        // Restore settings
+        Settings.Trace.originalLineColor = origColor
+        Settings.Trace.lineThickness = origThickness
+
+        // Convert Mat to Bitmap
+        val intermediate = Bitmap.createBitmap(matWidth, matHeight, Bitmap.Config.ARGB_8888).apply {
+            Utils.matToBitmap(mat, this)
+            mat.release()
+        }
+
+        // Final scale (matches existing export sizes)
+        val finalWidth = 79
+        val finalHeight = 68
+        return Bitmap.createScaledBitmap(intermediate, finalWidth, finalHeight, true)
+    }
+
+    // at class scope (outside any function):
+    private val traceBuffer = ArrayDeque<List<Point>>(8)
+
+    /**
+     * Raw Trace with CV Processing
+     * - Keeps up to 8 prior raw traces in a buffer (white)
+     * - Overlays the newest trace in red
+     */
+    fun exportRawTraceWithCvProcessing(): Bitmap {
+        val snapshot = rawDataList.toList()
+        if (snapshot.isEmpty()) {
+            // Return a tiny black bitmap if no data
+            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply {
+                eraseColor(Color.BLACK)
+            }
+        }
+
+        // 1) Compute bounds
+        var minX = Double.MAX_VALUE
+        var minY = Double.MAX_VALUE
+        var maxX = Double.MIN_VALUE
+        var maxY = Double.MIN_VALUE
+        for (pt in snapshot) {
+            minX = min(minX, pt.x)
+            minY = min(minY, pt.y)
+            maxX = max(maxX, pt.x)
+            maxY = max(maxY, pt.y)
+        }
+        val width   = (maxX - minX).coerceAtLeast(1.0)
+        val height  = (maxY - minY).coerceAtLeast(1.0)
+        val padding = 40.0  // ← increased padding
+
+        val matW = max(1, (width  + padding * 2).toInt())
+        val matH = max(1, (height + padding * 2).toInt())
+
+        // 2) Create black RGBA Mat
+        val mat = Mat(matH, matW, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 255.0))
+
+        // 3) Shift points into bitmap coords
+        val adjusted = snapshot.map {
+            Point((it.x - minX) + padding, (it.y - minY) + padding)
+        }
+
+        // 4) Update circular buffer
+        traceBuffer.addLast(adjusted)
+        if (traceBuffer.size > 8) traceBuffer.removeFirst()
+
+        // 5) Save current settings
+        val oldColor     = Settings.Trace.originalLineColor
+        val oldThickness = Settings.Trace.lineThickness
+
+        // 6) Draw all buffered traces in WHITE
+        Settings.Trace.originalLineColor = Scalar(255.0, 255.0, 255.0)
+        Settings.Trace.lineThickness     = 10
+        for (pts in traceBuffer) {
+            TraceRenderer.drawRawTrace(pts, mat)
+        }
+
+        // 7) Overlay newest trace in RED
+        Settings.Trace.originalLineColor = Scalar(255.0, 0.0, 0.0)
+        Settings.Trace.lineThickness     = 10
+        TraceRenderer.drawRawTrace(traceBuffer.last(), mat)
+
+        // 8) Restore settings
+        Settings.Trace.originalLineColor = oldColor
+        Settings.Trace.lineThickness     = oldThickness
+
+        // 9) Convert to Bitmap and scale
+        val bmpIntermediate = Bitmap.createBitmap(matW, matH, Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(mat, bmpIntermediate)
+        mat.release()
+        return Bitmap.createScaledBitmap(bmpIntermediate, 79, 68, true)
+    }
+
+    // --------------------------------------------------------------------------------
+    // Export spline trace for data collection and inference
+    // --------------------------------------------------------------------------------
+    fun exportSplineTraceForDataCollection(): Bitmap {
         val snapshot = smoothDataList.toList()
         if (snapshot.isEmpty()) {
             // Return a tiny black bitmap if we have no data
@@ -491,6 +642,80 @@ class VideoProcessor(private val context: Context) {
         val finalHeight = 68
         return Bitmap.createScaledBitmap(intermediate, finalWidth, finalHeight, true)
     }
+
+    // at class scope:
+    private val splineBuffer = ArrayDeque<List<Point>>(8)
+
+    /**
+     * Spline Trace with CV Processing
+     * - Keeps up to 8 prior smoothed (spline) traces in a buffer (white)
+     * - Overlays the newest spline trace in red
+     */
+    fun exportSplineTraceWithCvProcessing(): Bitmap {
+        val snapshot = smoothDataList.toList()
+        if (snapshot.isEmpty()) {
+            // no data → 1×1 black pixel
+            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply {
+                eraseColor(Color.BLACK)
+            }
+        }
+
+        // 1) compute bounds
+        var minX = Double.MAX_VALUE
+        var minY = Double.MAX_VALUE
+        var maxX = Double.MIN_VALUE
+        var maxY = Double.MIN_VALUE
+        for (pt in snapshot) {
+            minX = min(minX, pt.x)
+            minY = min(minY, pt.y)
+            maxX = max(maxX, pt.x)
+            maxY = max(maxY, pt.y)
+        }
+        val width   = (maxX - minX).coerceAtLeast(1.0)
+        val height  = (maxY - minY).coerceAtLeast(1.0)
+        val padding = 40.0  // ← increased padding
+
+        val matW = max(1, (width  + padding * 2).toInt())
+        val matH = max(1, (height + padding * 2).toInt())
+
+        // 2) create black RGBA Mat
+        val mat = Mat(matH, matW, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 255.0))
+
+        // 3) shift points into bitmap coords
+        val adjusted = snapshot.map {
+            Point((it.x - minX) + padding, (it.y - minY) + padding)
+        }
+
+        // 4) push into splineBuffer
+        splineBuffer.addLast(adjusted)
+        if (splineBuffer.size > 8) splineBuffer.removeFirst()
+
+        // 5) save old settings
+        val oldColor     = Settings.Trace.splineLineColor
+        val oldThickness = Settings.Trace.lineThickness
+
+        // 6) draw all buffered splines in WHITE
+        Settings.Trace.splineLineColor = Scalar(255.0, 255.0, 255.0)
+        Settings.Trace.lineThickness   = 10
+        for (pts in splineBuffer) {
+            TraceRenderer.drawSplineCurve(pts, mat)
+        }
+
+        // 7) overlay newest spline in RED
+        Settings.Trace.splineLineColor = Scalar(255.0, 0.0, 0.0)
+        Settings.Trace.lineThickness   = 10
+        TraceRenderer.drawSplineCurve(splineBuffer.last(), mat)
+
+        // 8) restore settings
+        Settings.Trace.splineLineColor = oldColor
+        Settings.Trace.lineThickness   = oldThickness
+
+        // 9) convert mat→bitmap and scale
+        val bmpIntermediate = Bitmap.createBitmap(matW, matH, Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(mat, bmpIntermediate)
+        mat.release()
+        return Bitmap.createScaledBitmap(bmpIntermediate, 79, 68, true)
+    }
 }
 
 // --------------------------------------------------
@@ -514,7 +739,7 @@ object TraceRenderer {
         }
     }
 
-    private fun drawRawTrace(data: List<Point>, image: Mat) {
+    fun drawRawTrace(data: List<Point>, image: Mat) {
         for (i in 1 until data.size) {
             Imgproc.line(
                 image,
@@ -809,11 +1034,12 @@ object YOLOHelper {
         val tl = Point(box.x1.toDouble(), box.y1.toDouble())
         val br = Point(box.x2.toDouble(), box.y2.toDouble())
         val textColor = when {
-            classificationLabel.contains("Sadness",    ignoreCase = true) -> Scalar(8.0, 223.0, 230.0)
-            classificationLabel.contains("Anxious",    ignoreCase = true) -> Scalar(255.0, 255.0,   0.0)
-            classificationLabel.contains("Excitement", ignoreCase = true) -> Scalar(8.0, 230.0,  74.0)
-            classificationLabel.contains("Angry",      ignoreCase = true) -> Scalar(255.0, 102.0, 102.0)
-            else                                                         -> Scalar(255.0, 203.0,   5.0)
+            classificationLabel.contains("Angry",    ignoreCase = true) -> Scalar(  255.0,   0.0, 0.0) // bright red
+            classificationLabel.contains("Anxious",  ignoreCase = true) -> Scalar(  255.0, 255.0, 0.0) // yellow
+            classificationLabel.contains("Disgusted",ignoreCase = true) -> Scalar(  0.0, 128.0,   0.0) // green
+            classificationLabel.contains("Excited",  ignoreCase = true) -> Scalar(  255.0, 165.0, 0.0) // orange
+            classificationLabel.contains("Sad",      ignoreCase = true) -> Scalar(255.0,   0.0,   0.0) // blue
+            else                                                         -> Scalar(255.0, 203.0,   5.0) // fallback gold
         }
         Imgproc.rectangle(mat, tl, br, textColor, 10)
 

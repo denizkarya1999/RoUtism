@@ -1,0 +1,5 @@
+org.opencv.test.OpenCV-4.10.0-androidTest-0 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\build\generated\res\resValues\androidTest\debug
+org.opencv.test.OpenCV-4.10.0-mergeDebugAndroidTestResources-1 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+org.opencv.test.OpenCV-4.10.0-mergeDebugAndroidTestResources-2 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+org.opencv.test.OpenCV-4.10.0-debugAndroidTest-3 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
+org.opencv.test.OpenCV-4.10.0-debug-4 C:\Users\deniz\AndroidStudioProjects\RoEmotion\Xemotion\OpenCV-4.10.0\build\intermediates\packaged_res\debug\packageDebugResources

@@ -1,88 +1,77 @@
-// File: PyTorchClassifier3.kt
 package com.developer27.xemotion.inference
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import org.pytorch.IValue
 import org.pytorch.Module
 import org.pytorch.torchvision.TensorImageUtils
-import kotlin.math.exp
+import java.io.Closeable
 
-/**
- * A PyTorch classifier that slices a 4-logit model into 3 labels.
- */
 class PyTorchClassifier private constructor(
     private val module: Module,
-    val inputWidth: Int = 224,
-    val inputHeight: Int = 224
-) : AutoCloseable {
+    private val inputWidth: Int = 224,
+    private val inputHeight: Int = 224,
+    private val mean: FloatArray = floatArrayOf(0.485f, 0.456f, 0.406f),
+    private val std: FloatArray = floatArrayOf(0.229f, 0.224f, 0.225f)
+) : Closeable {
 
     companion object {
-        @Volatile private var cachedModule: Module? = null
+        private const val TAG = "PyTorchClassifier"
+        @Volatile private var instance: PyTorchClassifier? = null
 
+        // Hardcoded emotion labels
+        private val labels = listOf("Angry","Anxious", "Disgusted", "Excited", "Sad")
+
+        /**
+         * Load the .pt model from assets and return (or cache) the classifier.
+         * Call: PyTorchClassifier.fromAsset(context, "resnet50_emotion.pt")
+         */
         fun fromAsset(
             context: Context,
-            modelAsset: String = "resnet50_emotion.pt",
-            inputWidth: Int = 224,
-            inputHeight: Int = 224
+            modelAsset: String = "resnet50_emotion.pt"
         ): PyTorchClassifier {
-            val mod = cachedModule ?: synchronized(this) {
-                cachedModule ?: PyTorchModuleLoader
-                    .loadModule(context, modelAsset)
-                    .also { cachedModule = it }
+            return instance ?: synchronized(this) {
+                val module = PyTorchModuleLoader.loadModule(context, modelAsset)
+                PyTorchClassifier(module).also { instance = it }
             }
-            return PyTorchClassifier(mod, inputWidth, inputHeight)
         }
     }
 
-    /** The 3 labels you want to show */
-    private val labels = listOf("Sadness", "Excitement", "Anxious")
-
-    // ImageNet normalization constants
-    private val mean = floatArrayOf(0.485f, 0.456f, 0.406f)
-    private val std  = floatArrayOf(0.229f, 0.224f, 0.225f)
-
-    /** Reusable softmax buffer of size 3 */
-    private val softmaxBuffer = FloatArray(labels.size)
-
     /**
-     * Classify a single bitmap:
-     * 1) run the 4-logit model
-     * 2) slice out [Sadness=idx2, Excitement=idx1, Anxious=idx0]
-     * 3) softmax the 3-element slice
+     * Runs the model on the given bitmap and returns:
+     *  • bestLabel: highest probability class (after softmax)
+     *  • probs: FloatArray of softmax probabilities
      */
     fun classifyLine(bitmap: Bitmap): Pair<String, FloatArray> {
+        // 1) Preprocess: resize & normalize
         val scaled = Bitmap.createScaledBitmap(bitmap, inputWidth, inputHeight, true)
         val tensor = TensorImageUtils.bitmapToFloat32Tensor(scaled, mean, std)
 
-        // 1) get 4 logits
-        val logits4 = module.forward(IValue.from(tensor)).toTensor().dataAsFloatArray
-        // 2) pick exactly the 3 we care about (in labels order)
-        val logits3 = floatArrayOf(
-            logits4[0],  // Anxious
-            logits4[1],  // Excitement
-            logits4[2]   // Sadness
-        )
-        // 3) softmax
-        val probs = softmax(logits3)
-        // 4) best index
-        val best  = probs.indices.maxByOrNull { probs[it] } ?: 0
-        return labels[best] to probs
+        // 2) Forward pass
+        val outputTensor = module.forward(IValue.from(tensor)).toTensor()
+        val rawLogits = outputTensor.dataAsFloatArray
+
+        // 3) Softmax
+        val expScores = rawLogits.map { Math.exp(it.toDouble()).toFloat() }
+        val sumExp = expScores.sum()
+        val probs = expScores.map { it / sumExp }.toFloatArray()
+
+        // 4) Argmax on probabilities
+        val maxIndex = probs.indices.maxByOrNull { probs[it] } ?: 0
+        val bestLabel = labels.getOrElse(maxIndex) { "Unknown" }
+
+        return bestLabel to probs
     }
 
-    private fun softmax(logits: FloatArray): FloatArray {
-        var maxLogit = logits[0]
-        for (i in 1 until logits.size) if (logits[i] > maxLogit) maxLogit = logits[i]
-        var sum = 0f
-        for (i in logits.indices) {
-            val e = exp(logits[i] - maxLogit)
-            softmaxBuffer[i] = e
-            sum += e
+    /**
+     * Same as classifyLine, but logs each label:probability for debugging.
+     */
+    fun classifyAndLog(bitmap: Bitmap) {
+        val (_, probs) = classifyLine(bitmap)
+        for (i in probs.indices) {
+            Log.d(TAG, "${labels.getOrNull(i) ?: "Label$i"}: ${probs[i]}")
         }
-        for (i in softmaxBuffer.indices) {
-            softmaxBuffer[i] = softmaxBuffer[i] / sum
-        }
-        return softmaxBuffer
     }
 
     override fun close() {
