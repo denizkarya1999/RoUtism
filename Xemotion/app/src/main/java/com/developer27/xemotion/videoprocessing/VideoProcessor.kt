@@ -28,6 +28,7 @@ import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.image.TensorImage
 import java.util.LinkedList
+import java.util.Random
 import kotlin.math.max
 import kotlin.math.min
 
@@ -517,78 +518,80 @@ class VideoProcessor(private val context: Context) {
         return Bitmap.createScaledBitmap(intermediate, finalWidth, finalHeight, true)
     }
 
-    // at class scope (outside any function):
-    private val traceBuffer = ArrayDeque<List<Point>>(8)
+    /**
+     * Adds zero‑mean Gaussian noise (σ) to each point for privacy.
+     */
+    fun addNoise(points: List<Point>, sigma: Double): List<Point> {
+        val rng = Random()
+        return points.map { pt ->
+            Point(
+                pt.x + rng.nextGaussian() * sigma,
+                pt.y + rng.nextGaussian() * sigma
+            )
+        }
+    }
 
     /**
-     * Raw Trace with CV Processing
-     * - Keeps up to 8 prior raw traces in a buffer (white)
-     * - Overlays the newest trace in red
+     * Exports the current raw trace with tremor suppression and privacy:
+     * - Applies a median filter (window=3), then adds noise to draw a bold pink path.
+     * - Uses a transparent background and returns a 79×68 Bitmap.
      */
     fun exportRawTraceWithCvProcessing(): Bitmap {
-        val snapshot = rawDataList.toList()
-        if (snapshot.isEmpty()) {
-            // Return a tiny black bitmap if no data
-            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply {
-                eraseColor(Color.BLACK)
-            }
-        }
+        val rawPoints = rawDataList.toList()
+        if (rawPoints.isEmpty()) return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+            .apply { eraseColor(Color.TRANSPARENT) }
 
-        // 1) Compute bounds
-        var minX = Double.MAX_VALUE
-        var minY = Double.MAX_VALUE
-        var maxX = Double.MIN_VALUE
-        var maxY = Double.MIN_VALUE
-        for (pt in snapshot) {
-            minX = min(minX, pt.x)
-            minY = min(minY, pt.y)
-            maxX = max(maxX, pt.x)
-            maxY = max(maxY, pt.y)
+        // Compute axis-aligned bounds
+        var minX = Double.MAX_VALUE; var minY = Double.MAX_VALUE
+        var maxX = Double.MIN_VALUE; var maxY = Double.MIN_VALUE
+        rawPoints.forEach { pt ->
+            minX = min(minX, pt.x); minY = min(minY, pt.y)
+            maxX = max(maxX, pt.x); maxY = max(maxY, pt.y)
         }
-        val width   = (maxX - minX).coerceAtLeast(1.0)
-        val height  = (maxY - minY).coerceAtLeast(1.0)
-        val padding = 40.0  // ← increased padding
+        val width = (maxX - minX).coerceAtLeast(1.0)
+        val height = (maxY - minY).coerceAtLeast(1.0)
+        val padding = 30.0
 
-        val matW = max(1, (width  + padding * 2).toInt())
+        // Prepare transparent canvas
+        val matW = max(1, (width + padding * 2).toInt())
         val matH = max(1, (height + padding * 2).toInt())
+        val mat = Mat(matH, matW, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 0.0))
 
-        // 2) Create black RGBA Mat
-        val mat = Mat(matH, matW, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 255.0))
+        // Shift raw points and dedupe
+        val shiftedRaw = rawPoints.map { pt ->
+            Point((pt.x - minX) + padding, (pt.y - minY) + padding)
+        }
+        val uniqueRaw = mutableListOf<Point>()
+        shiftedRaw.forEach { p -> if (uniqueRaw.isEmpty() || p != uniqueRaw.last()) uniqueRaw.add(p) }
 
-        // 3) Shift points into bitmap coords
-        val adjusted = snapshot.map {
-            Point((it.x - minX) + padding, (it.y - minY) + padding)
+        // Median filter (window=3)
+        val medianFiltered = uniqueRaw.mapIndexed { i, _ ->
+            val start = max(0, i - 1)
+            val end = min(uniqueRaw.size, i + 2)
+            val window = uniqueRaw.subList(start, end)
+            val xs = window.map { it.x }.sorted(); val ys = window.map { it.y }.sorted()
+            Point(xs[xs.size / 2], ys[ys.size / 2])
         }
 
-        // 4) Update circular buffer
-        traceBuffer.addLast(adjusted)
-        if (traceBuffer.size > 8) traceBuffer.removeFirst()
+        // Add privacy noise (σ = 2.0)
+        val privateMedian = addNoise(medianFiltered, sigma = 2.0)
 
-        // 5) Save current settings
-        val oldColor     = Settings.Trace.originalLineColor
-        val oldThickness = Settings.Trace.lineThickness
+        // Draw only the noisy median path in pink
+        val prevColor = Settings.Trace.originalLineColor
+        val prevTh = Settings.Trace.lineThickness
+        Settings.Trace.originalLineColor = Scalar(255.0, 192.0, 203.0)
+        Settings.Trace.lineThickness = 10
+        TraceRenderer.drawRawTrace(privateMedian, mat)
 
-        // 6) Draw all buffered traces in WHITE
-        Settings.Trace.originalLineColor = Scalar(255.0, 255.0, 255.0)
-        Settings.Trace.lineThickness     = 10
-        for (pts in traceBuffer) {
-            TraceRenderer.drawRawTrace(pts, mat)
-        }
+        // Restore original settings
+        Settings.Trace.originalLineColor = prevColor
+        Settings.Trace.lineThickness = prevTh
 
-        // 7) Overlay newest trace in RED
-        Settings.Trace.originalLineColor = Scalar(255.0, 0.0, 0.0)
-        Settings.Trace.lineThickness     = 10
-        TraceRenderer.drawRawTrace(traceBuffer.last(), mat)
-
-        // 8) Restore settings
-        Settings.Trace.originalLineColor = oldColor
-        Settings.Trace.lineThickness     = oldThickness
-
-        // 9) Convert to Bitmap and scale
-        val bmpIntermediate = Bitmap.createBitmap(matW, matH, Bitmap.Config.ARGB_8888)
-        Utils.matToBitmap(mat, bmpIntermediate)
+        // Convert to Bitmap and scale
+        val bmp = Bitmap.createBitmap(matW, matH, Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(mat, bmp)
         mat.release()
-        return Bitmap.createScaledBitmap(bmpIntermediate, 79, 68, true)
+        return Bitmap.createScaledBitmap(bmp, 79, 68, true)
     }
 
     // --------------------------------------------------------------------------------
@@ -655,78 +658,67 @@ class VideoProcessor(private val context: Context) {
         return Bitmap.createScaledBitmap(intermediate, finalWidth, finalHeight, true)
     }
 
-    // at class scope:
-    private val splineBuffer = ArrayDeque<List<Point>>(8)
-
     /**
-     * Spline Trace with CV Processing
-     * - Keeps up to 8 prior smoothed (spline) traces in a buffer (white)
-     * - Overlays the newest spline trace in red
+     * Exports the current spline trace with tremor suppression and privacy:
+     * - Applies a median filter (window=3) to compute a reduced‑tremor path.
+     * - Adds Gaussian noise (σ=2.0) and draws the result in bold pink.
+     * - Uses a transparent background and returns a 79×68 Bitmap.
      */
     fun exportSplineTraceWithCvProcessing(): Bitmap {
-        val snapshot = smoothDataList.toList()
-        if (snapshot.isEmpty()) {
-            // no data → 1×1 black pixel
-            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply {
-                eraseColor(Color.BLACK)
-            }
-        }
+        val smoothPoints = smoothDataList.toList()
+        if (smoothPoints.isEmpty()) return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+            .apply { eraseColor(Color.TRANSPARENT) }
 
-        // 1) compute bounds
-        var minX = Double.MAX_VALUE
-        var minY = Double.MAX_VALUE
-        var maxX = Double.MIN_VALUE
-        var maxY = Double.MIN_VALUE
-        for (pt in snapshot) {
-            minX = min(minX, pt.x)
-            minY = min(minY, pt.y)
-            maxX = max(maxX, pt.x)
-            maxY = max(maxY, pt.y)
+        // Compute bounds
+        var minX = Double.MAX_VALUE; var minY = Double.MAX_VALUE
+        var maxX = Double.MIN_VALUE; var maxY = Double.MIN_VALUE
+        smoothPoints.forEach { pt ->
+            minX = min(minX, pt.x); minY = min(minY, pt.y)
+            maxX = max(maxX, pt.x); maxY = max(maxY, pt.y)
         }
-        val width   = (maxX - minX).coerceAtLeast(1.0)
-        val height  = (maxY - minY).coerceAtLeast(1.0)
-        val padding = 40.0  // ← increased padding
+        val width = (maxX - minX).coerceAtLeast(1.0)
+        val height = (maxY - minY).coerceAtLeast(1.0)
+        val padding = 30.0
 
-        val matW = max(1, (width  + padding * 2).toInt())
+        // Create transparent canvas
+        val matW = max(1, (width + padding * 2).toInt())
         val matH = max(1, (height + padding * 2).toInt())
+        val mat = Mat(matH, matW, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 0.0))
 
-        // 2) create black RGBA Mat
-        val mat = Mat(matH, matW, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 255.0))
+        // Shift and dedupe
+        val shifted = smoothPoints.map { pt ->
+            Point((pt.x - minX) + padding, (pt.y - minY) + padding)
+        }
+        val unique = mutableListOf<Point>()
+        shifted.forEach { p -> if (unique.isEmpty() || p != unique.last()) unique.add(p) }
 
-        // 3) shift points into bitmap coords
-        val adjusted = snapshot.map {
-            Point((it.x - minX) + padding, (it.y - minY) + padding)
+        // Median filter (window=3)
+        val medianFiltered = unique.mapIndexed { i, _ ->
+            val start = max(0, i - 1)
+            val end = min(unique.size, i + 2)
+            val window = unique.subList(start, end)
+            val xs = window.map { it.x }.sorted()
+            val ys = window.map { it.y }.sorted()
+            Point(xs[xs.size / 2], ys[ys.size / 2])
         }
 
-        // 4) push into splineBuffer
-        splineBuffer.addLast(adjusted)
-        if (splineBuffer.size > 8) splineBuffer.removeFirst()
+        // Add noise and draw in bold pink
+        val noisy = addNoise(medianFiltered, sigma = 2.0)
+        val prevColor = Settings.Trace.splineLineColor
+        val prevTh = Settings.Trace.lineThickness
+        Settings.Trace.splineLineColor = Scalar(255.0, 192.0, 203.0)
+        Settings.Trace.lineThickness = 10
+        TraceRenderer.drawSplineCurve(noisy, mat)
 
-        // 5) save old settings
-        val oldColor     = Settings.Trace.splineLineColor
-        val oldThickness = Settings.Trace.lineThickness
+        // Restore settings
+        Settings.Trace.splineLineColor = prevColor
+        Settings.Trace.lineThickness = prevTh
 
-        // 6) draw all buffered splines in WHITE
-        Settings.Trace.splineLineColor = Scalar(255.0, 255.0, 255.0)
-        Settings.Trace.lineThickness   = 10
-        for (pts in splineBuffer) {
-            TraceRenderer.drawSplineCurve(pts, mat)
-        }
-
-        // 7) overlay newest spline in RED
-        Settings.Trace.splineLineColor = Scalar(255.0, 0.0, 0.0)
-        Settings.Trace.lineThickness   = 10
-        TraceRenderer.drawSplineCurve(splineBuffer.last(), mat)
-
-        // 8) restore settings
-        Settings.Trace.splineLineColor = oldColor
-        Settings.Trace.lineThickness   = oldThickness
-
-        // 9) convert mat→bitmap and scale
-        val bmpIntermediate = Bitmap.createBitmap(matW, matH, Bitmap.Config.ARGB_8888)
-        Utils.matToBitmap(mat, bmpIntermediate)
+        // Convert to Bitmap and scale to 79×68
+        val bmp = Bitmap.createBitmap(matW, matH, Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(mat, bmp)
         mat.release()
-        return Bitmap.createScaledBitmap(bmpIntermediate, 79, 68, true)
+        return Bitmap.createScaledBitmap(bmp, 79, 68, true)
     }
 }
 
