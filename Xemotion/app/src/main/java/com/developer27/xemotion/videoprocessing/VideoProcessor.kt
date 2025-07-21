@@ -121,6 +121,8 @@ object Settings {
 // --------------------------------------------------
 class VideoProcessor(private val context: Context) {
 
+    var userLabel: String = "Contour"
+
     // We'll store the classification label here. If non-empty, we overlay it in the bounding box.
     var classificationLabel: String = ""
 
@@ -383,7 +385,17 @@ class VideoProcessor(private val context: Context) {
                 )
                 if (Settings.BoundingBox.enableBoundingBox) {
                     if (box.x2 > box.x1 && box.y2 > box.y1) {
-                        YOLOHelper.drawBoundingBoxes(m, box, classificationLabel)
+                        // a) Lookup user label
+                        val classId   = box.classId
+                        userLabel = YOLOHelper.userLabels[classId - 1]
+
+                        // b) Use existing emotion classification (fallback = "Tracking")
+                        val emotionLabel = classificationLabel.ifEmpty { "Tracking" }
+
+                        // c) Combine both labels
+                        val combinedLabel = "$userLabel | $emotionLabel"
+
+                        YOLOHelper.drawBoundingBoxes(m, box, combinedLabel)
                     }
                 }
                 TraceRenderer.drawTrace(centerPoint, m)
@@ -916,6 +928,11 @@ object ContourDetection {
 // YOLOHelper
 // --------------------------------------------------
 object YOLOHelper {
+    // Type of user classes:
+    // 1) Define IDs 1…5
+    private val classNumbers = IntArray(5) { it + 1 }       // [1, 2, 3, 4, 5]
+    // 2) Build matching labels
+    val userLabels   = Array(5) { idx -> "User_${classNumbers[idx]}" }  // ["User 1", …, "User 5"]
 
     fun parseTFLite(rawOutput: Array<Array<FloatArray>>): DetectionResult? {
         val numDetections = rawOutput[0][0].size
@@ -1044,7 +1061,7 @@ object YOLOHelper {
         Imgproc.rectangle(mat, tl, br, textColor, 10)
 
         // Prepare label
-        var label     = classificationLabel.ifEmpty { "Tracking" }
+        var label = classificationLabel.ifEmpty { "Tracking" }
         val fontScale = 1.5
         val thickness = 2
         val baseline  = IntArray(1)

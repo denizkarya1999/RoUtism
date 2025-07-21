@@ -422,7 +422,7 @@ class MainActivity : AppCompatActivity() {
         // Helper to save one bitmap into a named subfolder
         fun saveBitmapToSubfolder(bmp: Bitmap, subfolder: String) {
             val dir = File(baseDir, subfolder).apply { if (!exists()) mkdirs() }
-            val filename = "Line (${batchCount + 1}).jpg"
+            val filename = "Line_${batchCount + 1}_${videoProcessor?.userLabel}.jpg"
             val outFile = File(dir, filename)
             try {
                 FileOutputStream(outFile).use { out ->
@@ -462,7 +462,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun saveViaMediaStore(traceBitmap: Bitmap) {
         // Prepare a unique filename
-        val filename = "Line_${batchCount + 1}.jpg"
+        val filename = "Line_${batchCount + 1}_User_${videoProcessor?.userLabel}.jpg"
         val values = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, filename)
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
@@ -508,7 +508,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-        val line = "$timestamp => $prediction"
+        val line = "$timestamp => ${videoProcessor?.userLabel} | ${videoProcessor?.classificationLabel}"
 
         @Suppress("DEPRECATION")
         val docDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
