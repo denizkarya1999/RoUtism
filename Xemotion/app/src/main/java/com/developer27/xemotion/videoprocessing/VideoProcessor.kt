@@ -532,66 +532,144 @@ class VideoProcessor(private val context: Context) {
     }
 
     /**
-     * Exports the current raw trace with tremor suppression and privacy:
-     * - Applies a median filter (window=3), then adds noise to draw a bold pink path.
+     * Exports the current raw trace with tremor suppression and privacy,
+     * but using the same white-on-black style as exportRawTraceForDataCollection():
+     * - Applies a median filter (window=3), then adds Gaussian noise (σ=2.0).
+     * - Draws the result in opaque white.
      * - Uses a transparent background and returns a 79×68 Bitmap.
      */
     fun exportRawTraceWithCvProcessing(): Bitmap {
         val rawPoints = rawDataList.toList()
-        if (rawPoints.isEmpty()) return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-            .apply { eraseColor(Color.TRANSPARENT) }
+        if (rawPoints.isEmpty()) {
+            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+                .apply { eraseColor(Color.TRANSPARENT) }
+        }
 
         // Compute axis-aligned bounds
         var minX = Double.MAX_VALUE; var minY = Double.MAX_VALUE
         var maxX = Double.MIN_VALUE; var maxY = Double.MIN_VALUE
         rawPoints.forEach { pt ->
-            minX = min(minX, pt.x); minY = min(minY, pt.y)
-            maxX = max(maxX, pt.x); maxY = max(maxY, pt.y)
+            minX = min(minX, pt.x);
+            minY = min(minY, pt.y)
+            maxX = max(maxX, pt.x);
+            maxY = max(maxY, pt.y)
         }
-        val width = (maxX - minX).coerceAtLeast(1.0)
-        val height = (maxY - minY).coerceAtLeast(1.0)
+        val width   = (maxX - minX).coerceAtLeast(1.0)
+        val height  = (maxY - minY).coerceAtLeast(1.0)
         val padding = 30.0
 
         // Prepare transparent canvas
         val matW = max(1, (width + padding * 2).toInt())
         val matH = max(1, (height + padding * 2).toInt())
-        val mat = Mat(matH, matW, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 0.0))
+        val mat  = Mat(matH, matW, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 0.0))
 
         // Shift raw points and dedupe
         val shiftedRaw = rawPoints.map { pt ->
             Point((pt.x - minX) + padding, (pt.y - minY) + padding)
         }
-        val uniqueRaw = mutableListOf<Point>()
-        shiftedRaw.forEach { p -> if (uniqueRaw.isEmpty() || p != uniqueRaw.last()) uniqueRaw.add(p) }
+        val uniqueRaw = mutableListOf<Point>().apply {
+            shiftedRaw.forEach { p -> if (isEmpty() || p != last()) add(p) }
+        }
 
         // Median filter (window=3)
         val medianFiltered = uniqueRaw.mapIndexed { i, _ ->
             val start = max(0, i - 1)
-            val end = min(uniqueRaw.size, i + 2)
+            val end   = min(uniqueRaw.size, i + 2)
             val window = uniqueRaw.subList(start, end)
-            val xs = window.map { it.x }.sorted(); val ys = window.map { it.y }.sorted()
+            val xs = window.map { it.x }.sorted()
+            val ys = window.map { it.y }.sorted()
             Point(xs[xs.size / 2], ys[ys.size / 2])
         }
 
         // Add privacy noise (σ = 2.0)
         val privateMedian = addNoise(medianFiltered, sigma = 2.0)
 
-        // Draw only the noisy median path in pink
+        // Draw only the noisy median path in opaque white, thickness=10
         val prevColor = Settings.Trace.originalLineColor
-        val prevTh = Settings.Trace.lineThickness
-        Settings.Trace.originalLineColor = Scalar(255.0, 192.0, 203.0)
-        Settings.Trace.lineThickness = 10
+        val prevTh    = Settings.Trace.lineThickness
+        Settings.Trace.originalLineColor = Scalar(182.6, 173.2, 224.9, 255.0)  // ← now pink
+        Settings.Trace.lineThickness      = 10
         TraceRenderer.drawRawTrace(privateMedian, mat)
-
-        // Restore original settings
         Settings.Trace.originalLineColor = prevColor
-        Settings.Trace.lineThickness = prevTh
+        Settings.Trace.lineThickness      = prevTh
 
-        // Convert to Bitmap and scale
-        val bmp = Bitmap.createBitmap(matW, matH, Bitmap.Config.ARGB_8888)
-        Utils.matToBitmap(mat, bmp)
-        mat.release()
-        return Bitmap.createScaledBitmap(bmp, 79, 68, true)
+        // Convert to an intermediate Bitmap, then scale to 79×68
+        val intermediate = Bitmap.createBitmap(matW, matH, Bitmap.Config.ARGB_8888).apply {
+            Utils.matToBitmap(mat, this)
+            mat.release()
+        }
+        return Bitmap.createScaledBitmap(intermediate, 79, 68, true)
+    }
+
+
+    /**
+     * Exports the current spline trace with tremor suppression and privacy,
+     * but using the same white-on-black style as exportSplineTraceForDataCollection():
+     * - Applies a median filter (window=3) to compute a reduced‑tremor path.
+     * - Adds Gaussian noise (σ=2.0) and draws the result in opaque white.
+     * - Uses a transparent background and returns a 79×68 Bitmap.
+     */
+    fun exportSplineTraceWithCvProcessing(): Bitmap {
+        val smoothPoints = smoothDataList.toList()
+        if (smoothPoints.isEmpty()) {
+            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+                .apply { eraseColor(Color.TRANSPARENT) }
+        }
+
+        // Compute bounds
+        var minX = Double.MAX_VALUE; var minY = Double.MAX_VALUE
+        var maxX = Double.MIN_VALUE; var maxY = Double.MIN_VALUE
+        smoothPoints.forEach { pt ->
+            minX = min(minX, pt.x);
+            minY = min(minY, pt.y)
+            maxX = max(maxX, pt.x);
+            maxY = max(maxY, pt.y)
+        }
+        val width   = (maxX - minX).coerceAtLeast(1.0)
+        val height  = (maxY - minY).coerceAtLeast(1.0)
+        val padding = 30.0
+
+        // Create transparent canvas
+        val matW = max(1, (width + padding * 2).toInt())
+        val matH = max(1, (height + padding * 2).toInt())
+        val mat  = Mat(matH, matW, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 0.0))
+
+        // Shift and dedupe
+        val shifted = smoothPoints.map { pt ->
+            Point((pt.x - minX) + padding, (pt.y - minY) + padding)
+        }
+        val unique = mutableListOf<Point>().apply {
+            shifted.forEach { p -> if (isEmpty() || p != last()) add(p) }
+        }
+
+        // Median filter (window=3)
+        val medianFiltered = unique.mapIndexed { i, _ ->
+            val start = max(0, i - 1)
+            val end   = min(unique.size, i + 2)
+            val window = unique.subList(start, end)
+            val xs = window.map { it.x }.sorted()
+            val ys = window.map { it.y }.sorted()
+            Point(xs[xs.size / 2], ys[ys.size / 2])
+        }
+
+        // Add Gaussian noise (σ = 2.0)
+        val noisy = addNoise(medianFiltered, sigma = 2.0)
+
+        // Draw in opaque white, thickness=10
+        val prevColor = Settings.Trace.splineLineColor
+        val prevTh    = Settings.Trace.lineThickness
+        Settings.Trace.splineLineColor = Scalar(182.6, 173.2, 224.9, 255.0)   // ← now pink
+        Settings.Trace.lineThickness   = 10
+        TraceRenderer.drawSplineCurve(noisy, mat)
+        Settings.Trace.splineLineColor = prevColor
+        Settings.Trace.lineThickness   = prevTh
+
+        // Convert to an intermediate Bitmap, then scale to 79×68
+        val intermediate = Bitmap.createBitmap(matW, matH, Bitmap.Config.ARGB_8888).apply {
+            Utils.matToBitmap(mat, this)
+            mat.release()
+        }
+        return Bitmap.createScaledBitmap(intermediate, 79, 68, true)
     }
 
     // --------------------------------------------------------------------------------
@@ -656,69 +734,6 @@ class VideoProcessor(private val context: Context) {
         val finalWidth = 79
         val finalHeight = 68
         return Bitmap.createScaledBitmap(intermediate, finalWidth, finalHeight, true)
-    }
-
-    /**
-     * Exports the current spline trace with tremor suppression and privacy:
-     * - Applies a median filter (window=3) to compute a reduced‑tremor path.
-     * - Adds Gaussian noise (σ=2.0) and draws the result in bold pink.
-     * - Uses a transparent background and returns a 79×68 Bitmap.
-     */
-    fun exportSplineTraceWithCvProcessing(): Bitmap {
-        val smoothPoints = smoothDataList.toList()
-        if (smoothPoints.isEmpty()) return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-            .apply { eraseColor(Color.TRANSPARENT) }
-
-        // Compute bounds
-        var minX = Double.MAX_VALUE; var minY = Double.MAX_VALUE
-        var maxX = Double.MIN_VALUE; var maxY = Double.MIN_VALUE
-        smoothPoints.forEach { pt ->
-            minX = min(minX, pt.x); minY = min(minY, pt.y)
-            maxX = max(maxX, pt.x); maxY = max(maxY, pt.y)
-        }
-        val width = (maxX - minX).coerceAtLeast(1.0)
-        val height = (maxY - minY).coerceAtLeast(1.0)
-        val padding = 30.0
-
-        // Create transparent canvas
-        val matW = max(1, (width + padding * 2).toInt())
-        val matH = max(1, (height + padding * 2).toInt())
-        val mat = Mat(matH, matW, CvType.CV_8UC4, Scalar(0.0, 0.0, 0.0, 0.0))
-
-        // Shift and dedupe
-        val shifted = smoothPoints.map { pt ->
-            Point((pt.x - minX) + padding, (pt.y - minY) + padding)
-        }
-        val unique = mutableListOf<Point>()
-        shifted.forEach { p -> if (unique.isEmpty() || p != unique.last()) unique.add(p) }
-
-        // Median filter (window=3)
-        val medianFiltered = unique.mapIndexed { i, _ ->
-            val start = max(0, i - 1)
-            val end = min(unique.size, i + 2)
-            val window = unique.subList(start, end)
-            val xs = window.map { it.x }.sorted()
-            val ys = window.map { it.y }.sorted()
-            Point(xs[xs.size / 2], ys[ys.size / 2])
-        }
-
-        // Add noise and draw in bold pink
-        val noisy = addNoise(medianFiltered, sigma = 2.0)
-        val prevColor = Settings.Trace.splineLineColor
-        val prevTh = Settings.Trace.lineThickness
-        Settings.Trace.splineLineColor = Scalar(255.0, 192.0, 203.0)
-        Settings.Trace.lineThickness = 10
-        TraceRenderer.drawSplineCurve(noisy, mat)
-
-        // Restore settings
-        Settings.Trace.splineLineColor = prevColor
-        Settings.Trace.lineThickness = prevTh
-
-        // Convert to Bitmap and scale to 79×68
-        val bmp = Bitmap.createBitmap(matW, matH, Bitmap.Config.ARGB_8888)
-        Utils.matToBitmap(mat, bmp)
-        mat.release()
-        return Bitmap.createScaledBitmap(bmp, 79, 68, true)
     }
 }
 

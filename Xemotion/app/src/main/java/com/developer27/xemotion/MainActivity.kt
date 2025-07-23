@@ -359,7 +359,7 @@ class MainActivity : AppCompatActivity() {
             exportTimer?.scheduleAtFixedRate(object : TimerTask() {
                 override fun run() {
                     runOnUiThread {
-                        val traceBitmap = videoProcessor?.exportRawTraceForDataCollection()
+                        val traceBitmap = videoProcessor?.exportSplineTraceWithCvProcessing()
                     if (traceBitmap != null) {
                         saveBatchAndRunInference(traceBitmap)
                     }
@@ -381,7 +381,7 @@ class MainActivity : AppCompatActivity() {
 
         // Final export of leftover frames
         try {
-            val traceBitmap = videoProcessor?.exportRawTraceForDataCollection()
+            val traceBitmap = videoProcessor?.exportSplineTraceWithCvProcessing()
             if (traceBitmap != null) {
                 saveBatchAndRunInference(traceBitmap)
             }
