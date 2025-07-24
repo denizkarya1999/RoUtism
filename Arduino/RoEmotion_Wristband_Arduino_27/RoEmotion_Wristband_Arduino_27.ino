@@ -1,5 +1,5 @@
 // define led according to pin diagram in article
-// OOK signal 27
+// OOK signal USER-1
 //const int redLed2 = D2; // there is no LED_BUILTIN available for the XIAO ESP32C3.
 const int greenLed4 = D4;
 
@@ -12,11 +12,11 @@ void setup() {
 void loop() {
     digitalWrite(greenLed4, HIGH);   // 1 turn off the Red Led 
     delayMicroseconds(166);
-    digitalWrite(greenLed4, HIGH);   // 1  turns on the Green LED
+    digitalWrite(greenLed4, LOW);   // 0  turns on the Green LED
     delayMicroseconds(166);                
-    digitalWrite(greenLed4, LOW);    // 0  turns off the Green LED
+    digitalWrite(greenLed4, HIGH);    // 1 turns off the Green LED
     delayMicroseconds(166);
-    digitalWrite(greenLed4, HIGH);   // 1  turns on the Green LED
+    digitalWrite(greenLed4, LOW);   // 0  turns on the Green LED
     delayMicroseconds(166);                  
     digitalWrite(greenLed4, HIGH);  // 1  turns off the Green LED
     delayMicroseconds(166);
